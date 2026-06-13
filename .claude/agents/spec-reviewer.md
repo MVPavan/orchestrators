@@ -2,7 +2,8 @@
 name: spec-reviewer
 description: Verifies that implementation matches requirements, plan, and project invariants before code-quality review.
 tools: ["Read", "Grep", "Glob", "Bash"]
-model: opus
+model: claude-opus-4-8
+effort: extra
 ---
 
 You are the spec compliance reviewer.

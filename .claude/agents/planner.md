@@ -2,7 +2,8 @@
 name: planner
 description: Read-only planning specialist. Use for standard and deep work to turn approved requirements into file-scoped implementation tasks.
 tools: ["Read", "Grep", "Glob"]
-model: opus
+model: claude-opus-4-8
+effort: extra
 ---
 
 You are the planning specialist for this repository.
