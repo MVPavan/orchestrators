@@ -1,5 +1,5 @@
 ---
-description: Turn input documents (designs, reviews, specs) into a workstream — brainstorm + roadmap + seeded bd epics/stages — ready for /run-phases.
+description: Turn input documents or research notes into a Beads-backed workstream — brainstorm + roadmap + seeded epics/stages.
 ---
 
 # Prepare Phases
@@ -7,11 +7,11 @@ description: Turn input documents (designs, reviews, specs) into a workstream �
 Takes one or more input documents and stands up a **workstream**: a brainstorm, a roadmap, and the bd
 epics + stages that `/run-phases` and `/phase-execution` drive off. Work-state lives in **beads**; the
 human-readable tracking files are bd-generated (never hand-authored). Model: `.beads/beads.md` →
-*Phase & workstream integration* and `docs/plans/beads-phase-integration.md`.
+*Workstream Mirrors*.
 
 ## Inputs
 
-- One or more document paths (design docs, review docs, spec updates) — passed as arguments.
+- One or more document paths (research notes, design docs, review docs, spec updates) — passed as arguments.
 - If no arguments, ask the user which documents to process.
 
 ## Workflow
@@ -20,8 +20,10 @@ human-readable tracking files are bd-generated (never hand-authored). Model: `.b
 
 1. Read each input document.
 2. Read `AGENTS.md`, `.claude/project/brief.md`, `.claude/project/docs-index.md`.
-3. Read `docs/workstreams/status.md` (the bd-generated board) to understand current project state.
+3. If `docs/workstreams/status.md` exists, read it as the generated board. If it does not exist yet,
+   use `bd stats`, `bd list`, and `docs/workstreams/README.md` to understand current state.
 4. Classify the input:
+   - **Research notes**: decisions or tradeoffs that may become implementation work
    - **New design docs**: new capabilities or components to build
    - **Review/audit docs**: findings to remediate against existing implementation
    - **Spec updates**: changes to existing design docs that require implementation updates
@@ -35,8 +37,9 @@ Invoke the **brainstorming skill** with the input documents as context:
 3. Identify phases, deliverables, risk levels, dependencies, and execution order.
 4. If real choices exist (e.g., new workstream vs extend existing, grouping strategy), present options.
 5. Get Codex criticism on the brainstorm (standard/deep work).
-6. Produce `docs/brainstorms/YYYY-MM-DD-<topic>-requirements.md` (lands in the live brainstorms inbox; it
-   moves to `done/` when shipped or `rejected/` if abandoned — see `docs/brainstorms/README.md`).
+6. Ensure `docs/brainstorms/` exists, then produce
+   `docs/brainstorms/YYYY-MM-DD-<topic>-requirements.md`. If a brainstorm lifecycle README does not
+   exist yet, do not invent lifecycle moves; keep the requirements file in place and report it.
 
 ### Step 3 — Create the Workstream
 
@@ -60,7 +63,8 @@ This replaces the old "status rows + checklist/progress scaffolding". For each p
 2. **Flat stage children**: per deliverable, `bd create "<stage>" --parent <epic> -t task --actor "…" -q` → dotted id `<epic>.N`. Avoid sub-tasks.
 3. **Dependencies — declare only the REAL ones** (`bd dep add <stage> <prereq> --actor "…"`): add a dep only where a stage genuinely needs another's output (per the roadmap). **Do NOT blanket-chain** in listing order — genuinely independent work stays unchained so it can run in any order / in parallel. Deps mirror **reality, not sequence**; `run-phases` walks roadmap order regardless, so artificial chaining only buys premature-start bugs and a noisier ready-front.
 4. **Render**: `BD_RENDER=1 bash scripts/bd-render-tracking.sh <name>` — regenerates the workstream's
-   `tracking/` trio + the board from bd.
+   `tracking/` trio + the board from bd. If `scripts/bd-render-tracking.sh` does not exist yet, skip
+   rendering, report the missing renderer, and do **not** create generated mirror files by hand.
 
 `--actor` is mandatory on every bd write. Conservative-git: do **not** commit; report the proposed commands.
 
@@ -68,9 +72,11 @@ This replaces the old "status rows + checklist/progress scaffolding". For each p
 
 Present to the user:
 - Workstream path; number of phases (epics) + stages (children) seeded; execution order; risk per phase.
-- Next command: `/run-phases docs/workstreams/<name>/roadmap.md` (autonomous) or `/phase-execution <phase> --roadmap docs/workstreams/<name>/roadmap.md` (one phase).
+- Next command: `/phase-execution <phase> --roadmap docs/workstreams/<name>/roadmap.md` (one phase).
+  Use `/run-phases docs/workstreams/<name>/roadmap.md` only after the renderer/workstream mirrors are
+  available and the user wants autonomous sequential execution.
 
-Example: "Seeded workstream `reviews`: 6 phases / 23 stages in bd. Run `/run-phases docs/workstreams/reviews/roadmap.md` to begin."
+Example: "Seeded workstream `reviews`: 6 phases / 23 stages in bd. Run `/phase-execution 1 --roadmap docs/workstreams/reviews/roadmap.md` to begin."
 
 ## What This Command Produces
 
@@ -79,12 +85,12 @@ Example: "Seeded workstream `reviews`: 6 phases / 23 stages in bd. Run `/run-pha
 | Brainstorm requirements | `docs/brainstorms/YYYY-MM-DD-<topic>-requirements.md` |
 | Workstream charter + roadmap | `docs/workstreams/<name>/{README.md, roadmap.md}` |
 | Work-state | bd epics (phases) + flat stage children + deps |
-| Tracking trio + board | **bd-generated** via `scripts/bd-render-tracking.sh` (read-only) |
+| Tracking trio + board | **bd-generated** via `scripts/bd-render-tracking.sh` when the renderer exists |
 
 ## What This Command Does NOT Do
 
 - Does not create plan docs (that's `/phase-execution` Step 2).
-- Does not execute any implementation (that's `/run-phases`).
+- Does not execute any implementation (that's `/phase-execution` or `/run-phases`).
 - Does not write code.
 
 ## Rules
@@ -93,7 +99,8 @@ Example: "Seeded workstream `reviews`: 6 phases / 23 stages in bd. Run `/run-pha
 - Always ask the user about new vs extend workstream — do not assume.
 - **No orphan issues** — every epic belongs to a workstream and carries `--spec-id` + `--design`.
 - **Deps mirror reality** — chain only genuine deps; independent work stays unchained (parallelizable at the DD stage level, file-conflict bounded).
-- `--actor` on every bd write; never hand-edit the generated tracking files (update bd, then render).
+- `--actor` on every bd write; never hand-edit generated tracking files. If the renderer is missing,
+  leave generated mirrors absent and report the gap.
 - Use repo-relative paths only.
 - Get Codex criticism on the brainstorm for standard/deep work.
 - If the input documents are unclear or contradictory, stop and ask the user before proceeding.

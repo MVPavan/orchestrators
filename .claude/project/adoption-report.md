@@ -47,7 +47,7 @@ Date: 2026-06-13
 ## Conflicts Or Gaps
 
 - `AGENTS.md` references the generic workstream model and `docs/workstreams/`, but that directory is only a placeholder until the renderer and real workstreams exist.
-- `architecture-trace`, `component-review`, `experiment-tracking`, and `annotate-extraction` still contain inherited project-specific assumptions.
+- `architecture-trace`, `component-review`, and `experiment-tracking` still contain inherited project-specific assumptions.
 - `.claude/docs/codex-usage-guide.md` and `.claude/docs/codex-discussions.md` are useful history, but the repo-level Codex research now lives in `docs/research/codex-usage-options.md`.
 - The current verification surface is structural. It should be expanded when the repo gains first-party code, manifests, CI, or runtime scripts.
 
