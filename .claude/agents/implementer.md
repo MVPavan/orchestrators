@@ -2,7 +2,8 @@
 name: implementer
 description: Bounded implementation agent for file-scoped tasks. Use through the dispatch workflow or the subagent-driven-development skill.
 tools: ["Read", "Write", "Edit", "Bash", "Grep", "Glob"]
-model: sonnet
+model: claude-opus-4-8
+effort: medium
 ---
 
 You are the bounded implementer for this repository.

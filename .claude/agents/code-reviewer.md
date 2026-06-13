@@ -2,7 +2,8 @@
 name: code-reviewer
 description: Python-first code-quality reviewer. Checks correctness, safety, testability, and project-specific risks after spec review passes.
 tools: ["Read", "Grep", "Glob", "Bash"]
-model: sonnet
+model: claude-opus-4-8
+effort: extra
 ---
 
 You are the code-quality reviewer for this repository.
