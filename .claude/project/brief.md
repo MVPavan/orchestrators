@@ -28,14 +28,14 @@ Only submodule commit pointers belong to this parent repo. The internal files an
 - **Version control:** Git parent repo plus Git submodules for upstream projects.
 - **Issue tracking:** Beads (`bd`) with local Dolt storage and `.beads/issues.jsonl` as the git-reviewable mirror.
 - **Agent runtimes:** Claude Code harness, Codex CLI/plugin research, Gemini CLI as a likely peer runtime.
-- **Research artifacts:** `RESEARCH/`.
+- **Research artifacts:** `docs/research/`.
 - **First-party application code:** not present yet.
-- **Workstream docs:** intended under `docs/workstreams/`, but not bootstrapped yet.
+- **Workstream docs:** `docs/workstreams/` exists as a placeholder; real workstreams and generated mirrors are not bootstrapped yet.
 
 ## How Work Happens
 
 - Durable work is tracked in Beads. Use `.beads/beads.md` as the project policy.
-- Research decisions should land under `RESEARCH/` unless they belong in a formal project doc.
+- Research decisions should land under `docs/research/` unless they belong in a formal project doc.
 - The reusable Claude harness lives under `.claude/`, but `.claude/project/` is the repo-specific overlay.
 - External repos are inspected as references or upstreams. Do not edit their internals from the parent repo unless the task explicitly asks for submodule work.
 
@@ -49,6 +49,6 @@ Only submodule commit pointers belong to this parent repo. The internal files an
 
 ## Open Adoption Gaps
 
-- `docs/brainstorms/`, `docs/workstreams/`, and `scripts/bd-render-tracking.sh` are not present yet.
+- `docs/brainstorms/` and `scripts/bd-render-tracking.sh` are not present yet. `docs/workstreams/` exists as a placeholder only.
 - `architecture-trace`, `component-review`, and experiment-tracking skills still need adaptation before use.
-- The Codex integration direction is captured in `RESEARCH/codex-usage-options.md`, but project-native wrappers are not implemented yet.
+- The Codex integration research is captured in `docs/research/codex-usage-options.md`, but project-native wrappers are not implemented yet.

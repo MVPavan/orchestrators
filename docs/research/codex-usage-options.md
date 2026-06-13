@@ -1,6 +1,7 @@
 # Codex Usage Options
 
 Date: 2026-06-13
+Location: `docs/research/`
 
 This note captures the current Codex integration options for the orchestrators repo. It compares Codex Cloud, the native Codex CLI, Codex SDK, app-server, MCP, and the installed Claude Code Codex plugin.
 

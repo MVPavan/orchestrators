@@ -9,12 +9,12 @@ Use this file to find the right source before guessing. Prefer current repo file
 | Path | Purpose | Authority | Read When |
 | --- | --- | --- | --- |
 | `README.md` | Public repo summary, submodule layout, clone/sync commands | authoritative | Understanding the parent repo and upstream sync model |
-| `AGENTS.md` | Always-loaded agent operating guide | authoritative, pending cleanup | Starting any agent work in this repo |
+| `AGENTS.md` | Always-loaded agent operating guide | authoritative | Starting any agent work in this repo |
 | `CLAUDE.md` | Claude entry point pointing at `AGENTS.md` | authoritative | Claude Code startup |
 | `.gitmodules` | Submodule path, URL, and branch declarations | authoritative | Working with `external/gascity` or `external/gastown` |
 | `.beads/beads.md` | Beads policy, work item conventions, generated mirror rules | authoritative | Creating, claiming, closing, or syncing issues |
 | `.beads/config.yaml` | Beads sync/export configuration | authoritative | Debugging issue tracker persistence or sync |
-| `RESEARCH/codex-usage-options.md` | Current Codex surface comparison and adoption recommendation | authoritative research note | Deciding how to invoke Codex from Claude, Gemini, shell, cloud, SDK, or MCP |
+| `docs/research/codex-usage-options.md` | Current Codex surface comparison and adoption recommendation | authoritative research note | Deciding how to invoke Codex from Claude, Gemini, shell, cloud, SDK, or MCP |
 
 ## Claude Harness Docs
 
@@ -34,7 +34,7 @@ These files came from the copied harness and may contain useful patterns, but th
 
 | Path | Current Status | Use With Care |
 | --- | --- | --- |
-| `.claude/docs/codex-usage-guide.md` | Claude-plugin-oriented Codex guide from prior setup | Cross-check against `RESEARCH/codex-usage-options.md` before applying |
+| `.claude/docs/codex-usage-guide.md` | Claude-plugin-oriented Codex guide from prior setup | Cross-check against `docs/research/codex-usage-options.md` before applying |
 | `.claude/docs/codex-discussions.md` | Discussion history for Codex plugin usage | Treat as historical notes |
 | `.claude/docs/beads-issue-tracking-adoption.md` | Beads adoption notes | Useful background; `.beads/beads.md` wins |
 | `.claude/docs/mlflow-experiment-tracking-adoption.md` | Prior experiment-tracking adoption plan | Not current policy for this repo |
@@ -51,7 +51,7 @@ These files came from the copied harness and may contain useful patterns, but th
 | Planned Path | Intended Purpose |
 | --- | --- |
 | `docs/brainstorms/` | Durable brainstorm and requirements inbox |
-| `docs/workstreams/` | Workstream charters, roadmaps, plans, and Beads-generated mirrors |
+| `docs/workstreams/` | Placeholder now; later workstream charters, roadmaps, plans, and Beads-generated mirrors |
 | `scripts/bd-render-tracking.sh` | Renderer for Beads-generated workstream views |
 | `docs/architecture-trace/` | Architecture trace outputs after the skill is generalized |
 | `docs/reviews/` | Component/system review outputs after the skill is generalized |

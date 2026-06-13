@@ -14,11 +14,11 @@ Beads is the durable work tracker for this repo.
 
 ## Research Tracking
 
-Use `RESEARCH/` for durable research notes that inform project direction.
+Use `docs/research/` for durable research notes that inform project direction.
 
 Current research:
 
-- `RESEARCH/codex-usage-options.md`
+- `docs/research/codex-usage-options.md`
 
 Research notes should include:
 
@@ -53,4 +53,4 @@ Do not use inherited MLflow or prior-project tracking conventions as current pro
 - artifacts: prompts, command logs, JSONL event streams, diffs, final reports
 - metrics: success, cost, latency, resume behavior, verification result
 
-Until then, keep concrete run findings in `RESEARCH/` or Beads issues as appropriate.
+Until then, keep concrete run findings in `docs/research/` or Beads issues as appropriate.
