@@ -1,109 +1,61 @@
 # Mechanically Checkable Invariants
 
-Status: adopted for v2.7 design docs on 2026-04-07
+Status: adapted for Agent Orchestrators on 2026-06-13
 
-These are current mechanically checkable project facts for the repo as it exists today.
-Promote implementation invariants only after code, manifests, and test config exist.
+These invariants describe the repo as it exists now. Update them when the project adds first-party code, a workstream renderer, CI, or additional external repositories.
 
-## [INV-01] Common Design Is The Top Authority
+## [INV-01] External Upstreams Are Git Submodules
 
-- Statement: `docs/design/v_2_7/core/bodha-design-v2_7.md` is present and marked authoritative.
-- Check: `rg -n "^\\*\\*Status:\\*\\* Authoritative$" docs/design/v_2_7/core/bodha-design-v2_7.md`
-- Must return: exactly one line
-- Why it matters: this is the source of truth when component docs or historical setup files disagree.
+- Statement: `gascity` and `gastown` are tracked as submodules under `external/`, both on `main`.
+- Check: `git config --file .gitmodules --get-regexp '^submodule\\.(gascity|gastown)\\.(path|url|branch)$'`
+- Must return: path, URL, and branch entries for both submodules.
+- Why it matters: the parent repo should track upstream pointers, not vendor entire upstream internals.
 
-## [INV-02] Temporal Replaced The Older Scheduler Model
+## [INV-02] README Documents Submodule Clone And Sync
 
-- Statement: the v2.7 design says Temporal is the sole orchestrator and replaces `async_core.Scheduler`.
-- Check: `rg -n "Temporal as sole orchestrator|replaces async_core\\.Scheduler" docs/design/v_2_7/core/bodha-design-v2_7.md docs/design/v_2_7/core/bodha-infrastructure-v2_7.md`
-- Must return: one or more matching lines
-- Why it matters: the old Bodha setup still assumes the pre-Temporal scheduler model.
+- Statement: `README.md` explains recursive clone/init and upstream sync commands.
+- Check: `rg -n "git clone --recurse-submodules|git submodule update --init --recursive|git submodule update --remote --merge" README.md`
+- Must return: all three command patterns.
+- Why it matters: contributors need a stable way to hydrate and update upstream projects.
 
-## [INV-03] pydantic-settings Replaced OmegaConf
+## [INV-03] Beads Has A Durable Mirror
 
-- Statement: the v2.7 design adopts `pydantic-settings` instead of OmegaConf.
-- Check: `rg -n "pydantic-settings replaces OmegaConf" docs/design/v_2_7/core/bodha-design-v2_7.md docs/design/v_2_7/core/bodha-infrastructure-v2_7.md`
-- Must return: one or more matching lines
-- Why it matters: historical Python/config rules that still hard-code OmegaConf are stale.
+- Statement: Beads exports to `.beads/issues.jsonl` and does not auto-stage it.
+- Check: `rg -n "export\\.auto: true|export\\.path: \"issues.jsonl\"|export\\.git-add: false" .beads/config.yaml`
+- Must return: all three settings.
+- Why it matters: issue state must be reviewable in git without giving Beads authority to stage files automatically.
 
-## [INV-04] PostgreSQL Is The Authoritative Write Boundary
+## [INV-04] Beads Policy Defines Generated Workstream Mirrors
 
-- Statement: Bodha treats PostgreSQL as the authoritative write boundary and source of record.
-- Check: `rg -n "Postgres.*(sole authority|source of record|Authoritative write boundary)" docs/design/v_2_7/core/bodha-design-v2_7.md docs/design/v_2_7/core/bodha-chitta-v2_7.md`
-- Must return: one or more matching lines
-- Why it matters: write-path safety, replayability, and projection discipline all depend on this boundary.
+- Statement: generated workstream mirrors are listed in `.beads/beads.md`.
+- Check: `rg -n "docs/workstreams/status.md|docs/workstreams/\\*/tracking/\\*\\.md|Update Beads first" .beads/beads.md`
+- Must return: matching policy lines.
+- Why it matters: once workstream docs are created, agents must not hand-edit generated tracker views.
 
-## [INV-05] Tools And Skills Are Registry Infrastructure
+## [INV-05] Claude Safety Hooks Are Wired
 
-- Statement: tools and skills are registry infrastructure, not memory-ledger entries.
-- Check: `rg -n "Tools and skills are \\*\\*identity infrastructure\\*\\*" docs/design/v_2_7/core/bodha-tools-skills-v2_7.md`
-- Must return: exactly one line
-- Why it matters: this keeps capability identity separate from memory storage and Dhṛti write-gate logic.
+- Statement: Claude PreToolUse hooks block dangerous shell commands and hand-edits to generated mirrors.
+- Check: `jq -e '.hooks.PreToolUse[] | select(.matcher=="Bash")' .claude/settings.json >/dev/null && jq -e '.hooks.PreToolUse[] | select(.matcher=="Write|Edit")' .claude/settings.json >/dev/null`
+- Must return: exit 0.
+- Why it matters: the harness should enforce the local safety rules it documents.
 
-## [INV-06] Raw Document Chunks Never Enter Citta
+## [INV-06] Project Overlay Has No Source-Project Leakage
 
-- Statement: raw document chunks and verbatim passages do not enter Citta.
-- Check: `rg -n "Raw chunks and verbatim passages never enter Citta" docs/design/v_2_7/core/bodha-rag-v2_7.md`
-- Must return: exactly one line
-- Why it matters: the bookshelf model depends on keeping raw document content external while storing only internalized knowledge and provenance.
+- Statement: `.claude/project/` should not contain copied source-project facts.
+- Check: `! rg -n "Bo[d]ha|bo[d]ha|Dhri[t]i|Dhṛ[t]i|src/bo[d]ha|docs/design/v_2_[0-9]" .claude/project`
+- Must return: exit 0.
+- Why it matters: reusable harness files can remain generic, but project overlay facts must describe this repo.
 
-## [INV-07] Source Quote Is Mandatory In v2.7 Extraction
+## [INV-07] Codex Research Note Exists
 
-- Statement: every ExtractionCandidate must include a `source_quote` field in v2.7.
-- Check: `rg -n "Every ExtractionCandidate must include a .source_quote. field|source_quote mandatory" docs/design/v_2_7/core/bodha-design-v2_7.md docs/design/v_2_7/core/bodha-dhriti-v2_7.md`
-- Must return: one or more matching lines
-- Why it matters: v2.7 extraction grounding depends on verbatim evidence instead of trusting model confidence alone.
+- Statement: Codex integration research is recorded under `RESEARCH/`.
+- Check: `test -f RESEARCH/codex-usage-options.md && rg -n "codex exec|codex cloud|codex mcp-server|Claude Code Codex Plugin" RESEARCH/codex-usage-options.md`
+- Must return: exit 0 and matching lines.
+- Why it matters: Codex adoption decisions should be durable and reviewable, not only chat context.
 
-## [INV-08] Phase 1.5 Mechanical Verification Is Non-LLM
+## [INV-08] Parent Repo Has No First-Party Source Tree Yet
 
-- Statement: Phase 1.5 grounding verification uses mechanical checks, not LLM calls.
-- Check: `rg -n "Phase 1\\.5.*non-LLM|No LLM calls|mechanical verification is non-LLM" docs/design/v_2_7/core/bodha-design-v2_7.md docs/design/v_2_7/core/bodha-dhriti-v2_7.md docs/design/v_2_7/core/bodha-job-plan-v2_7.md`
-- Must return: one or more matching lines
-- Why it matters: the v2.7 hardening story depends on adding verifiable guardrails rather than another opaque reasoning step.
-
-## [INV-08b] `claim_support` Is The Sole LLM-Generation Call Site In The Post-Grounding Dhriti Pipeline
-
-- Statement: within the post-grounding Dhriti sub-pipeline (`grounding_guard.py`,
-  `claim_support.py`, `promotion_gate.py`, `promotion_gate_helpers.py`, `commit.py`),
-  `src/bodha/dhriti/claim_support.py` is the only file permitted to invoke an LLM
-  *generation* call (chat completion, structured output, judge call) — and only
-  inside a function named `judge_call`. Exactly one such call site may exist in
-  the file. INV-08 ("no LLM calls in `grounding_guard`") remains unchanged and
-  is the narrower invariant inside INV-08b's scope. Embedding queries via
-  `Gateway.embed()` are explicitly permitted (deterministic math transform,
-  not generation). Files explicitly OUTSIDE this invariant — because LLM
-  generation is the whole point of the stage — are `dhriti_agents.py`,
-  `signal_capture.py`, and `escalation_repair.py`. `dharana/signal_repair.py`
-  is in the `dharana` module and is outside the invariant entirely.
-- Check 1 (Stage A gate, already enforced): `pytest tests/invariant/test_authority_boundary.py::test_no_forbidden_llm_calls_in_post_grounding_pipeline`
-- Check 2 (Stage B gate, lands with `claim_support.py`): `pytest tests/invariant/test_authority_boundary.py::test_claim_support_has_exactly_one_llm_call_in_judge_call_wrapper`
-- Must return: both tests green
-- Why it matters: the v2 Schema introduces a per-granularity cosine band where
-  `grounding_guard` cannot decide alone. The judge belongs in its own stage
-  with its own boundary so future contributors see a single authoritative
-  LLM-call site in the post-grounding pipeline. Loosening INV-08 to "no LLM
-  in Layer 1, LLM allowed in Layer 2" would split a clean invariant down a
-  fuzzy seam; a separate file with its own invariant is the cleaner cut.
-
-## [INV-09] Fabricated Candidates Are Rejected Before Phase 2
-
-- Statement: if grounding fails badly enough, the candidate is rejected before escalation or Phase 2.
-- Check: `rg -n "Fabricated candidates are rejected before Phase 2|grounding_score < 0\\.5.*REJECT|automatic \\*\\*REJECT\\*\\*" docs/design/v_2_7/core/bodha-design-v2_7.md docs/design/v_2_7/core/bodha-dhriti-v2_7.md`
-- Must return: one or more matching lines
-- Why it matters: this is the strongest new v2.7 safeguard against fabricated memories entering the write path.
-
-## [INV-10] verification.md Reflects Repo Reality (No False-Green Gate)
-
-- Statement: while runnable application code exists under `src/bodha/`, the verification-command
-  registry `.claude/project/verification.md` must point the completion gate at real code checks — it
-  must name the canonical test command (`uv run pytest`) and must NOT carry the obsolete
-  "no runnable application code → doc-existence checks" claim. This stops the keystone
-  `verification-before-completion` gate from silently rotting back into passing on `test -f` while the
-  code is broken.
-- Check 1 (real gate present): `test -d src/bodha && rg -n "uv run pytest" .claude/project/verification.md`
-- Check 2 (stale claim absent): `rg -n "not runnable application code" .claude/project/verification.md`
-- Must return: Check 1 → one or more matching lines; Check 2 → NO matching lines (empty output).
-- Why it matters: `verification.md` is the source of truth the `verification-before-completion` skill
-  reads to choose the command that proves "done." It went stale once (frozen at the design-only stage,
-  contradicting the python rules), turning the accuracy keystone into a false-green hazard. This
-  invariant makes that specific rot mechanically detectable by `/check-invariants`.
+- Statement: the parent repo currently has no `src/` or `tests/`; upstream source lives in submodules.
+- Check: `test ! -d src && test ! -d tests && test -d external/gascity && test -d external/gastown`
+- Must return: exit 0.
+- Why it matters: verification must not pretend there are application tests until first-party code exists.
