@@ -7,7 +7,7 @@ description: Execute a development phase from a workstream roadmap, following th
 
 Thin orchestrator that drives one complete phase of a workstream. Work-state lives in **beads** (epic =
 phase, flat task = stage); the tracking files are bd-generated. Delegates planning and implementation to
-specialized skills — does not reimplement them. Model: `.beads/beads.md` → *Phase & workstream integration*.
+specialized skills — does not reimplement them. Model: `.beads/beads.md` → *Workstream Mirrors*.
 
 ## Use It When
 
@@ -58,11 +58,13 @@ ready stage remains:
    - **standard** → implement directly from the roadmap's Spec Reference.
    - Marked **test-first** → invoke the **test-driven-development skill**.
    - Unexpected test failure → invoke the **systematic-debugging skill** before retrying.
-3. **Close with evidence**: `bd close <stage-id> --reason "<commit SHA + test result>" --actor "…"`. The
+3. **Close with evidence**: `bd close <stage-id> --reason "<verification evidence>" --actor "…"`. The
    reason is what renders into `progress.md` — if it's not in bd, it's not real.
 4. **Discovered durable work** → `bd create --parent <epic> --deps discovered-from:<stage-id> --actor "…"`
    (becomes a new stage; do not let it vanish with the turn).
-5. **Render**: `BD_RENDER=1 bash scripts/bd-render-tracking.sh <name>`. Confirm the stage to the user.
+5. **Render if available**: if `scripts/bd-render-tracking.sh` exists, run
+   `BD_RENDER=1 bash scripts/bd-render-tracking.sh <name>`. If it does not exist, leave generated
+   mirrors absent and report the missing renderer. Confirm the stage to the user.
 
 ### Step 4 — Exit (the discipline gate)
 
@@ -78,7 +80,9 @@ ready stage remains:
 
 ### Step 5 — Report
 
-1. **Render**: `BD_RENDER=1 bash scripts/bd-render-tracking.sh <name>` (refreshes status/checklist/progress).
+1. **Render if available**: if `scripts/bd-render-tracking.sh` exists, run
+   `BD_RENDER=1 bash scripts/bd-render-tracking.sh <name>` (refreshes status/checklist/progress).
+   If it does not exist, report that generated mirrors were not refreshed.
 2. Run `git status` — report uncommitted changes (do not commit unless asked / running under `/run-phases`).
 3. Summarize: what was built, test results, open items.
 
@@ -98,9 +102,9 @@ The phase lifecycle (load → plan → execute → gate → report), the bd work
 
 ## Rules
 
-- Never skip Codex steps — enforced by the delegated skills.
+- Codex steps are expected when available, but remain best-effort under the capacity policy in `AGENTS.md`.
 - Never mark a phase done without the **gate** (all stages closed) *and* the exit criterion.
 - Never proceed past step 2 without user approval (deep phases).
 - Never hand-edit the generated tracking files — update bd, then render.
 - `--actor` on every bd write. If a stage is blocked or fails verification, stop and report.
-- Do not modify `infra/proxy-setup/` — it is independent.
+- Do not edit submodule internals unless the task is explicitly submodule-local.

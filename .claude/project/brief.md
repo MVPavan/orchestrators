@@ -50,5 +50,4 @@ Only submodule commit pointers belong to this parent repo. The internal files an
 ## Open Adoption Gaps
 
 - `docs/brainstorms/` and `scripts/bd-render-tracking.sh` are not present yet. `docs/workstreams/` exists as a placeholder only.
-- `architecture-trace`, `component-review`, and experiment-tracking skills still need adaptation before use.
 - The Codex integration research is captured in `docs/research/codex-usage-options.md`, but project-native wrappers are not implemented yet.

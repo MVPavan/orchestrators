@@ -28,7 +28,8 @@ Skip it for clearly `small` work with explicit behavior.
 5. Pressure-test the request for scope, reuse, and carrying cost.
 6. If real choices remain, present 2-3 approaches with tradeoffs.
 7. Recommend one direction.
-8. If durable decisions were made, write `docs/brainstorms/YYYY-MM-DD-<topic>-requirements.md`.
+8. If durable decisions were made, ensure `docs/brainstorms/` exists and write
+   `docs/brainstorms/YYYY-MM-DD-<topic>-requirements.md`.
 9. Review the new document before treating it as source of truth.
 10. In Claude Code with Codex available, get Codex criticism for `standard` and `deep` brainstorms before finalizing.
 
