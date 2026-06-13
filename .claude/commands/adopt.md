@@ -1,5 +1,5 @@
 ---
-description: Adopt this reusable Claude setup to the current repository by filling only the project overlay files.
+description: Adopt this reusable Claude setup to the current repository by refreshing only the project overlay files.
 ---
 
 # Adopt This Setup
@@ -8,8 +8,7 @@ Use this after the setup has been copied into a target repository root.
 
 ## Goal
 
-Keep the core harness stable.
-Update only `.claude/project/*` with facts derived from the current repo.
+Keep the core harness stable. Update only `.claude/project/*` with facts derived from the current repo.
 
 ## Workflow
 
@@ -31,9 +30,12 @@ Update only `.claude/project/*` with facts derived from the current repo.
 4. Verify claims against the actual repo when possible.
 5. Update only:
    - `.claude/project/brief.md`
+   - `.claude/project/repo-map.md`
    - `.claude/project/verification.md`
    - `.claude/project/invariants.md`
    - `.claude/project/docs-index.md`
+   - `.claude/project/tools.md`
+   - `.claude/project/tracking.md`
    - `.claude/project/learnings.md`
    - `.claude/project/adoption-report.md`
 6. Use repo-relative paths only.
@@ -44,5 +46,7 @@ Update only `.claude/project/*` with facts derived from the current repo.
 
 - Do not rewrite core rules, agents, commands, or skills unless the user asks.
 - Do not copy unverifiable design-doc claims into project facts.
-- If the repo is Python and local commands are unclear, fall back to the Python defaults in `.claude/project/verification.md`.
-- If the repo is not Python, use the observed local commands and note the mismatch in the adoption report.
+- Do not invent verification commands. If local commands are unclear, say so in `verification.md` and
+  keep the completion gate structural until real code, manifests, or CI exist.
+- If the repo has a language-specific stack, document the observed commands and any mismatch with
+  `.claude/rules/` in the adoption report.
