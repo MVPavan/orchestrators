@@ -66,3 +66,11 @@
 # - github.token    → use GITHUB_TOKEN env var instead
 
 sync.remote: "git+https://github.com/MVPavan/orchestrators.git"
+
+export.git-add: false
+
+export.auto: true
+
+export.path: "issues.jsonl"
+
+import.path: "issues.jsonl"

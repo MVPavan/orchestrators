@@ -1,7 +1,7 @@
 #!/bin/bash
 # PreToolUse(Bash) guard. Blocks destructive commands and asks the user first.
-# Covers: git working-tree/history destroyers, --no-verify, beads store re-init, and
-# recursive removes (rm -r / rm -rf) targeting anything outside /tmp.
+# Covers: git working-tree/history destroyers, --no-verify, beads store re-init,
+# and recursive removes (rm -r / rm -rf) targeting anything outside /tmp.
 set -euo pipefail
 
 INPUT=$(cat)
@@ -73,16 +73,5 @@ while IFS= read -r SEG; do
 done <<EOF
 $(echo "$COMMAND" | grep -oE '(^|[[:space:]])rm[[:space:]]+[^;&|<>]*' || true)
 EOF
-
-# bd-GENERATED tracking mirrors. The per-workstream tracking trio and the cross-cutting board under
-# docs/workstreams/ are read-only projections of beads (see docs/plans/beads-phase-integration.md §5).
-# The only sanctioned writer is scripts/bd-render-tracking.sh (invoked with BD_RENDER=1). Block direct
-# shell-redirect / tee / in-place-sed writes to them unless that whitelist token is present in the command.
-GEN_PATH_RE='docs/workstreams/([^|;]*/tracking/[^/[:space:]]*\.md|(status|ideas|backlog)\.md)'
-if ! echo "$COMMAND" | grep -qF 'BD_RENDER=1' 2>/dev/null \
-   && echo "$COMMAND" | grep -qE "(>>?|[[:space:]]tee[[:space:]]|sed[[:space:]]+-i)[^|;]*$GEN_PATH_RE" 2>/dev/null; then
-  echo "BLOCKED: '$COMMAND' writes to a bd-GENERATED tracking mirror (read-only projection of beads). Update bd, then run: BD_RENDER=1 bash scripts/bd-render-tracking.sh. Do not hand-edit." >&2
-  exit 2
-fi
 
 exit 0
