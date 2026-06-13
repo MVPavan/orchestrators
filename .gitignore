@@ -1,9 +1,9 @@
 # Local agent/tool runtime state
-.agents/
-.codex/
-.claude/
-AGENTS.md
-CLAUDE.md
+# .agents/
+# .codex/
+# .claude/
+# AGENTS.md
+# CLAUDE.md
 
 # Environment files
 .env
