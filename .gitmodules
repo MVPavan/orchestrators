@@ -1,0 +1,9 @@
+[submodule "gascity"]
+	path = gascity
+	url = https://github.com/gastownhall/gascity.git
+	branch = main
+
+[submodule "gastown"]
+	path = gastown
+	url = https://github.com/gastownhall/gastown.git
+	branch = main
