@@ -1,6 +1,6 @@
 # Tools And Runtimes
 
-Routing guidance for this repo. Current project facts live in `.claude/project/`; deeper tool research lives in `RESEARCH/`.
+Routing guidance for this repo. Current project facts live in `.claude/project/`; deeper tool research lives in `docs/research/`.
 
 ## Beads
 
@@ -11,7 +11,7 @@ Routing guidance for this repo. Current project facts live in `.claude/project/`
 
 ## Codex
 
-- **Current decision:** `RESEARCH/codex-usage-options.md` is the authoritative project note.
+- **Current research:** `docs/research/codex-usage-options.md` is the current project research note.
 - **Default project direction:** prefer repo-native `codex exec`, `codex exec resume`, and `codex review` wrappers for automation.
 - **Cloud work:** use `codex cloud` for offloaded branch/PR-style work after a Codex cloud environment is configured.
 - **Cross-agent bridge:** consider `codex mcp-server` or the Codex SDK when Gemini or another runtime needs Codex as a callable tool.
@@ -32,9 +32,10 @@ Routing guidance for this repo. Current project facts live in `.claude/project/`
 
 ## Docs Research
 
-- For current library, SDK, CLI, API, cloud, or model-provider behavior, use an up-to-date documentation path instead of guessing.
-- In Claude Code, use the `docs-researcher` subagent when available.
-- For OpenAI/Codex behavior, prefer the current official docs and the local research note in `RESEARCH/codex-usage-options.md`.
+- For current library, SDK, CLI, API, cloud, or model-provider behavior, use official/reference docs instead of guessing.
+- In Claude Code, use the `docs-researcher` subagent when available for narrow documentation lookup.
+- Use brainstorming, not docs-researcher, for open-ended project research, tradeoff analysis, and requirements decisions.
+- For OpenAI/Codex behavior, prefer current official docs and the local research note in `docs/research/codex-usage-options.md`.
 
 ## External Repos
 
@@ -44,5 +45,5 @@ Routing guidance for this repo. Current project facts live in `.claude/project/`
 
 ## HTML Artifacts
 
-- Use the `html-artifact` skill only for polished human-facing reports that benefit from richer structure than Markdown.
+- Use the `html-artifact` skill only when the user asks for HTML, or when the output is purely for human reading and richer structure clearly helps.
 - Do not use it for README files, agent prompts, harness docs, or content meant for another agent.

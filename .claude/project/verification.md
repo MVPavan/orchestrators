@@ -50,6 +50,8 @@ Use these when editing `.claude/project/`:
 ```bash
 rg -n "Bo[d]ha|bo[d]ha|Dhri[t]i|Dhṛ[t]i|src/bo[d]ha|docs/design/v_2_[0-9]" .claude/project
 rg -n "^## \\[INV-" .claude/project/invariants.md
+test -f docs/research/codex-usage-options.md
+test -f docs/workstreams/README.md
 ```
 
 The first command should return no matches after the overlay is fully adapted.

@@ -37,4 +37,4 @@ Keep entries short. Never store secrets or machine-local paths.
 - Trigger: comparing Codex Cloud, CLI, SDK, app-server, MCP, and the installed Claude Code Codex plugin.
 - Rule: use `codex exec`, `codex exec resume`, and `codex review` as the default automation foundation; keep the Claude plugin as an interactive convenience layer.
 - Evidence: current research note records official-doc and local-plugin findings.
-- Related docs: `RESEARCH/codex-usage-options.md`, `.claude/project/tools.md`.
+- Related docs: `docs/research/codex-usage-options.md`, `.claude/project/tools.md`.

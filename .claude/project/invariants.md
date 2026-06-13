@@ -48,10 +48,17 @@ These invariants describe the repo as it exists now. Update them when the projec
 
 ## [INV-07] Codex Research Note Exists
 
-- Statement: Codex integration research is recorded under `RESEARCH/`.
-- Check: `test -f RESEARCH/codex-usage-options.md && rg -n "codex exec|codex cloud|codex mcp-server|Claude Code Codex Plugin" RESEARCH/codex-usage-options.md`
+- Statement: Codex integration research is recorded under `docs/research/`.
+- Check: `test -f docs/research/codex-usage-options.md && rg -n "codex exec|codex cloud|codex mcp-server|Claude Code Codex Plugin" docs/research/codex-usage-options.md`
 - Must return: exit 0 and matching lines.
 - Why it matters: Codex adoption decisions should be durable and reviewable, not only chat context.
+
+## [INV-07b] Workstreams Placeholder Exists
+
+- Statement: `docs/workstreams/README.md` exists but no generated workstream mirrors are expected yet.
+- Check: `test -f docs/workstreams/README.md && test ! -f docs/workstreams/status.md`
+- Must return: exit 0.
+- Why it matters: phase commands can point at the intended location without pretending generated tracking exists.
 
 ## [INV-08] Parent Repo Has No First-Party Source Tree Yet
 
