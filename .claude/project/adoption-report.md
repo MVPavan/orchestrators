@@ -1,52 +1,60 @@
 # Adoption Report
 
-Status: adopted for v2.7 on 2026-04-07
+Status: draft adapted overlay for Agent Orchestrators
+
+Date: 2026-06-13
 
 ## Inputs Read
 
-- `project_agnostic_claude_setup/AGENTS.md`
-- `project_agnostic_claude_setup/adopt.md`
-- `project_agnostic_claude_setup/.claude/project/*.md`
-- `docs/design/v_2_7/core/bodha-design-v2_7.md`
-- `docs/design/v_2_7/core/bodha-buddhi-v2_7.md`
-- `docs/design/v_2_7/core/bodha-chitta-v2_7.md`
-- `docs/design/v_2_7/core/bodha-dharana-v2_7.md`
-- `docs/design/v_2_7/core/bodha-dhriti-v2_7.md`
-- `docs/design/v_2_7/core/bodha-infrastructure-v2_7.md`
-- `docs/design/v_2_7/core/bodha-job-plan-v2_7.md`
-- `docs/design/v_2_7/core/bodha-rag-v2_7.md`
-- `docs/design/v_2_7/core/bodha-retrieval-v2_7.md`
-- `docs/design/v_2_7/core/bodha-tools-skills-v2_7.md`
-- `docs/design/v_2_7/core/memory-benchmarks-v2_7.md`
-- `docs/design/v_2_6/core/new_discussions/claude-mem-adoption-log.md`
-- `docs/design/v_2_6/core/new_discussions/dhriti-extraction-discussions.md`
-- `docs/design/v_2_6/core/bodha_subscription_proxy_architecture.md`
-- `bodha_claude_setup_old/.claude/project/*.md` (reference for prior adoption)
+- `README.md`
+- `.gitmodules`
+- `.gitignore`
+- `AGENTS.md`
+- `CLAUDE.md`
+- `.beads/beads.md`
+- `.beads/config.yaml`
+- `.beads/README.md`
+- `RESEARCH/codex-usage-options.md`
+- `.claude/project/*.md` inherited from the prior setup
 
 ## Files Updated
 
 - `.claude/project/brief.md`
-- `.claude/project/components.md` *(since removed from the overlay)*
+- `.claude/project/docs-index.md`
+- `.claude/project/repo-map.md`
 - `.claude/project/verification.md`
 - `.claude/project/invariants.md`
-- `.claude/project/docs-index.md`
+- `.claude/project/tools.md`
+- `.claude/project/tracking.md`
 - `.claude/project/learnings.md`
 - `.claude/project/adoption-report.md`
 
+## What Changed
+
+- Replaced copied source-project facts with Agent Orchestrators facts.
+- Marked `external/gascity` and `external/gastown` as submodule upstreams, not parent-repo source trees.
+- Removed Python/Temporal/Postgres/MLflow verification assumptions from the project overlay.
+- Added current structural verification commands for Git, submodules, Beads, Claude settings, and hooks.
+- Recorded current open gaps: no first-party `src/`, `tests/`, `docs/`, `scripts/`, CI, workstream renderer, or project-native Codex wrappers yet.
+- Made `RESEARCH/codex-usage-options.md` the current Codex adoption note.
+
 ## Assumptions
 
-- The eventual Bodha implementation remains Python-first and async, based on the authoritative v2.7 design docs.
-- All paths in this overlay are repo-relative to the Bodha project root.
-- The v2.7 design set supersedes the older v2.2-era harness whenever they conflict.
+- "Adapt `.claude/project`" means update the repo-specific overlay only, not the reusable harness commands, skills, agents, or rules.
+- The parent repo remains a harness/orchestration repo unless the user later adds first-party implementation code.
+- Copied skills that are still useful but project-coupled will be adapted in later passes after this overlay is reviewed.
 
-## Conflicts or Gaps
+## Conflicts Or Gaps
 
-- Current repo reality is docs-first: no source tree, manifests, CI config, or test directories were found. Infrastructure setup exists under `infra/proxy-setup/`.
-- The old setup encodes stale v2.2 assumptions that conflict with v2.7, including `async_core.Scheduler`, OmegaConf-based config guidance, and the older Dhī boundary.
-- The v2.7 design docs live under `docs/design/v_2_7/core/`, while supporting discussion docs live under `docs/design/v_2_6/core/new_discussions/`.
-- Because repo-native verification commands do not exist yet, the adopted verification surface is limited to doc-consistency checks plus explicit future Python fallback.
+- `AGENTS.md` still references the generic workstream model and `docs/workstreams/`, but those directories are not bootstrapped yet.
+- `architecture-trace`, `component-review`, `experiment-tracking`, and `annotate-extraction` still contain inherited project-specific assumptions.
+- `.claude/docs/codex-usage-guide.md` and `.claude/docs/codex-discussions.md` are useful history, but the repo-level Codex direction now lives in `RESEARCH/codex-usage-options.md`.
+- The current verification surface is structural. It should be expanded when the repo gains first-party code, manifests, CI, or runtime scripts.
 
-## Next Review Step
+## Recommended Next Review Step
 
-- Human review required before treating the setup as fully adopted.
-- When Bodha source lands, replace doc-only verification with repo-native commands and promote code-level invariants from design intent into mechanically checkable checks.
+Review the overlay for correctness, especially:
+
+1. whether the repo scope should stay "harness/adoption" or already describe a concrete orchestrator implementation;
+2. whether `docs/workstreams/` and `scripts/bd-render-tracking.sh` should be bootstrapped next;
+3. which inherited skills should be adapted, parked, or removed first.

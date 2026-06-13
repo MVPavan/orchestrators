@@ -1,61 +1,67 @@
-# Repo Map — structure & how to orient
+# Repo Map
 
-Physical layout + navigation. Design-doc authority is mapped in `docs-index.md`; this file maps the tree.
+Physical layout and navigation for the parent repo.
 
-## Top level
-
-| Path | What |
-|---|---|
-| `src/bodha/` | The application (component packages below) |
-| `tests/` | `unit/` · `integration/` (needs dev-stack) · `invariant/` · `eval/` (harness + component suites) |
-| `alembic/` | DB migrations (Postgres) |
-| `config/` | YAML config (pydantic-settings) |
-| `prompts/` | Versioned LLM prompts (e.g. `prompts/dhriti/extraction/v*.md`) |
-| `infra/` | Docker stacks: `dev-stack/` (Postgres, Redis, Neo4j, Qdrant, Oxigraph, LiteLLM) · `embed-stack/` · `mlflow-stack/` · `proxy-setup/` (cli-proxy-api; independent — do not modify) |
-| `datasets/` | Benchmark data (docs tracked; raw/normalized gitignored) |
-| `experiments/` | Exploratory work, pre-graduation (e.g. `dhriti/ner_rel_grounding/`) |
-| `eval-results/` | Eval run outputs (gitignored) |
-| `scripts/` | Repo tooling (e.g. `bd-render-tracking.sh`) |
-| `viewer/` | Side-by-side signal-extraction viewer (scratch quality, not lint-clean) |
-| `docs/` | See below |
-| `scratchpad/` | Throwaway work — gitignored, never commit |
-| `repos/` | Local reference checkouts — gitignored, not part of the build |
-
-## `src/bodha/` components
-
-| Package | Owns |
-|---|---|
-| `contracts/` | Shared Pydantic models + enums — the dependency sink; if a dependency feels backwards, the shared type moves here |
-| `buddhi/` | Turn orchestration, tool gating, model tiers, Gateway routing |
-| `manas/` | Context packing, compression, repacking |
-| `dhriti/` | Extraction pipeline: signal capture → grounding guard → claim support → promotion gate → commit |
-| `chitta/` | Store authority: schemas, adapters (Postgres/Neo4j/Qdrant/Oxigraph/Redis), projections, overlay |
-| `retrieval/` | Dhī intent classification + Smṛti retrieval stages |
-| `dharana/` | Background integrity, consolidation, enrichment, revalidation jobs |
-| `resolution/` | Entity + vocabulary resolution |
-| `agents/` | pydantic-ai agent definitions |
-| `capabilities/` | Agent capability middleware (e.g. context_repack) |
-| `tools/`, `skills/` | Capability registries (identity infrastructure — bypass Dhṛti) |
-| `infrastructure/` | Temporal, gateway, observability, virtual keys |
-| `api.py`, `config.py` | Top-level API surface; settings |
-
-Dependency flow (no circular imports): `api.py` → component packages → shared `contracts/`.
-
-## `docs/`
+## Top Level
 
 | Path | What |
-|---|---|
-| `design/` | Versioned architecture specs (`v_2_7/core/` authoritative) + `memory-design-tests/` (DS eval datasets, golden-100) + `component-eval/` (per-component eval design) |
-| `workstreams/` | Per-initiative execution: `<name>/{README,roadmap,plans/,tracking/}`; root = bd-generated board (`status/ideas/backlog.md`, read-only) |
-| `brainstorms/` | Exploration inbox (dated; `done/` + `rejected/` lifecycle) |
-| `plans/` | Cross-cutting plans (e.g. `beads-phase-integration.md`) |
-| `reviews/`, `architecture-trace/` | Review + code↔design trace outputs |
-| `guides/` | Operational how-tos (proxy-setup) |
-| `_archive/` | Frozen history (pre-bd roadmaps/trio, archived to-dos) |
+| --- | --- |
+| `README.md` | Public description and submodule sync commands |
+| `AGENTS.md` | Main agent operating guide |
+| `CLAUDE.md` | Claude Code pointer to `AGENTS.md` |
+| `.gitmodules` | Submodule configuration for upstream projects |
+| `.gitignore` | Local runtime, cache, env, and Beads ignore rules |
+| `RESEARCH/` | Research notes and integration analysis |
+| `.beads/` | Beads issue tracker state, policy, and git-reviewable mirror |
+| `.claude/` | Claude Code harness: agents, commands, hooks, rules, skills, and project overlay |
+| `.agents/` | Placeholder for cross-agent configuration |
+| `.codex/` | Placeholder for Codex-specific repo configuration |
+| `external/` | Git submodules for upstream projects |
 
-## How to orient on a task
+## External Upstreams
 
-1. `brief.md` — what Bodha is, stack, constraints.
-2. `docs-index.md` — which design doc owns the component you're touching.
-3. This map → `src/bodha/<component>/` + its tests under `tests/`.
-4. Current work: the workstream's `roadmap.md` + bd (`bd ready`); proof commands: `verification.md`.
+| Path | Role |
+| --- | --- |
+| `external/gascity` | Upstream submodule from `gastownhall/gascity`, branch `main` |
+| `external/gastown` | Upstream submodule from `gastownhall/gastown`, branch `main` |
+
+The parent repo tracks only the submodule commit pointers. If a task is about parent orchestration, avoid editing inside `external/*`. If a task is about updating upstream pointers, use `git submodule update --remote --merge ...` and stage the submodule path only.
+
+## Claude Harness
+
+| Path | Role |
+| --- | --- |
+| `.claude/agents/` | Local Claude subagent definitions |
+| `.claude/commands/` | Slash-command workflows copied from the reusable harness |
+| `.claude/hooks/` | Safety hooks and Beads session startup hook |
+| `.claude/rules/` | General operating rules |
+| `.claude/skills/` | Reusable skills; some are generic, some still need adaptation |
+| `.claude/project/` | Current repo-specific facts. Prefer this over inherited harness docs. |
+| `.claude/docs/` | Background/reference docs; some are historical and need review before adoption |
+
+## Current Research
+
+| Path | Role |
+| --- | --- |
+| `RESEARCH/codex-usage-options.md` | Current Codex integration comparison and recommendation |
+
+## Missing First-Party Runtime Areas
+
+These paths do not exist yet in the parent repo:
+
+- `src/`
+- `tests/`
+- `docs/`
+- `scripts/`
+- CI configuration
+
+Do not assume Python, Node, Go, Docker, or test commands until the repo adds first-party code or manifests.
+
+## How To Orient On A Task
+
+1. Read `README.md` for the parent repo purpose and submodule model.
+2. Read `.claude/project/brief.md` for current constraints.
+3. Read `.claude/project/docs-index.md` to find the relevant durable docs.
+4. For work tracking, read `.beads/beads.md` and use `bd`.
+5. For Codex decisions, read `RESEARCH/codex-usage-options.md`.
+6. For upstream-specific work, enter the relevant `external/*` submodule and read its own docs.

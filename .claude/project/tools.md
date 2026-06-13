@@ -1,32 +1,48 @@
-# Tools & Subagents — when to reach for what
+# Tools And Runtimes
 
-Routing triggers live in `AGENTS.md`; this file holds the per-tool operating detail.
+Routing guidance for this repo. Current project facts live in `.claude/project/`; deeper tool research lives in `RESEARCH/`.
 
-## Codex (one-way, best-effort critic)
+## Beads
 
-- **When:** plan/doc critique (`rescue`), standard diffs (`review`), deep/cross-boundary diffs
-  (`adversarial-review`). Skip for `small` tasks unless risk is unusual.
-- **How:** follow [`.claude/commands/use-codex.md`](../commands/use-codex.md) — authoritative; it owns the
-  invocation path (Agent subagent vs Bash; Skill path banned) and the operational rules (zombie check,
-  one job at a time, `--effort low` floor, gate off). Deep reference: `.claude/docs/codex-usage-guide.md`.
-- **Capacity errors:** retry once → proceed without Codex and log the skip. Never blocking.
-- Codex reviews your completed output; do not assume a reverse loop exists.
+- **When:** durable tasks, blockers, follow-ups, workstream phases, multi-session handoff.
+- **How:** use `bd`; policy lives in `.beads/beads.md`.
+- **Mirror:** refresh `.beads/issues.jsonl` after issue changes that should be preserved in git.
+- **Authority:** no commits, pushes, `bd dolt push`, or `bd dolt pull` unless explicitly asked or an active workflow grants that authority.
 
-## docs-researcher (library/API documentation)
+## Codex
 
-- **When:** unsure about a library, framework, SDK, API, CLI tool, or cloud service — methods, signatures,
-  config keys, version-specific behavior, migration steps. Any question where training data may be stale.
-- **Not for:** refactoring, writing scripts, debugging business logic, code review, general concepts.
-- **How:** Agent tool, `subagent_type: "docs-researcher"` (Context7-wired, runs on Haiku). Give it the
-  library name, the specific question, and the repo-pinned version if relevant.
+- **Current decision:** `RESEARCH/codex-usage-options.md` is the authoritative project note.
+- **Default project direction:** prefer repo-native `codex exec`, `codex exec resume`, and `codex review` wrappers for automation.
+- **Cloud work:** use `codex cloud` for offloaded branch/PR-style work after a Codex cloud environment is configured.
+- **Cross-agent bridge:** consider `codex mcp-server` or the Codex SDK when Gemini or another runtime needs Codex as a callable tool.
+- **Claude plugin:** the installed Claude Code Codex plugin is useful for interactive Claude workflows, but should not be the core project substrate.
+- **Raw app-server:** treat `codex app-server` as experimental and isolate/version-pin any direct integration.
 
-## experiment-tracking (MLflow)
+## Claude Code
 
-- **When:** any experiment producing params/metrics/output files (sweeps, benchmarks, calibrations).
-- **How:** the `experiment-tracking` skill; policy fence in [`tracking.md`](tracking.md).
+- **Harness:** `.claude/agents`, `.claude/commands`, `.claude/skills`, `.claude/hooks`, and `.claude/rules`.
+- **Project overlay:** `.claude/project/` is the source of repo-specific facts.
+- **Caution:** some copied skills and docs are still legacy or source-project-specific. Check `.claude/project/docs-index.md` before treating them as current policy.
 
-## html-artifact
+## Gemini CLI
 
-- **When:** human-facing documents (reports, plans, explainers) that benefit from richer structure than
-  markdown. Not for git/CLI/agent-destined content.
-- **How:** the `html-artifact` skill.
+- Gemini CLI is a target peer runtime for this orchestration repo, but no project-native Gemini wrapper exists yet.
+- Prefer direct, explicit commands until a wrapper or MCP profile is created.
+- If using Codex from Gemini, the likely first integration path is MCP via `codex mcp-server`.
+
+## Docs Research
+
+- For current library, SDK, CLI, API, cloud, or model-provider behavior, use an up-to-date documentation path instead of guessing.
+- In Claude Code, use the `docs-researcher` subagent when available.
+- For OpenAI/Codex behavior, prefer the current official docs and the local research note in `RESEARCH/codex-usage-options.md`.
+
+## External Repos
+
+- `external/gascity` and `external/gastown` are upstream submodules.
+- Inspect them when evaluating orchestration patterns or syncing upstreams.
+- Do not modify their internals from the parent repo unless the task is explicitly submodule-local.
+
+## HTML Artifacts
+
+- Use the `html-artifact` skill only for polished human-facing reports that benefit from richer structure than Markdown.
+- Do not use it for README files, agent prompts, harness docs, or content meant for another agent.

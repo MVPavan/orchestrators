@@ -1,49 +1,56 @@
-# Experiment Tracking — Bodha policy
+# Tracking Policy
 
-Durable conventions for the `bodha.infrastructure.tracking` toolkit. The triggerable workflow lives in
-the **`experiment-tracking`** skill; the full design + Docker deployment in
-**[`docs/workstreams/project-ops/experiment-tracking-toolkit-design.md`](../../docs/workstreams/project-ops/experiment-tracking-toolkit-design.md)**.
-This file holds only the rules that must not drift.
+Status: adapted for Agent Orchestrators on 2026-06-13
 
-## What it is
+## Work Tracking
 
-- A generic, MLflow-backed tracker. One API (`track(...)`) for **any** experiment shape — sweeps,
-  calibration curves, scoring grids, dataset builds, judge panels, live traced runs.
-- **Vendor-neutral adapter** (`ExperimentTracker` Protocol + `MlflowTracker` + `NullTracker`), mirroring
-  `infrastructure/observability/langfuse.py`. MLflow is **lazy-imported** and an **optional** dependency.
-- **Best-effort, degrade-don't-block:** if MLflow is missing or the server is down, tracking becomes a
-  no-op and the experiment still runs — tracking never raises into experiment logic (mirror invariant 34).
+Beads is the durable work tracker for this repo.
 
-## Rules
+- Use Beads for tasks, bugs, features, epics, decisions, blockers, and durable follow-ups.
+- Use in-turn checklists for transient execution steps only.
+- Every mutating Beads command should include an actor when practical: `--actor "<runtime>:<session-or-purpose>"`.
+- Refresh `.beads/issues.jsonl` after issue changes that should survive through git.
+- Use `.beads/beads.md` as the policy source of truth.
 
-- **Use `track(...)`** for experiments; never hand-roll MLflow plumbing or treat ad-hoc
-  `experiments/`/`eval-results/` folders as the durable source of truth.
-- **One experiment per stage** `<component>/<stage>`; **one run per config/variant**. The specific study
-  is a **tag** (`study`, `sweep_id`), never a new experiment.
-- **Tags = the compare axis** (`study`, `prompt`, `model`, `dataset`, `sweep_id`, `run_level`).
-  **Params = reproducibility** — `provenance=True` auto-logs git sha + dirty + diff-hash + `uv.lock` hash;
-  add your own config params on top.
-- **Flat metric names** (`grounded_f1`, not `grounded/f1`) — they show as plain columns in the UI.
-- **`trace=True`** for LLM experiments (autolog `pydantic_ai`/`openai`/`litellm`).
-- **Sequential → `track()`** (fluent). **Concurrent → `create_run()`/`open_run()`** (explicit `run_id`) +
-  **one OS process per model** (fluent runs aren't concurrency-safe; model selection is a process global).
+## Research Tracking
 
-## Scope fence (hard boundary)
+Use `RESEARCH/` for durable research notes that inform project direction.
 
-The toolkit owns **component experiments only**. It must **not** own:
+Current research:
 
-- **LLM production tracing** → Langfuse (the declared stack tool).
-- **Operational logs/metrics** → Grafana + Alloy + Loki.
-- **End-to-end memory benchmark** → Pydantic Evals + Langfuse (`tests/eval/harness/`).
-- **Any production hot path** → tracking is a batch/experiment side-effect, never inline in a request.
+- `RESEARCH/codex-usage-options.md`
 
-## Deployment & access
+Research notes should include:
 
-- Server = the dockerised **`mlflow-stack`** (`infra/mlflow-stack/`), Postgres-backed (reuses
-  `bodha-postgres`), localhost-only on `:5000`. Bring the dev-stack up first, then
-  `docker compose -f infra/mlflow-stack/docker-compose.yml up -d`.
-- Code = `src/bodha/infrastructure/tracking/`. Install MLflow for clients via `uv run --with mlflow` or
-  `uv sync --extra tracking`. Override the server with `MLFLOW_TRACKING_URI` or an injected
-  `TrackingConfig`.
-- **PII:** traces and tables can carry raw conversation content — the server stays localhost-only; never
-  put raw content or secrets in params/tags.
+- date
+- question being answered
+- verified local facts
+- external sources when used
+- recommendation and known caveats
+
+## Workstream Tracking
+
+The intended workstream model is:
+
+- `docs/brainstorms/` for requirements and exploratory decisions
+- `docs/workstreams/<name>/README.md` for workstream charter
+- `docs/workstreams/<name>/roadmap.md` for phased plan
+- `docs/workstreams/<name>/plans/` for per-phase plans
+- Beads epics and children for live work state
+- generated mirrors under `docs/workstreams/.../tracking/`
+
+This structure is not bootstrapped yet. Until it exists, do not pretend generated workstream status files are available.
+
+## Experiment Or Run Tracking
+
+No experiment tracker is configured for this repo yet.
+
+Do not use inherited MLflow or prior-project tracking conventions as current project policy. If this repo later evaluates orchestrator runs, choose and document the tracking stack first. Candidate dimensions include:
+
+- runtime: Claude Code, Codex CLI, Gemini CLI, API provider
+- mode: interactive, noninteractive, cloud, MCP, SDK
+- task type: review, implementation, research, orchestration
+- artifacts: prompts, command logs, JSONL event streams, diffs, final reports
+- metrics: success, cost, latency, resume behavior, verification result
+
+Until then, keep concrete run findings in `RESEARCH/` or Beads issues as appropriate.

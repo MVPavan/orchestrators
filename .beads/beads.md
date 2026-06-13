@@ -50,6 +50,19 @@ the reason should be clear from the issue description.
 Keep child tasks as flat as practical. Add dependencies only when work genuinely depends on another
 issue's output; do not chain tasks only because they appear in sequence.
 
+## Workstream Mirrors
+
+`docs/workstreams/` is the conventional home for human-readable workstream views. Treat these paths
+as generated Beads mirrors, not hand-authored source files:
+
+- `docs/workstreams/status.md`
+- `docs/workstreams/ideas.md`
+- `docs/workstreams/backlog.md`
+- `docs/workstreams/*/tracking/*.md`
+
+Update Beads first, then regenerate those mirrors with the project renderer. Hand-authored files in
+the same tree, such as `README.md`, `roadmap.md`, and `plans/*.md`, remain editable.
+
 ## Session Close
 
 Before reporting completion:

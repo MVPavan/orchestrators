@@ -1,48 +1,54 @@
 # Project Brief
 
-Status: active development - check docs/workstreams/status.md for progress
+Status: early harness/adoption phase
 
-Last updated: 2026-06-08
+Last updated: 2026-06-13
 
-## What Is Bodha
+## What This Repo Is
 
-A universal agent memory system — persistent, structured, governed memory for AI agents. Gives agents durable recall, controlled write paths, retrieval intelligence, grounded extraction, background consolidation, and document/tool/skill integration.
+Agent Orchestrators is a workspace for designing, testing, and standardizing multi-agent orchestration workflows.
 
-**Users:** agent-platform engineers building personal assistants, domain agents, and multi-agent systems.
+The project direction is subscription-first where practical: use local CLI products such as Codex CLI, Claude Code, and Gemini CLI when they provide enough capability. API-based providers remain valid when automation, CI, SDK control, or non-interactive execution needs them.
 
-## Stack
+This repository is currently a parent/harness repo. It does not yet contain a first-party application source tree.
 
-- **Language:** Python 3.12+, fully async
-- **Package manager:** uv
-- **Data models:** Pydantic (all models frozen)
-- **Config:** pydantic-settings from YAML
-- **Stores:** PostgreSQL (write authority), Neo4j, Qdrant, Oxigraph, Redis (cache only)
-- **Orchestration:** Temporal (sole orchestrator)
-- **LLM access:** LiteLLM Proxy (all model calls routed through Gateway)
-- **Observability:** Langfuse (LLM tracing), Grafana + Alloy + Loki (operational logging), structlog
-- **Infrastructure:** Docker Compose, Alembic (migrations), Infisical (secrets)
+## Upstream Projects
+
+The repo tracks upstream projects as Git submodules under `external/`:
+
+| Path | Upstream | Branch |
+| --- | --- | --- |
+| `external/gascity` | `https://github.com/gastownhall/gascity.git` | `main` |
+| `external/gastown` | `https://github.com/gastownhall/gastown.git` | `main` |
+
+Only submodule commit pointers belong to this parent repo. The internal files and history of those projects stay in their own repositories.
+
+## Current Stack
+
+- **Version control:** Git parent repo plus Git submodules for upstream projects.
+- **Issue tracking:** Beads (`bd`) with local Dolt storage and `.beads/issues.jsonl` as the git-reviewable mirror.
+- **Agent runtimes:** Claude Code harness, Codex CLI/plugin research, Gemini CLI as a likely peer runtime.
+- **Research artifacts:** `RESEARCH/`.
+- **First-party application code:** not present yet.
+- **Workstream docs:** intended under `docs/workstreams/`, but not bootstrapped yet.
 
 ## How Work Happens
 
-- Development is organized into **workstreams** under `docs/workstreams/` (each with its own `roadmap.md`); the original 9-phase core build is complete and archived under `docs/_archive/`.
-- Current state tracked in `docs/workstreams/status.md` (bd-generated, read-only).
-- Start a phase: `/phase-execution N` — it handles planning, execution, review, and tracking.
-- Design authority: `docs/design/v_2_7/core/bodha-design-v2_7.md` is the top doc. See `.claude/project/docs-index.md` for the full map.
-- `infra/proxy-setup/` runs cli-proxy-api only since 2026-04-10. LiteLLM moved into `infra/dev-stack/docker-compose.yml` and reuses `bodha-postgres` for its state (in a `litellm` database created by a one-shot `litellm-db-init` sidecar). The two stacks communicate over the `bodha-llm-gateway` external docker network — run `docker network create bodha-llm-gateway` once during setup. Daily proxy-setup operation is `docker compose -f docker-compose-cliproxy-api.yaml up -d` (there is no plain `docker-compose.yaml` there anymore; `docker-compose.base.yaml` is a frozen historical snapshot). Do not re-add a second LiteLLM or a second Postgres to `infra/proxy-setup/`.
+- Durable work is tracked in Beads. Use `.beads/beads.md` as the project policy.
+- Research decisions should land under `RESEARCH/` unless they belong in a formal project doc.
+- The reusable Claude harness lives under `.claude/`, but `.claude/project/` is the repo-specific overlay.
+- External repos are inspected as references or upstreams. Do not edit their internals from the parent repo unless the task explicitly asks for submodule work.
 
 ## Non-Negotiable Constraints
 
-- PostgreSQL is the sole write authority.
-- Temporal is the sole orchestrator.
-- Phase 1.5 extraction requires `source_quote` grounding + non-LLM verification before Phase 2.
-- Tools and skills are registry infrastructure, not memories — they bypass Dhṛti.
-- Raw document chunks never enter Citta.
-- Redis failure degrades quality, never blocks response.
-- Pydantic BaseModel everywhere (invariant 21).
+- Keep `external/gascity` and `external/gastown` as submodules, not copied source trees.
+- Do not hand-edit Beads-generated workstream mirrors once the renderer exists; update Beads first, then regenerate.
+- Do not commit or push unless explicitly asked or an active workflow grants that authority.
+- Do not claim tests or runtime behavior for first-party code until such code and verification commands exist.
+- Prefer repo-relative paths in docs, prompts, and plans.
 
-## Notes for Agents
+## Open Adoption Gaps
 
-- Read `docs-index.md` to find which design doc to read for any component.
-- Read the active workstream's `docs/workstreams/<name>/roadmap.md` Spec References to find the exact design section for any implementation task.
-- Do not inherit pre-v2.7 assumptions when they conflict with the v2.7 design set.
-- Use `scratchpad/` for temporary files — it is gitignored.
+- `docs/brainstorms/`, `docs/workstreams/`, and `scripts/bd-render-tracking.sh` are not present yet.
+- `architecture-trace`, `component-review`, and experiment-tracking skills still need adaptation before use.
+- The Codex integration direction is captured in `RESEARCH/codex-usage-options.md`, but project-native wrappers are not implemented yet.
