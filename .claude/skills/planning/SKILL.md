@@ -12,7 +12,8 @@ This skill turns approved requirements into an execution-ready plan.
 1. Start from approved requirements or explicit assumptions.
 2. If product behavior is still unclear, return to brainstorming.
 3. Research local code, tests, project docs, and prior learnings before fixing the plan shape.
-4. Write a right-sized plan under `docs/plans/`.
+4. Write a right-sized plan at the caller-specified path. For phase work, use
+   `docs/workstreams/<name>/plans/<phase>.md`; for cross-cutting standalone plans, use `docs/plans/`.
 5. Include:
    - goal and scope
    - origin doc or assumptions

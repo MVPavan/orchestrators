@@ -53,5 +53,3 @@ These files came from the copied harness and may contain useful patterns, but th
 | `docs/brainstorms/` | Durable brainstorm and requirements inbox |
 | `docs/workstreams/` | Placeholder now; later workstream charters, roadmaps, plans, and Beads-generated mirrors |
 | `scripts/bd-render-tracking.sh` | Renderer for Beads-generated workstream views |
-| `docs/architecture-trace/` | Architecture trace outputs after the skill is generalized |
-| `docs/reviews/` | Component/system review outputs after the skill is generalized |
