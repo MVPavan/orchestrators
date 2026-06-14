@@ -1,7 +1,7 @@
 # Agent Operating Guide
 
 Always-loaded entry point — every line here costs context. Detail lives in the pointed-to docs; keep it there.
-Core harness is stable; repo-specific facts live in `.claude/project/`.
+Core harness is stable; repo-specific facts live in `.codex/project/`.
 
 ## Critical guidelines
 
@@ -14,15 +14,15 @@ Core harness is stable; repo-specific facts live in `.claude/project/`.
 ## Read Order
 
 1. `AGENTS.md`
-2. `.claude/project/`: `brief.md`, `repo-map.md` (folder structure + how to orient), `docs-index.md`, `verification.md`, `invariants.md`
+2. `.codex/project/`: `brief.md`, `repo-map.md` (folder structure + how to orient), `docs-index.md`, `verification.md`, `invariants.md`
 3. `docs/research/` — when working from prior research, runtime comparisons, or provider/tooling decisions
 4. `docs/workstreams/<name>/roadmap.md` (active workstream plan) + generated workstream mirrors — when a workstream exists
-5. Relevant rules under `.claude/rules/`
+5. Relevant rules under `.codex/rules/`
 6. `external/<name>/` docs — only when the task is explicitly about that submodule
 
 ## Coding guideline
 
-1. Follow `.claude/rules/core/03-ak-guidelines.md` — coding rules that reduce common LLM mistakes.
+1. Follow `.codex/rules/core/03-ak-guidelines.md` — coding rules that reduce common LLM mistakes.
 2. Use `html-artifact` only when the user asks for HTML, or when the deliverable is purely for human reading and richer structure clearly helps. Do not use it for agent prompts, README files, harness docs, or other Markdown-native repo files.
 
 ## Working Mode
@@ -49,15 +49,15 @@ If the user already supplied a clear, approved plan, do not re-run brainstorming
 
 ## Phase Execution
 
-Explicit phase execution implementation work runs through `/phase-execution N` (full cycle: planning → subagent-dev → TDD → debugging → verification). Phase inventory: `docs/workstreams/<name>/roadmap.md`; work-state in Beads.
+Explicit phase execution implementation work runs through `$phase-execution N` in Codex (or `/phase-execution N` in Claude Code): full cycle from planning to subagent-dev, TDD, debugging, and verification. Phase inventory: `docs/workstreams/<name>/roadmap.md`; work-state in Beads.
 
-## Claude and Codex
+## Codex And Claude
 
-Applies only when the Codex plugin is available. Codex is a **one-way, best-effort critic** — it reviews your completed output; no reverse loop. `small` tasks: skip Codex unless risk is unusual. For **any** invocation, follow [`.claude/commands/use-codex.md`](.claude/commands/use-codex.md) (authoritative — invocation path, operational rules, which command for what). Capacity errors: retry once, then proceed without it and log the skip. Detail: `.claude/project/tools.md`.
+Codex-native assets live in `.codex/`: skills, custom agents, hooks, rules, config, project facts, and legacy reference docs. Use `$use-codex` for current invocation choices. Codex review/critique remains best-effort: `small` tasks skip it unless risk is unusual; capacity errors get one retry, then proceed without it and log the skip. Claude Code assets under `.claude/` remain as a legacy/source harness for Claude-specific runs.
 
 ## Tools & Subagents
 
-Unsure about a library/SDK/API/CLI (methods, signatures, config, versions)? Use official/reference docs via the **`docs-researcher`** subagent where available; never invent APIs. Use brainstorming for open-ended project research, tradeoffs, and requirements decisions. Tool routing details live in `.claude/project/tools.md`.
+Unsure about a library/SDK/API/CLI (methods, signatures, config, versions)? Use official/reference docs via the `docs-researcher` agent/skill path where available; never invent APIs. Use brainstorming for open-ended project research, tradeoffs, and requirements decisions. Tool routing details live in `.codex/project/tools.md`.
 
 ## Verification
 
@@ -69,13 +69,13 @@ No completion claims without fresh evidence.
 4. Report the actual result.
 5. Check `git status` before presenting completion.
 
-Source of truth: `.claude/project/verification.md` and `.claude/project/invariants.md`.
+Source of truth: `.codex/project/verification.md` and `.codex/project/invariants.md`.
 
-This repo currently has no first-party source tree or test suite. Use the structural checks in `.claude/project/verification.md` until real code and CI exist.
+This repo currently has no first-party source tree or test suite. Use the structural checks in `.codex/project/verification.md` until real code and CI exist.
 
 ## Learnings
 
-Record verified, likely-to-recur patterns in `.claude/project/learnings.md` (format + rules in its header).
+Record verified, likely-to-recur patterns in `.codex/project/learnings.md` (format + rules in its header).
 
 ## Git Safety
 

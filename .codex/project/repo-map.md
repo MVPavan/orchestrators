@@ -1,0 +1,76 @@
+# Repo Map
+
+Physical layout and navigation for the parent repo.
+
+## Top Level
+
+| Path | What |
+| --- | --- |
+| `README.md` | Public description and submodule sync commands |
+| `AGENTS.md` | Main agent operating guide |
+| `CLAUDE.md` | Claude Code pointer to `AGENTS.md` |
+| `.gitmodules` | Submodule configuration for upstream projects |
+| `.gitignore` | Local runtime, cache, env, and Beads ignore rules |
+| `docs/` | Project docs, currently `research/` and placeholder `workstreams/` |
+| `.beads/` | Beads issue tracker state, policy, and git-reviewable mirror |
+| `.codex/` | Codex-native harness: skills, custom agents, hooks, rules, project overlay, and legacy docs |
+| `.claude/` | Legacy Claude Code harness retained for Claude-specific runs |
+| `.agents/` | Placeholder kept for compatibility; active Codex assets are in `.codex/` |
+| `external/` | Git submodules for upstream projects |
+
+## External Upstreams
+
+| Path | Role |
+| --- | --- |
+| `external/gascity` | Upstream submodule from `gastownhall/gascity`, branch `main` |
+| `external/gastown` | Upstream submodule from `gastownhall/gastown`, branch `main` |
+
+The parent repo tracks only the submodule commit pointers. If a task is about parent orchestration, avoid editing inside `external/*`. If a task is about updating upstream pointers, use `git submodule update --remote --merge ...` and stage the submodule path only.
+
+## Codex Harness
+
+| Path | Role |
+| --- | --- |
+| `.codex/agents/` | Codex custom agent TOML files |
+| `.codex/skills/` | Codex skills, including migrated command workflows |
+| `.codex/hooks.json`, `.codex/hooks/` | Codex lifecycle hook registration and hook scripts |
+| `.codex/rules/` | Codex exec-policy rules plus reusable guidance docs |
+| `.codex/project/` | Current repo-specific facts. Prefer this over inherited harness docs. |
+| `.codex/docs/` | Background/reference docs; some are historical and need review before adoption |
+
+## Legacy Claude Harness
+
+| Path | Role |
+| --- | --- |
+| `.claude/agents/` | Claude Code subagent definitions |
+| `.claude/commands/` | Claude slash-command workflows |
+| `.claude/hooks/` | Claude Code hook scripts |
+| `.claude/rules/` | Original Claude-oriented rule docs |
+| `.claude/skills/` | Original Claude skill sources |
+| `.claude/project/` | Prior project overlay, superseded by `.codex/project/` for Codex runs |
+
+## Current Research
+
+| Path | Role |
+| --- | --- |
+| `docs/research/codex-usage-options.md` | Current Codex integration comparison and recommendation |
+
+## Missing First-Party Runtime Areas
+
+These paths do not exist yet in the parent repo:
+
+- `src/`
+- `tests/`
+- `scripts/`
+- CI configuration
+
+Do not assume Python, Node, Go, Docker, or test commands until the repo adds first-party code or manifests.
+
+## How To Orient On A Task
+
+1. Read `README.md` for the parent repo purpose and submodule model.
+2. Read `.codex/project/brief.md` for current constraints.
+3. Read `.codex/project/docs-index.md` to find the relevant durable docs.
+4. For work tracking, read `.beads/beads.md` and use `bd`.
+5. For Codex decisions, read `docs/research/codex-usage-options.md`.
+6. For upstream-specific work, enter the relevant `external/*` submodule and read its own docs.
