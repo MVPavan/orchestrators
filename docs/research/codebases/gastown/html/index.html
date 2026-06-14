@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Gastown Architecture Artifacts</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #f6f7f8;
+      --surface: #ffffff;
+      --soft: #eef2f5;
+      --ink: #17202b;
+      --muted: #607083;
+      --line: #d7dee7;
+      --accent: #12695c;
+      --accent-soft: #e3f2ef;
+      --shadow: 0 1px 2px rgba(16, 24, 40, 0.08);
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #101318;
+        --surface: #181c23;
+        --soft: #222833;
+        --ink: #e9edf3;
+        --muted: #a4afbd;
+        --line: #333b47;
+        --accent: #79d0bd;
+        --accent-soft: #16352f;
+        --shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font: 15px/1.65 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    main {
+      width: min(1080px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 42px 0 64px;
+    }
+    header {
+      padding-bottom: 24px;
+      border-bottom: 1px solid var(--line);
+    }
+    .eyebrow {
+      margin: 0 0 10px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+    }
+    h1 {
+      margin: 0 0 12px;
+      font-size: clamp(31px, 4vw, 48px);
+      line-height: 1.08;
+      letter-spacing: 0;
+    }
+    p {
+      margin: 0 0 12px;
+      color: var(--muted);
+    }
+    a {
+      color: var(--accent);
+      text-decoration-thickness: 1px;
+      text-underline-offset: 3px;
+    }
+    code {
+      padding: 2px 5px;
+      border-radius: 4px;
+      background: var(--soft);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: .92em;
+    }
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+      margin: 28px 0;
+    }
+    .card {
+      display: block;
+      min-height: 190px;
+      padding: 22px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--surface);
+      box-shadow: var(--shadow);
+      color: inherit;
+      text-decoration: none;
+    }
+    .card:hover {
+      border-color: var(--accent);
+      background: color-mix(in srgb, var(--surface) 82%, var(--accent-soft));
+    }
+    .card span {
+      display: inline-block;
+      margin-bottom: 18px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-size: 12px;
+      font-weight: 750;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+    }
+    .card h2 {
+      margin: 0 0 8px;
+      font-size: 22px;
+      line-height: 1.22;
+      letter-spacing: 0;
+    }
+    .card p {
+      margin: 0;
+      color: var(--muted);
+    }
+    .note {
+      margin-top: 24px;
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--surface);
+      box-shadow: var(--shadow);
+    }
+    .note h2 {
+      margin: 0 0 10px;
+      font-size: 18px;
+      letter-spacing: 0;
+    }
+    .terms {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .term {
+      padding: 10px;
+      border-radius: 6px;
+      background: var(--soft);
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .term strong {
+      display: block;
+      color: var(--ink);
+    }
+    footer {
+      margin-top: 30px;
+      padding-top: 18px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 13px;
+    }
+    @media (max-width: 760px) {
+      main { width: min(100% - 22px, 1080px); padding-top: 28px; }
+      .cards, .terms { grid-template-columns: 1fr; }
+      .card { min-height: auto; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <p class="eyebrow">Gastown codebase research</p>
+      <h1>Architecture Artifacts</h1>
+      <p>This index is only the table of contents. Each linked page is a standalone HTML artifact focused on one internal mechanism, with project vocabulary reduced to the minimum needed to map back to the source code.</p>
+    </header>
+
+    <nav class="cards" aria-label="Architecture reports">
+      <a class="card" href="core-architecture.html">
+        <span>01</span>
+        <h2>Core Architecture</h2>
+        <p>The stable structure: command layer, durable state, repo workspaces, tmux sessions, and merge processor.</p>
+      </a>
+      <a class="card" href="agent-invocation.html">
+        <span>02</span>
+        <h2>Agent Invocation</h2>
+        <p>Exactly how an agent process is selected, given identity, started in tmux, and primed for work.</p>
+      </a>
+      <a class="card" href="agent-communication.html">
+        <span>03</span>
+        <h2>Agent Communication</h2>
+        <p>How mail, notifications, queued nudges, direct tmux input, and lifecycle messages reach agents.</p>
+      </a>
+      <a class="card" href="work-sharing.html">
+        <span>04</span>
+        <h2>Work Sharing</h2>
+        <p>How a work item is assigned, locked, executed by a worker, submitted, and handed to the merge processor.</p>
+      </a>
+    </nav>
+
+    <section class="note">
+      <h2>Terminology Used In These Reports</h2>
+      <p>The pages use plain operational names first. When a Gastown source term is necessary, it appears in code style so it can be searched in the repository.</p>
+      <div class="terms">
+        <div class="term"><strong>Workspace</strong><code>town</code></div>
+        <div class="term"><strong>Repo container</strong><code>rig</code></div>
+        <div class="term"><strong>Work item</strong><code>bead</code></div>
+        <div class="term"><strong>Assignment slot</strong><code>hook</code></div>
+        <div class="term"><strong>Worker session</strong><code>polecat</code></div>
+      </div>
+    </section>
+
+    <footer>
+      Source basis: local code under <code>external/gastown</code>, especially <code>internal/config</code>, <code>internal/tmux</code>, <code>internal/mail</code>, <code>internal/nudge</code>, <code>internal/cmd/sling_dispatch.go</code>, <code>internal/cmd/hook.go</code>, and <code>internal/cmd/done.go</code>.
+    </footer>
+  </main>
+</body>
+</html>

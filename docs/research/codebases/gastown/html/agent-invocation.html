@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Gastown Agent Invocation</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #f6f7f8;
+      --surface: #ffffff;
+      --soft: #eef2f5;
+      --ink: #17202b;
+      --muted: #607083;
+      --line: #d7dee7;
+      --accent: #12695c;
+      --accent-soft: #e3f2ef;
+      --shadow: 0 1px 2px rgba(16, 24, 40, 0.08);
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #101318;
+        --surface: #181c23;
+        --soft: #222833;
+        --ink: #e9edf3;
+        --muted: #a4afbd;
+        --line: #333b47;
+        --accent: #79d0bd;
+        --accent-soft: #16352f;
+        --shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+      }
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.65 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    main { width: min(1160px, calc(100% - 32px)); margin: 0 auto; padding: 36px 0 64px; }
+    header { margin-bottom: 24px; padding-bottom: 22px; border-bottom: 1px solid var(--line); }
+    .back { display: inline-block; margin-bottom: 14px; color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+    .eyebrow { margin: 0 0 8px; color: var(--muted); font-size: 13px; font-weight: 750; letter-spacing: .04em; text-transform: uppercase; }
+    h1 { max-width: 920px; margin: 0 0 10px; font-size: clamp(30px, 4vw, 46px); line-height: 1.1; letter-spacing: 0; }
+    h2 { margin: 0 0 12px; font-size: 22px; line-height: 1.25; letter-spacing: 0; }
+    h3 { margin: 0 0 8px; font-size: 16px; letter-spacing: 0; }
+    p { margin: 0 0 12px; }
+    header p, .muted { color: var(--muted); }
+    code { padding: 2px 5px; border-radius: 4px; background: var(--soft); font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: .92em; }
+    pre { overflow-x: auto; margin: 12px 0 0; padding: 14px; border-radius: 8px; background: var(--soft); }
+    pre code { padding: 0; background: transparent; }
+    section { margin-top: 24px; padding: 22px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); box-shadow: var(--shadow); }
+    .diagram { overflow-x: auto; margin-top: 18px; padding: 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--soft); }
+    svg { display: block; min-width: 1080px; max-width: 100%; height: auto; }
+    .box { fill: var(--surface); stroke: var(--line); stroke-width: 1.4; }
+    .box-strong { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 1.6; }
+    .label { fill: var(--ink); font: 700 14px system-ui, sans-serif; }
+    .small { fill: var(--muted); font: 12px system-ui, sans-serif; }
+    .arrow { stroke: var(--accent); stroke-width: 2; fill: none; marker-end: url(#arrow); }
+    .steps { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; counter-reset: step; }
+    .step { position: relative; padding: 16px 16px 16px 54px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
+    .step::before { counter-increment: step; content: counter(step); position: absolute; left: 16px; top: 16px; width: 26px; height: 26px; border-radius: 50%; background: var(--accent-soft); color: var(--accent); display: grid; place-items: center; font-weight: 800; }
+    .step p { color: var(--muted); }
+    table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+    th, td { padding: 10px 12px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+    th { color: var(--muted); font-size: 12px; letter-spacing: .04em; text-transform: uppercase; }
+    footer { margin-top: 30px; padding-top: 16px; border-top: 1px solid var(--line); color: var(--muted); font-size: 13px; }
+    @media (max-width: 760px) { main { width: min(100% - 22px, 1160px); padding-top: 26px; } .steps { grid-template-columns: 1fr; } section { padding: 16px; } }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <a class="back" href="index.html">Back to contents</a>
+      <p class="eyebrow">Agent invocation</p>
+      <h1>An agent is started as a terminal process with a role-specific environment and startup prompt.</h1>
+      <p>The core path is manager code to environment construction to startup command to tmux session. Work context is passed through environment variables and the startup beacon; durable assignment is read separately from Beads.</p>
+    </header>
+
+    <section>
+      <h2>Invocation Flow</h2>
+      <div class="diagram" aria-label="Agent invocation diagram">
+        <svg viewBox="0 0 1160 500" role="img">
+          <defs>
+            <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+              <path d="M0,0 L0,6 L9,3 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+          <rect class="box-strong" x="28" y="66" width="170" height="90" rx="8"></rect>
+          <text class="label" x="52" y="100">Trigger</text>
+          <text class="small" x="52" y="124">dispatch, boot, patrol</text>
+
+          <rect class="box" x="254" y="66" width="170" height="90" rx="8"></rect>
+          <text class="label" x="278" y="100">Manager</text>
+          <text class="small" x="278" y="124">prepare dir/settings</text>
+
+          <rect class="box" x="480" y="34" width="200" height="128" rx="8"></rect>
+          <text class="label" x="504" y="70">AgentEnv</text>
+          <text class="small" x="504" y="94">identity + attribution</text>
+          <text class="small" x="504" y="116">GT_ROOT, GT_AGENT</text>
+          <text class="small" x="504" y="138">BD_ACTOR, git author</text>
+
+          <rect class="box" x="736" y="34" width="184" height="128" rx="8"></rect>
+          <text class="label" x="760" y="70">Runtime config</text>
+          <text class="small" x="760" y="94">agent selection</text>
+          <text class="small" x="760" y="116">wrapper and settings</text>
+          <text class="small" x="760" y="138">env sanitization</text>
+
+          <rect class="box-strong" x="974" y="66" width="160" height="90" rx="8"></rect>
+          <text class="label" x="998" y="100">Command</text>
+          <text class="small" x="998" y="124">exec env ... agent</text>
+
+          <rect class="box" x="254" y="300" width="190" height="98" rx="8"></rect>
+          <text class="label" x="278" y="334">Startup prompt</text>
+          <text class="small" x="278" y="358">beacon + gt prime</text>
+
+          <rect class="box" x="520" y="300" width="210" height="98" rx="8"></rect>
+          <text class="label" x="544" y="334">tmux session</text>
+          <text class="small" x="544" y="358">new-session -e vars</text>
+          <text class="small" x="544" y="380">respawn-pane command</text>
+
+          <rect class="box-strong" x="820" y="300" width="214" height="98" rx="8"></rect>
+          <text class="label" x="844" y="334">Ready agent</text>
+          <text class="small" x="844" y="358">hooks or fallback nudge</text>
+          <text class="small" x="844" y="380">reads current work</text>
+
+          <path class="arrow" d="M198 112 H244"></path>
+          <path class="arrow" d="M424 112 H470"></path>
+          <path class="arrow" d="M680 98 H726"></path>
+          <path class="arrow" d="M920 112 H964"></path>
+          <path class="arrow" d="M1054 156 C1054 244 692 242 625 294"></path>
+          <path class="arrow" d="M424 300 C464 250 510 200 558 166"></path>
+          <path class="arrow" d="M730 350 H810"></path>
+        </svg>
+      </div>
+    </section>
+
+    <section>
+      <h2>Step By Step</h2>
+      <div class="steps">
+        <div class="step">
+          <h3>A command decides a session is needed.</h3>
+          <p>Examples are dispatching work, booting a repo container, or a patrol loop starting a missing role session.</p>
+        </div>
+        <div class="step">
+          <h3>The role manager prepares the workspace.</h3>
+          <p>Managers create or repair role directories, runtime settings, Beads redirects, hooks, and startup text before launching.</p>
+        </div>
+        <div class="step">
+          <h3><code>AgentEnv</code> builds identity.</h3>
+          <p>The environment sets role, repo container, worker name, session id, Beads actor, git author, and project root.</p>
+        </div>
+        <div class="step">
+          <h3>The runtime command is resolved.</h3>
+          <p>Selection priority is explicit agent override, role-specific config, then default agent. Startup env is sanitized to prevent nested runtime contamination.</p>
+        </div>
+        <div class="step">
+          <h3>tmux starts the process.</h3>
+          <p>Gastown creates a detached tmux session with env flags and then replaces the shell with the actual command using <code>respawn-pane</code>.</p>
+        </div>
+        <div class="step">
+          <h3>The agent is primed.</h3>
+          <p>If hooks are available, startup hooks run <code>gt prime</code>. Otherwise Gastown delivers a fallback startup prompt or delayed nudge.</p>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Identity Variables Passed To The Agent</h2>
+      <table>
+        <thead><tr><th>Variable</th><th>Use</th></tr></thead>
+        <tbody>
+          <tr><td><code>GT_ROLE</code></td><td>Human-readable role path, for example coordinator, repo witness, merge processor, worker, or crew.</td></tr>
+          <tr><td><code>GT_RIG</code></td><td>The repo container name for repo-scoped roles.</td></tr>
+          <tr><td><code>GT_POLECAT</code> / <code>GT_CREW</code></td><td>Specific worker or crew identity when applicable.</td></tr>
+          <tr><td><code>GT_ROOT</code></td><td>Workspace root used by commands and routing.</td></tr>
+          <tr><td><code>GT_SESSION</code> and <code>GT_AGENT</code></td><td>Runtime session and selected agent surface.</td></tr>
+          <tr><td><code>BD_ACTOR</code>, <code>BEADS_AGENT_NAME</code>, <code>GIT_AUTHOR_NAME</code></td><td>Attribution for Beads writes and git commits.</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>Actual Command Shape</h2>
+      <p>The POSIX startup command is built as an exec replacement with environment entries prepended. The exact agent command varies by configured runtime.</p>
+      <pre><code>exec env GT_ROLE=... GT_ROOT=... BD_ACTOR=... GT_AGENT=... &lt;runtime-wrapper-if-any&gt; &lt;agent-command&gt; &lt;startup-prompt-if-supported&gt;</code></pre>
+      <p class="muted">The session also receives tmux <code>-e</code> variables before the shell starts. The duplicated env path is deliberate compatibility, not a second agent launch.</p>
+    </section>
+
+    <section>
+      <h2>Important Safeguards</h2>
+      <table>
+        <thead><tr><th>Safeguard</th><th>Internal reason</th></tr></thead>
+        <tbody>
+          <tr><td>Global tmux env cleanup</td><td>Clears stale identity variables before creating a new session so one role does not leak into another.</td></tr>
+          <tr><td><code>respawn-pane</code> launch</td><td>Avoids the race of creating a shell and then typing the startup command with <code>send-keys</code>.</td></tr>
+          <tr><td><code>CLAUDECODE</code> and <code>NODE_OPTIONS</code> sanitization</td><td>Prevents nested agent runtimes from inheriting settings that can crash or alter behavior.</td></tr>
+          <tr><td>Post-create liveness check</td><td>Detects immediate command failure, kills the bad session, and returns an error instead of leaving a dead pane.</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <footer>
+      Source references: <code>external/gastown/internal/config/env.go:17</code>, <code>external/gastown/internal/config/loader.go:2387</code>, <code>external/gastown/internal/config/loader.go:2433</code>, <code>external/gastown/internal/config/loader.go:2547</code>, <code>external/gastown/internal/session/startup.go:59</code>, <code>external/gastown/internal/runtime/runtime.go:188</code>, <code>external/gastown/internal/tmux/tmux.go:371</code>, <code>external/gastown/internal/tmux/tmux.go:410</code>.
+    </footer>
+  </main>
+</body>
+</html>

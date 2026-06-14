@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Gastown Core Architecture</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #f6f7f8;
+      --surface: #ffffff;
+      --soft: #eef2f5;
+      --ink: #17202b;
+      --muted: #607083;
+      --line: #d7dee7;
+      --accent: #12695c;
+      --accent-soft: #e3f2ef;
+      --warn: #8a5a16;
+      --warn-bg: #fff2d6;
+      --shadow: 0 1px 2px rgba(16, 24, 40, 0.08);
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #101318;
+        --surface: #181c23;
+        --soft: #222833;
+        --ink: #e9edf3;
+        --muted: #a4afbd;
+        --line: #333b47;
+        --accent: #79d0bd;
+        --accent-soft: #16352f;
+        --warn: #ffd88c;
+        --warn-bg: #382b16;
+        --shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font: 15px/1.65 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    main { width: min(1160px, calc(100% - 32px)); margin: 0 auto; padding: 36px 0 64px; }
+    header { margin-bottom: 24px; padding-bottom: 22px; border-bottom: 1px solid var(--line); }
+    .back { display: inline-block; margin-bottom: 14px; color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+    .eyebrow { margin: 0 0 8px; color: var(--muted); font-size: 13px; font-weight: 750; letter-spacing: .04em; text-transform: uppercase; }
+    h1 { max-width: 900px; margin: 0 0 10px; font-size: clamp(30px, 4vw, 46px); line-height: 1.1; letter-spacing: 0; }
+    h2 { margin: 0 0 12px; font-size: 22px; line-height: 1.25; letter-spacing: 0; }
+    h3 { margin: 0 0 8px; font-size: 16px; letter-spacing: 0; }
+    p { margin: 0 0 12px; }
+    header p, .muted { color: var(--muted); }
+    code { padding: 2px 5px; border-radius: 4px; background: var(--soft); font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: .92em; }
+    section { margin-top: 24px; padding: 22px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); box-shadow: var(--shadow); }
+    .diagram { overflow-x: auto; margin-top: 18px; padding: 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--soft); }
+    svg { display: block; min-width: 980px; max-width: 100%; height: auto; }
+    .box { fill: var(--surface); stroke: var(--line); stroke-width: 1.4; }
+    .box-strong { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 1.6; }
+    .label { fill: var(--ink); font: 700 14px system-ui, sans-serif; }
+    .small { fill: var(--muted); font: 12px system-ui, sans-serif; }
+    .arrow { stroke: var(--accent); stroke-width: 2; fill: none; marker-end: url(#arrow); }
+    .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+    .tile { padding: 16px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
+    .tile p { color: var(--muted); }
+    table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+    th, td { padding: 10px 12px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+    th { color: var(--muted); font-size: 12px; letter-spacing: .04em; text-transform: uppercase; }
+    .callout { border-color: color-mix(in srgb, var(--warn) 45%, var(--line)); background: var(--warn-bg); }
+    footer { margin-top: 30px; padding-top: 16px; border-top: 1px solid var(--line); color: var(--muted); font-size: 13px; }
+    @media (max-width: 760px) { main { width: min(100% - 22px, 1160px); padding-top: 26px; } .grid { grid-template-columns: 1fr; } section { padding: 16px; } }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <a class="back" href="index.html">Back to contents</a>
+      <p class="eyebrow">Core architecture</p>
+      <h1>Gastown is a state coordinator around agent CLIs, git, Beads, and tmux.</h1>
+      <p>There is no central in-process orchestrator that owns all agent state. The <code>gt</code> command changes durable state, starts or nudges terminal sessions, and lets agents recover context from the same stores.</p>
+    </header>
+
+    <section>
+      <h2>Mechanical Architecture</h2>
+      <p class="muted">Plain labels are used in the diagram; source terms appear only where they are necessary for repository lookup.</p>
+      <div class="diagram" aria-label="Core architecture diagram">
+        <svg viewBox="0 0 1060 560" role="img">
+          <defs>
+            <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+              <path d="M0,0 L0,6 L9,3 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+          <rect class="box-strong" x="30" y="46" width="210" height="88" rx="8"></rect>
+          <text class="label" x="54" y="82">Operator or daemon</text>
+          <text class="small" x="54" y="106">runs gt commands</text>
+
+          <rect class="box-strong" x="410" y="42" width="240" height="96" rx="8"></rect>
+          <text class="label" x="434" y="78">Command layer</text>
+          <text class="small" x="434" y="102">dispatch, hook, done, mail</text>
+
+          <rect class="box" x="790" y="28" width="220" height="118" rx="8"></rect>
+          <text class="label" x="814" y="64">Runtime launcher</text>
+          <text class="small" x="814" y="88">env + startup command</text>
+          <text class="small" x="814" y="110">tmux session creation</text>
+
+          <rect class="box" x="46" y="236" width="230" height="120" rx="8"></rect>
+          <text class="label" x="70" y="272">Durable work ledger</text>
+          <text class="small" x="70" y="296">Beads records backed by Dolt</text>
+          <text class="small" x="70" y="318">work items, mail, MRs, agent fields</text>
+
+          <rect class="box" x="416" y="236" width="230" height="120" rx="8"></rect>
+          <text class="label" x="440" y="272">Repo workspace</text>
+          <text class="small" x="440" y="296">shared bare repo + worktrees</text>
+          <text class="small" x="440" y="318">branches and commits</text>
+
+          <rect class="box" x="790" y="236" width="220" height="120" rx="8"></rect>
+          <text class="label" x="814" y="272">Agent sessions</text>
+          <text class="small" x="814" y="296">tmux panes running agent CLIs</text>
+          <text class="small" x="814" y="318">Claude, Codex, Gemini, etc.</text>
+
+          <rect class="box" x="138" y="428" width="260" height="90" rx="8"></rect>
+          <text class="label" x="162" y="462">Message files and events</text>
+          <text class="small" x="162" y="486">mail, nudge queue, activity feed</text>
+
+          <rect class="box" x="628" y="428" width="250" height="90" rx="8"></rect>
+          <text class="label" x="652" y="462">Merge processor</text>
+          <text class="small" x="652" y="486">reads MR work items, merges branches</text>
+
+          <path class="arrow" d="M240 90 H400"></path>
+          <path class="arrow" d="M650 90 H780"></path>
+          <path class="arrow" d="M530 138 V226"></path>
+          <path class="arrow" d="M410 104 C278 140 176 172 160 226"></path>
+          <path class="arrow" d="M790 296 H656"></path>
+          <path class="arrow" d="M276 296 H406"></path>
+          <path class="arrow" d="M531 356 C550 394 600 430 628 462"></path>
+          <path class="arrow" d="M276 356 C286 390 292 410 292 428"></path>
+          <path class="arrow" d="M398 474 H618"></path>
+          <path class="arrow" d="M878 428 C850 392 874 370 894 356"></path>
+        </svg>
+      </div>
+    </section>
+
+    <section>
+      <h2>What Actually Holds State</h2>
+      <table>
+        <thead><tr><th>State</th><th>Where it lives</th><th>Why it matters</th></tr></thead>
+        <tbody>
+          <tr><td>Work assignment</td><td>Beads issue status and assignee, plus agent <code>hook_bead</code></td><td>The worker discovers its current work from durable fields, not from a live coordinator.</td></tr>
+          <tr><td>Agent identity</td><td>Process env such as <code>GT_ROLE</code>, <code>GT_RIG</code>, <code>GT_AGENT</code>, <code>BD_ACTOR</code></td><td>Every command the agent runs can attribute Beads and git actions to the right role.</td></tr>
+          <tr><td>Execution process</td><td>tmux sessions</td><td>The running agent is a terminal process. Gastown injects startup prompts or nudges into that terminal.</td></tr>
+          <tr><td>Code changes</td><td>git branches and worktrees</td><td>Workers produce commits; completion submits a merge-request work item for the merge processor.</td></tr>
+          <tr><td>Communication</td><td>Beads mail records, nudge queue files, tmux input</td><td>Messages are durable first when possible; direct terminal input is only a delivery mechanism.</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>Component Responsibilities</h2>
+      <div class="grid">
+        <div class="tile">
+          <h3><code>gt</code> command layer</h3>
+          <p>Runs the transitions: dispatch work, hook a work item, start sessions, send mail, submit completion, and wake the merge processor.</p>
+        </div>
+        <div class="tile">
+          <h3>Agent managers</h3>
+          <p>Prepare directories and settings, build the environment, construct the agent startup command, and create the tmux session.</p>
+        </div>
+        <div class="tile">
+          <h3>Worker sessions</h3>
+          <p>Read current assignment, modify the repo worktree, and call <code>gt done</code> when complete. They do not own the global queue.</p>
+        </div>
+        <div class="tile">
+          <h3>Merge processor</h3>
+          <p>Reads merge-request records, validates branch state, runs configured gates, merges, pushes, and closes source work on success.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="callout">
+      <h2>Core Mental Model</h2>
+      <p>Gastown shares work by mutating durable records, then making sure the right terminal session notices. That is the main internal rule behind dispatch, mail, nudges, completion, and merge processing.</p>
+    </section>
+
+    <footer>
+      Source references: <code>external/gastown/internal/cmd/sling_dispatch.go:60</code>, <code>external/gastown/internal/config/env.go:17</code>, <code>external/gastown/internal/tmux/tmux.go:371</code>, <code>external/gastown/internal/mail/router.go:1103</code>, <code>external/gastown/internal/cmd/done.go:50</code>, <code>external/gastown/internal/refinery/engineer.go:499</code>.
+    </footer>
+  </main>
+</body>
+</html>

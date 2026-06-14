@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Gastown Work Sharing</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #f6f7f8;
+      --surface: #ffffff;
+      --soft: #eef2f5;
+      --ink: #17202b;
+      --muted: #607083;
+      --line: #d7dee7;
+      --accent: #12695c;
+      --accent-soft: #e3f2ef;
+      --shadow: 0 1px 2px rgba(16, 24, 40, 0.08);
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #101318;
+        --surface: #181c23;
+        --soft: #222833;
+        --ink: #e9edf3;
+        --muted: #a4afbd;
+        --line: #333b47;
+        --accent: #79d0bd;
+        --accent-soft: #16352f;
+        --shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+      }
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.65 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    main { width: min(1160px, calc(100% - 32px)); margin: 0 auto; padding: 36px 0 64px; }
+    header { margin-bottom: 24px; padding-bottom: 22px; border-bottom: 1px solid var(--line); }
+    .back { display: inline-block; margin-bottom: 14px; color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+    .eyebrow { margin: 0 0 8px; color: var(--muted); font-size: 13px; font-weight: 750; letter-spacing: .04em; text-transform: uppercase; }
+    h1 { max-width: 930px; margin: 0 0 10px; font-size: clamp(30px, 4vw, 46px); line-height: 1.1; letter-spacing: 0; }
+    h2 { margin: 0 0 12px; font-size: 22px; line-height: 1.25; letter-spacing: 0; }
+    h3 { margin: 0 0 8px; font-size: 16px; letter-spacing: 0; }
+    p { margin: 0 0 12px; }
+    header p, .muted { color: var(--muted); }
+    code { padding: 2px 5px; border-radius: 4px; background: var(--soft); font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: .92em; }
+    section { margin-top: 24px; padding: 22px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); box-shadow: var(--shadow); }
+    .diagram { overflow-x: auto; margin-top: 18px; padding: 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--soft); }
+    svg { display: block; min-width: 1100px; max-width: 100%; height: auto; }
+    .box { fill: var(--surface); stroke: var(--line); stroke-width: 1.4; }
+    .box-strong { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 1.6; }
+    .label { fill: var(--ink); font: 700 14px system-ui, sans-serif; }
+    .small { fill: var(--muted); font: 12px system-ui, sans-serif; }
+    .arrow { stroke: var(--accent); stroke-width: 2; fill: none; marker-end: url(#arrow); }
+    .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+    .tile { padding: 16px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
+    .tile p { color: var(--muted); }
+    table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+    th, td { padding: 10px 12px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+    th { color: var(--muted); font-size: 12px; letter-spacing: .04em; text-transform: uppercase; }
+    footer { margin-top: 30px; padding-top: 16px; border-top: 1px solid var(--line); color: var(--muted); font-size: 13px; }
+    @media (max-width: 760px) { main { width: min(100% - 22px, 1160px); padding-top: 26px; } .grid { grid-template-columns: 1fr; } section { padding: 16px; } }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <a class="back" href="index.html">Back to contents</a>
+      <p class="eyebrow">Work sharing</p>
+      <h1>Work is shared by assigning a durable work item to one worker and then starting that worker session.</h1>
+      <p>The assignment is not a chat message. It is a Beads state transition plus worker metadata. The terminal prompt only tells the worker to inspect its current assignment.</p>
+    </header>
+
+    <section>
+      <h2>Assignment To Completion Flow</h2>
+      <div class="diagram" aria-label="Work sharing diagram">
+        <svg viewBox="0 0 1180 560" role="img">
+          <defs>
+            <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+              <path d="M0,0 L0,6 L9,3 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+          <rect class="box-strong" x="34" y="56" width="180" height="90" rx="8"></rect>
+          <text class="label" x="58" y="90">Open work item</text>
+          <text class="small" x="58" y="114">Beads record</text>
+
+          <rect class="box" x="274" y="56" width="200" height="90" rx="8"></rect>
+          <text class="label" x="298" y="90">Dispatch lock</text>
+          <text class="small" x="298" y="114">per-work-item flock</text>
+
+          <rect class="box" x="534" y="38" width="210" height="126" rx="8"></rect>
+          <text class="label" x="558" y="74">Worker allocation</text>
+          <text class="small" x="558" y="98">create/reuse identity</text>
+          <text class="small" x="558" y="120">prepare worktree</text>
+          <text class="small" x="558" y="142">maybe formula/convoy</text>
+
+          <rect class="box-strong" x="814" y="56" width="220" height="90" rx="8"></rect>
+          <text class="label" x="838" y="90">Attach assignment</text>
+          <text class="small" x="838" y="114">status=hooked, assignee=worker</text>
+
+          <rect class="box" x="104" y="260" width="210" height="108" rx="8"></rect>
+          <text class="label" x="128" y="296">Agent metadata</text>
+          <text class="small" x="128" y="320">hook_bead</text>
+          <text class="small" x="128" y="342">agent_state, active_mr</text>
+
+          <rect class="box" x="404" y="260" width="210" height="108" rx="8"></rect>
+          <text class="label" x="428" y="296">Worker session</text>
+          <text class="small" x="428" y="320">gt prime reads hook</text>
+          <text class="small" x="428" y="342">agent edits worktree</text>
+
+          <rect class="box" x="704" y="260" width="210" height="108" rx="8"></rect>
+          <text class="label" x="728" y="296">Completion command</text>
+          <text class="small" x="728" y="320">commit, rebase, push</text>
+          <text class="small" x="728" y="342">create MR item</text>
+
+          <rect class="box-strong" x="962" y="260" width="184" height="108" rx="8"></rect>
+          <text class="label" x="986" y="296">Merge processor</text>
+          <text class="small" x="986" y="320">merge queue</text>
+          <text class="small" x="986" y="342">close source work</text>
+
+          <rect class="box" x="500" y="438" width="250" height="82" rx="8"></rect>
+          <text class="label" x="524" y="472">Recovery and reassignment</text>
+          <text class="small" x="524" y="496">stale hook, shutdown mail, retry</text>
+
+          <path class="arrow" d="M214 102 H264"></path>
+          <path class="arrow" d="M474 102 H524"></path>
+          <path class="arrow" d="M744 102 H804"></path>
+          <path class="arrow" d="M924 146 C878 214 268 204 214 252"></path>
+          <path class="arrow" d="M314 314 H394"></path>
+          <path class="arrow" d="M614 314 H694"></path>
+          <path class="arrow" d="M914 314 H952"></path>
+          <path class="arrow" d="M809 368 C784 412 716 430 674 438"></path>
+          <path class="arrow" d="M580 438 C482 410 434 378 408 360"></path>
+        </svg>
+      </div>
+    </section>
+
+    <section>
+      <h2>What Dispatch Writes</h2>
+      <table>
+        <thead><tr><th>Write</th><th>Purpose</th></tr></thead>
+        <tbody>
+          <tr><td>Work item status and assignee</td><td><code>gt hook</code> materializes the assignment with <code>bd update &lt;id&gt; --status=hooked --assignee=&lt;agent&gt;</code>.</td></tr>
+          <tr><td>Agent <code>hook_bead</code></td><td>The worker's agent record points back to its current work item for status displays and recovery logic.</td></tr>
+          <tr><td>Work item fields</td><td>Dispatch metadata such as dispatcher, args, formula, attached molecule, no-merge, review-only, mode, and formula variables.</td></tr>
+          <tr><td>Repo branch/worktree</td><td>The worker gets an isolated workspace branch so implementation changes are separate from the integration branch.</td></tr>
+          <tr><td>Activity event</td><td>A feed entry records that work was assigned to the worker identity.</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>How Contention Is Controlled</h2>
+      <div class="grid">
+        <div class="tile">
+          <h3>One lock per work item</h3>
+          <p>Dispatch takes a flock for the target work item so simultaneous dispatch paths do not both assign it.</p>
+        </div>
+        <div class="tile">
+          <h3>One lock per assignee</h3>
+          <p>Before writing the assignment, dispatch serializes writes for the chosen worker so concurrent hook updates do not overwrite each other.</p>
+        </div>
+        <div class="tile">
+          <h3>Hook replacement rules</h3>
+          <p>If the worker already has a hooked item, replacement is allowed only when complete, explicitly forced, or auto-forced because the old session is dead.</p>
+        </div>
+        <div class="tile">
+          <h3>Stolen work shutdown</h3>
+          <p>When forced reassignment steals work from a live worker, dispatch sends lifecycle shutdown mail to the old worker's witness.</p>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Completion Path</h2>
+      <table>
+        <thead><tr><th>Stage</th><th>Internal behavior</th></tr></thead>
+        <tbody>
+          <tr><td><code>gt done</code> starts</td><td>Only worker sessions are allowed. It reconstructs identity from environment and cwd, normalizes the worktree path, and marks the heartbeat as exiting.</td></tr>
+          <tr><td>Workspace safety</td><td>It protects stash state, auto-commits safe uncommitted work, blocks unsafe default-branch completion, fetches, rebases, and checks contamination.</td></tr>
+          <tr><td>Submission</td><td>Completed work pushes the branch and creates or reuses a merge-request work item unless the item is no-merge, review-only, escalated, or deferred.</td></tr>
+          <tr><td>Traceability</td><td>The worker agent record gets completion metadata such as exit type, MR id, branch, last source issue, and completion time.</td></tr>
+          <tr><td>Merge processing</td><td>The merge processor reads open MR work items, runs checks, merges or reports failure, closes the source work on success, and nudges relevant roles.</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>Important Takeaway</h2>
+      <p>Work is shared through Beads records and git branches. Terminal messages only wake agents up; the source of truth is the assignment state and repo state that any replacement or recovery session can inspect.</p>
+    </section>
+
+    <footer>
+      Source references: <code>external/gastown/internal/cmd/sling_dispatch.go:60</code>, <code>external/gastown/internal/cmd/sling_dispatch.go:97</code>, <code>external/gastown/internal/cmd/sling_dispatch.go:175</code>, <code>external/gastown/internal/cmd/sling_dispatch.go:331</code>, <code>external/gastown/internal/cmd/sling_dispatch.go:350</code>, <code>external/gastown/internal/cmd/hook.go:298</code>, <code>external/gastown/internal/cmd/hook.go:379</code>, <code>external/gastown/internal/beads/beads_agent.go:36</code>, <code>external/gastown/internal/cmd/done.go:50</code>, <code>external/gastown/internal/cmd/done.go:1349</code>, <code>external/gastown/internal/cmd/done.go:1404</code>.
+    </footer>
+  </main>
+</body>
+</html>
