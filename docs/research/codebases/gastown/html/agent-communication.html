@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Gastown Agent Communication</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #f6f7f8;
+      --surface: #ffffff;
+      --soft: #eef2f5;
+      --ink: #17202b;
+      --muted: #607083;
+      --line: #d7dee7;
+      --accent: #12695c;
+      --accent-soft: #e3f2ef;
+      --shadow: 0 1px 2px rgba(16, 24, 40, 0.08);
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #101318;
+        --surface: #181c23;
+        --soft: #222833;
+        --ink: #e9edf3;
+        --muted: #a4afbd;
+        --line: #333b47;
+        --accent: #79d0bd;
+        --accent-soft: #16352f;
+        --shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+      }
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.65 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    main { width: min(1160px, calc(100% - 32px)); margin: 0 auto; padding: 36px 0 64px; }
+    header { margin-bottom: 24px; padding-bottom: 22px; border-bottom: 1px solid var(--line); }
+    .back { display: inline-block; margin-bottom: 14px; color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+    .eyebrow { margin: 0 0 8px; color: var(--muted); font-size: 13px; font-weight: 750; letter-spacing: .04em; text-transform: uppercase; }
+    h1 { max-width: 930px; margin: 0 0 10px; font-size: clamp(30px, 4vw, 46px); line-height: 1.1; letter-spacing: 0; }
+    h2 { margin: 0 0 12px; font-size: 22px; line-height: 1.25; letter-spacing: 0; }
+    h3 { margin: 0 0 8px; font-size: 16px; letter-spacing: 0; }
+    p { margin: 0 0 12px; }
+    header p, .muted { color: var(--muted); }
+    code { padding: 2px 5px; border-radius: 4px; background: var(--soft); font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: .92em; }
+    section { margin-top: 24px; padding: 22px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); box-shadow: var(--shadow); }
+    .diagram { overflow-x: auto; margin-top: 18px; padding: 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--soft); }
+    svg { display: block; min-width: 1100px; max-width: 100%; height: auto; }
+    .box { fill: var(--surface); stroke: var(--line); stroke-width: 1.4; }
+    .box-strong { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 1.6; }
+    .label { fill: var(--ink); font: 700 14px system-ui, sans-serif; }
+    .small { fill: var(--muted); font: 12px system-ui, sans-serif; }
+    .arrow { stroke: var(--accent); stroke-width: 2; fill: none; marker-end: url(#arrow); }
+    .lanes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+    .lane { padding: 16px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
+    .lane p { color: var(--muted); }
+    table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+    th, td { padding: 10px 12px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+    th { color: var(--muted); font-size: 12px; letter-spacing: .04em; text-transform: uppercase; }
+    footer { margin-top: 30px; padding-top: 16px; border-top: 1px solid var(--line); color: var(--muted); font-size: 13px; }
+    @media (max-width: 840px) { main { width: min(100% - 22px, 1160px); padding-top: 26px; } .lanes { grid-template-columns: 1fr; } section { padding: 16px; } }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <a class="back" href="index.html">Back to contents</a>
+      <p class="eyebrow">Agent communication</p>
+      <h1>Agents communicate through durable mail and queued or direct terminal nudges.</h1>
+      <p>The system does not create direct agent-to-agent sockets. It writes messages into durable state, resolves a recipient identity to one or more sessions, and optionally wakes those sessions through tmux.</p>
+    </header>
+
+    <section>
+      <h2>Communication Paths</h2>
+      <div class="diagram" aria-label="Agent communication diagram">
+        <svg viewBox="0 0 1180 560" role="img">
+          <defs>
+            <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+              <path d="M0,0 L0,6 L9,3 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+          <rect class="box-strong" x="40" y="60" width="170" height="86" rx="8"></rect>
+          <text class="label" x="64" y="94">Sender</text>
+          <text class="small" x="64" y="118">agent or command</text>
+
+          <rect class="box" x="290" y="36" width="210" height="110" rx="8"></rect>
+          <text class="label" x="314" y="72">Mail router</text>
+          <text class="small" x="314" y="96">expand recipient</text>
+          <text class="small" x="314" y="118">validate address</text>
+
+          <rect class="box-strong" x="590" y="36" width="210" height="110" rx="8"></rect>
+          <text class="label" x="614" y="72">Durable mail</text>
+          <text class="small" x="614" y="96">Beads issue assigned</text>
+          <text class="small" x="614" y="118">to recipient identity</text>
+
+          <rect class="box" x="902" y="36" width="220" height="110" rx="8"></rect>
+          <text class="label" x="926" y="72">Recipient checks</text>
+          <text class="small" x="926" y="96">gt mail inbox/read</text>
+          <text class="small" x="926" y="118">or startup prime</text>
+
+          <rect class="box" x="292" y="236" width="210" height="110" rx="8"></rect>
+          <text class="label" x="316" y="272">Notification</text>
+          <text class="small" x="316" y="296">resolve session id</text>
+          <text class="small" x="316" y="318">respect mute/DND</text>
+
+          <rect class="box" x="592" y="224" width="210" height="134" rx="8"></rect>
+          <text class="label" x="616" y="260">Nudge decision</text>
+          <text class="small" x="616" y="284">idle: direct</text>
+          <text class="small" x="616" y="306">busy: queue</text>
+          <text class="small" x="616" y="328">no pane: queue</text>
+
+          <rect class="box" x="912" y="224" width="210" height="134" rx="8"></rect>
+          <text class="label" x="936" y="260">tmux delivery</text>
+          <text class="small" x="936" y="284">serialized send-keys</text>
+          <text class="small" x="936" y="306">Escape + Enter</text>
+          <text class="small" x="936" y="328">wake pane</text>
+
+          <rect class="box" x="592" y="430" width="210" height="90" rx="8"></rect>
+          <text class="label" x="616" y="464">Nudge queue</text>
+          <text class="small" x="616" y="488">JSON files per session</text>
+
+          <rect class="box-strong" x="912" y="430" width="210" height="90" rx="8"></rect>
+          <text class="label" x="936" y="464">Agent sees prompt</text>
+          <text class="small" x="936" y="488">system reminder text</text>
+
+          <path class="arrow" d="M210 104 H280"></path>
+          <path class="arrow" d="M500 92 H580"></path>
+          <path class="arrow" d="M800 92 H892"></path>
+          <path class="arrow" d="M695 146 C680 185 502 220 422 236"></path>
+          <path class="arrow" d="M502 292 H582"></path>
+          <path class="arrow" d="M802 292 H902"></path>
+          <path class="arrow" d="M698 358 V420"></path>
+          <path class="arrow" d="M802 475 H902"></path>
+          <path class="arrow" d="M1018 358 V420"></path>
+        </svg>
+      </div>
+    </section>
+
+    <section>
+      <h2>Three Communication Lanes</h2>
+      <div class="lanes">
+        <div class="lane">
+          <h3>Mail</h3>
+          <p><code>Router.Send</code> expands lists or groups, validates the recipient, writes a Beads-backed message, then starts notification in the background.</p>
+        </div>
+        <div class="lane">
+          <h3>Nudge</h3>
+          <p><code>gt nudge</code> or mail notification sends a short reminder into the recipient session. If the agent is busy, the nudge is queued for later delivery.</p>
+        </div>
+        <div class="lane">
+          <h3>Lifecycle</h3>
+          <p>Lifecycle subjects such as <code>LIFECYCLE:Shutdown</code> are mail messages that tell a role manager or witness to stop, restart, or recover a session.</p>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Mail Internals</h2>
+      <table>
+        <thead><tr><th>Operation</th><th>Internal behavior</th></tr></thead>
+        <tbody>
+          <tr><td>Address routing</td><td>Recipient strings are resolved against town roles, repo roles, crew, workers, route files, and fallback workspace directories.</td></tr>
+          <tr><td>Durable write</td><td>The router builds a <code>bd create</code> command with assignee, body, priority, labels, actor, and subject. The message exists even if notification fails.</td></tr>
+          <tr><td>Fan-out</td><td>Lists and groups create individual message copies for each recipient.</td></tr>
+          <tr><td>Notification</td><td>After the durable write, notification is asynchronous. The router waits briefly for idle; idle sessions receive a direct nudge, busy sessions get queued.</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>Nudge Internals</h2>
+      <table>
+        <thead><tr><th>Case</th><th>Delivery detail</th></tr></thead>
+        <tbody>
+          <tr><td>Idle tmux session</td><td>Gastown serializes access to the pane, exits copy mode, sends literal text chunks, presses Enter, and wakes the pane.</td></tr>
+          <tr><td>Busy tmux session</td><td>The nudge is written as JSON in <code>.runtime/nudge_queue/&lt;session&gt;/</code> and drained later.</td></tr>
+          <tr><td>Runtime without hook support</td><td>A background nudge poller checks the queue, waits for idle, drains due files, and injects them through tmux.</td></tr>
+          <tr><td>No tmux pane or ACP mode</td><td>Delivery falls back to the queue because there is no interactive terminal pane to type into.</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>Queue Semantics</h2>
+      <p>Nudge files use timestamp-based names for FIFO ordering. Draining atomically renames each file to a unique claimed path so two drainers do not deliver the same nudge. Expired nudges are deleted; deferred nudges are unclaimed and left for a later drain.</p>
+    </section>
+
+    <footer>
+      Source references: <code>external/gastown/internal/mail/types.go:12</code>, <code>external/gastown/internal/mail/router.go:861</code>, <code>external/gastown/internal/mail/router.go:1103</code>, <code>external/gastown/internal/mail/router.go:1168</code>, <code>external/gastown/internal/mail/router.go:1583</code>, <code>external/gastown/internal/nudge/queue.go:1</code>, <code>external/gastown/internal/nudge/queue.go:217</code>, <code>external/gastown/internal/nudge/poller.go:1</code>, <code>external/gastown/internal/tmux/tmux.go:1624</code>, <code>external/gastown/internal/cmd/nudge.go:153</code>.
+    </footer>
+  </main>
+</body>
+</html>
