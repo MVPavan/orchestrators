@@ -1,0 +1,974 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Gascity Core Orchestration Contents</title>
+  <style>
+    :root {
+      --bg: #f6f7f9;
+      --surface: #ffffff;
+      --surface-2: #f0f3f7;
+      --text: #18202a;
+      --muted: #5c6674;
+      --line: #d8dee8;
+      --line-strong: #b7c0cf;
+      --accent: #1f6feb;
+      --accent-soft: #e8f1ff;
+      --green: #0f766e;
+      --green-soft: #e6f5f2;
+      --amber: #9a5b13;
+      --amber-soft: #fff4df;
+      --red: #a13333;
+      --red-soft: #fce8e8;
+      --code: #eef2f7;
+      --shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #111418;
+        --surface: #181c22;
+        --surface-2: #20262e;
+        --text: #edf1f7;
+        --muted: #a7b0bf;
+        --line: #303844;
+        --line-strong: #465160;
+        --accent: #7db1ff;
+        --accent-soft: #15263d;
+        --green: #6fd6c8;
+        --green-soft: #102b28;
+        --amber: #f3c26e;
+        --amber-soft: #352514;
+        --red: #ff9d9d;
+        --red-soft: #341c1f;
+        --code: #232a33;
+        --shadow: none;
+      }
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.58;
+      letter-spacing: 0;
+    }
+
+    a {
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 650;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    code {
+      background: var(--code);
+      border: 1px solid var(--line);
+      border-radius: 5px;
+      padding: 1px 5px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.92em;
+    }
+
+    .wrap {
+      width: min(1180px, calc(100% - 40px));
+      margin: 0 auto;
+    }
+
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .hero {
+      padding: 34px 0 24px;
+    }
+
+    .eyebrow {
+      margin: 0 0 8px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 720;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(28px, 4vw, 44px);
+      line-height: 1.08;
+      font-weight: 780;
+      letter-spacing: 0;
+    }
+
+    .subtitle {
+      max-width: 840px;
+      margin: 12px 0 0;
+      color: var(--muted);
+      font-size: 17px;
+    }
+
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px 18px;
+      margin-top: 18px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .kpis {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 22px;
+    }
+
+    .kpi {
+      min-height: 104px;
+      padding: 16px;
+      background: var(--surface-2);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+
+    .kpi strong {
+      display: block;
+      font-size: 25px;
+      line-height: 1.15;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .kpi span {
+      display: block;
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 3;
+      background: color-mix(in srgb, var(--surface) 92%, transparent);
+      border-bottom: 1px solid var(--line);
+      backdrop-filter: blur(8px);
+    }
+
+    nav .wrap {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      padding: 10px 0;
+    }
+
+    nav a {
+      display: inline-flex;
+      min-height: 34px;
+      align-items: center;
+      padding: 6px 10px;
+      border-radius: 6px;
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 650;
+    }
+
+    nav a:hover {
+      background: var(--surface-2);
+      color: var(--text);
+      text-decoration: none;
+    }
+
+    main {
+      padding: 28px 0 52px;
+    }
+
+    section {
+      margin: 0 0 28px;
+      padding: 0;
+    }
+
+    .section-head {
+      display: grid;
+      grid-template-columns: 64px 1fr;
+      gap: 14px;
+      align-items: end;
+      margin-bottom: 14px;
+    }
+
+    .section-no {
+      color: var(--line-strong);
+      font-size: 30px;
+      line-height: 1;
+      font-weight: 780;
+      font-variant-numeric: tabular-nums;
+    }
+
+    h2 {
+      margin: 0;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--line);
+      font-size: 24px;
+      line-height: 1.24;
+      letter-spacing: 0;
+    }
+
+    h3 {
+      margin: 0 0 8px;
+      font-size: 17px;
+      line-height: 1.3;
+    }
+
+    p {
+      margin: 0 0 12px;
+    }
+
+    ul, ol {
+      margin: 0 0 12px 20px;
+      padding: 0;
+    }
+
+    li {
+      margin: 6px 0;
+    }
+
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      padding: 20px;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .stack {
+      display: grid;
+      gap: 14px;
+    }
+
+    .callout {
+      border-left: 4px solid var(--accent);
+      padding: 12px 14px;
+      background: var(--accent-soft);
+      border-radius: 6px;
+    }
+
+    .callout strong {
+      display: block;
+      margin-bottom: 3px;
+    }
+
+    .muted {
+      color: var(--muted);
+    }
+
+    .small {
+      font-size: 13px;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--surface);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 780px;
+    }
+
+    th, td {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--line);
+      vertical-align: top;
+      text-align: left;
+    }
+
+    th {
+      color: var(--muted);
+      background: var(--surface-2);
+      font-size: 12px;
+      font-weight: 760;
+      text-transform: uppercase;
+    }
+
+    tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      min-height: 24px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 760;
+      white-space: nowrap;
+    }
+
+    .tag.info {
+      color: var(--accent);
+      background: var(--accent-soft);
+    }
+
+    .tag.ok {
+      color: var(--green);
+      background: var(--green-soft);
+    }
+
+    .tag.warn {
+      color: var(--amber);
+      background: var(--amber-soft);
+    }
+
+    .tag.risk {
+      color: var(--red);
+      background: var(--red-soft);
+    }
+
+    .diagram {
+      width: 100%;
+      min-height: 280px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--surface);
+    }
+
+    .diagram text {
+      fill: var(--text);
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      letter-spacing: 0;
+    }
+
+    .diagram .muted-text {
+      fill: var(--muted);
+    }
+
+    .diagram .box {
+      fill: var(--surface-2);
+      stroke: var(--line-strong);
+      stroke-width: 1.2;
+    }
+
+    .diagram .accent-box {
+      fill: var(--accent-soft);
+      stroke: var(--accent);
+      stroke-width: 1.4;
+    }
+
+    .diagram .line {
+      stroke: var(--line-strong);
+      stroke-width: 1.4;
+      fill: none;
+      marker-end: url(#arrow);
+    }
+
+    .diagram .dashed {
+      stroke-dasharray: 6 5;
+    }
+
+    details {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 12px 14px;
+    }
+
+    summary {
+      cursor: pointer;
+      font-weight: 720;
+    }
+
+    details > div {
+      margin-top: 12px;
+      color: var(--muted);
+    }
+
+    footer {
+      padding: 20px 0 34px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    @media (max-width: 900px) {
+      .kpis {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .grid-3 {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 720px) {
+      .wrap {
+        width: min(100% - 24px, 1180px);
+      }
+
+      nav {
+        position: static;
+      }
+
+      .kpis,
+      .grid-2,
+      .grid-3 {
+        grid-template-columns: 1fr;
+      }
+
+      .section-head {
+        grid-template-columns: 1fr;
+        gap: 6px;
+      }
+
+      .section-no {
+        font-size: 22px;
+      }
+
+      .panel {
+        padding: 16px;
+      }
+
+      table {
+        min-width: 680px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap hero">
+      <p class="eyebrow">Architecture contents hub</p>
+      <h1>Gascity Core Orchestration</h1>
+      <p class="subtitle">A contents-style review page for how Gas City turns config, beads, formulas, orders, and session demand into live agent runtime state. Markdown reports remain the canonical source; this page is the human review surface.</p>
+      <div class="meta">
+        <span>Target: <code>external/gascity</code></span>
+        <span>Research baseline: <code>2026-06-13</code></span>
+        <span>HTML contents revised: <code>2026-06-14</code></span>
+        <span>Submodule commit: <code>ec67043b8c9cd5f763ac699e22c6d9f75be6ebb5</code></span>
+      </div>
+      <div class="kpis" aria-label="Document facts">
+        <div class="kpi">
+          <strong>1</strong>
+          <span>Parent-repo HTML contents hub for Gascity architecture</span>
+        </div>
+        <div class="kpi">
+          <strong>7</strong>
+          <span>Canonical agent Markdown reports linked below</span>
+        </div>
+        <div class="kpi">
+          <strong>8</strong>
+          <span>Core runtime phases in the CityRuntime tick path</span>
+        </div>
+        <div class="kpi">
+          <strong>5+</strong>
+          <span>State layers: config, beads, registry, providers, events, caches</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <nav aria-label="Page contents">
+    <div class="wrap">
+      <a href="#contents">Contents</a>
+      <a href="#thesis">Thesis</a>
+      <a href="#diagram">Control Loop</a>
+      <a href="#how">How It Runs</a>
+      <a href="#state">State</a>
+      <a href="#sessions">Sessions</a>
+      <a href="#extensions">Extensions</a>
+      <a href="#risks">Risks</a>
+      <a href="#sources">Sources</a>
+    </div>
+  </nav>
+
+  <main class="wrap">
+    <section id="contents">
+      <div class="section-head">
+        <div class="section-no">01</div>
+        <h2>Contents Register, Not History</h2>
+      </div>
+      <div class="panel stack">
+        <p>This file is the entry point for current Gascity architecture review content. Do not turn it into a chronological change log. When a new architecture HTML is created, add or revise a contents row here with its current scope, canonical source, and review status.</p>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Artifact</th>
+                <th>Current Scope</th>
+                <th>Canonical Source</th>
+                <th>Update Rule</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>html/index.html</code></td>
+                <td>Core orchestration contents hub: startup, supervisor reconciliation, CityRuntime tick, desired-state building, sessions, stores, orders, formulas, integrations, and risks.</td>
+                <td><code>agent/*.md</code> plus cited Gascity source paths.</td>
+                <td><span class="tag ok">current hub</span> Keep this as the table of contents and current architecture summary.</td>
+              </tr>
+              <tr>
+                <td><code>agent/00-index.md</code></td>
+                <td>Target, commit, report map, core architecture bullets, read-next path, and scope limits.</td>
+                <td>Source-grounded research pass.</td>
+                <td><span class="tag info">agent source</span> Update before changing derived HTML claims.</td>
+              </tr>
+              <tr>
+                <td><code>agent/01-core-architecture.md</code></td>
+                <td>Architectural thesis, core modules, ownership boundaries, and central versus peripheral areas.</td>
+                <td><code>cmd/gc</code>, <code>internal/*</code>, and architecture specs.</td>
+                <td><span class="tag info">agent source</span> Use for module responsibility changes.</td>
+              </tr>
+              <tr>
+                <td><code>agent/02-runtime-lifecycle.md</code></td>
+                <td>Startup, supervisor city reconciliation, CityRuntime loop, desired state, sessions, providers, orders, and shutdown.</td>
+                <td><code>cmd_start.go</code>, <code>cmd_supervisor.go</code>, <code>city_runtime.go</code>, <code>session_reconciler.go</code>.</td>
+                <td><span class="tag info">agent source</span> Use for lifecycle and control-loop revisions.</td>
+              </tr>
+              <tr>
+                <td><code>agent/03-data-state-and-persistence.md</code></td>
+                <td>Config state, bead stores, session beads, events, supervisor registry, formula state, and consistency notes.</td>
+                <td><code>internal/config</code>, <code>internal/beads</code>, <code>internal/session</code>, <code>internal/events</code>.</td>
+                <td><span class="tag info">agent source</span> Use for state ownership changes.</td>
+              </tr>
+              <tr>
+                <td><code>agent/04-integration-and-extension-points.md</code></td>
+                <td>CLI/API/SSE, providers, bead stores, packs, formulas, sling, orders, events, env vars, and contract risks.</td>
+                <td>Runtime provider, API, config, orders, and sling source files.</td>
+                <td><span class="tag info">agent source</span> Use for external surface changes.</td>
+              </tr>
+              <tr>
+                <td><code>agent/05-operational-model.md</code></td>
+                <td>Build, run, test, inspect, diagnostics, parent repo caveats, and common failure modes.</td>
+                <td><code>README.md</code>, <code>Makefile</code>, <code>TESTING.md</code>, supervisor/config source.</td>
+                <td><span class="tag info">agent source</span> Use for operator guidance changes.</td>
+              </tr>
+              <tr>
+                <td><code>agent/90-open-questions.md</code></td>
+                <td>Known gaps, inferred claims, architectural risks, follow-up reads, and suggested experiments.</td>
+                <td>Research pass boundaries and sampled source reads.</td>
+                <td><span class="tag warn">open questions</span> Keep uncertainty explicit instead of filling gaps with guesses.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="small muted">Current specialized HTML artifacts: this contents hub only. Add future HTML artifacts to this table when they exist; do not pre-list files that have not been created.</p>
+      </div>
+    </section>
+
+    <section id="thesis">
+      <div class="section-head">
+        <div class="section-no">02</div>
+        <h2>Core Architecture Thesis</h2>
+      </div>
+      <div class="grid-2">
+        <div class="panel">
+          <h3>What Gascity Is</h3>
+          <p>Gas City is a configurable orchestration runtime for multi-agent coding workflows. It is not a fixed role application. The important domain objects live under <code>internal/*</code>, and the CLI, HTTP/SSE API, and dashboard project those objects outward.</p>
+          <p>The most useful mental model is a bead-backed desired-state engine: config and work demand describe what sessions should exist; <code>CityRuntime</code> repeatedly reconciles that desired state to live runtime providers; Beads hold durable work and session lifecycle; Events record infrastructure observations.</p>
+        </div>
+        <div class="panel">
+          <h3>What Is Central</h3>
+          <ul>
+            <li><code>cmd/gc/cmd_supervisor.go</code>: machine supervisor startup, registry, city runtime construction.</li>
+            <li><code>cmd/gc/city_runtime.go</code>: per-city controller loop, reload, orders, desired state, cleanup, shutdown.</li>
+            <li><code>cmd/gc/build_desired_state.go</code>: desired session state, demand, partial-query flags, scale checks.</li>
+            <li><code>cmd/gc/session_reconciler.go</code>: bead-driven wake, sleep, drain, restart, and create decisions.</li>
+            <li><code>internal/{config,beads,session,worker,runtime,events,formula,molecule,sling,orders}</code>: domain model and extension seams.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="diagram">
+      <div class="section-head">
+        <div class="section-no">03</div>
+        <h2>Control Loop Map</h2>
+      </div>
+      <div class="panel">
+        <svg class="diagram" viewBox="0 0 1120 420" role="img" aria-labelledby="diagram-title diagram-desc">
+          <title id="diagram-title">Gascity orchestration control loop</title>
+          <desc id="diagram-desc">Config, supervisor registry, stores, and providers flow through CityRuntime tick into desired state and session reconciliation.</desc>
+          <defs>
+            <marker id="arrow" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+              <path d="M0,0 L10,4 L0,8 Z" fill="currentColor"></path>
+            </marker>
+          </defs>
+
+          <rect class="box" x="36" y="42" width="185" height="76" rx="8"></rect>
+          <text x="58" y="74" font-size="16" font-weight="720">city.toml + packs</text>
+          <text x="58" y="98" font-size="13" class="muted-text">agents, rigs, orders, formulas</text>
+
+          <rect class="box" x="36" y="172" width="185" height="76" rx="8"></rect>
+          <text x="58" y="204" font-size="16" font-weight="720">Bead stores</text>
+          <text x="58" y="228" font-size="13" class="muted-text">work, sessions, tracking rows</text>
+
+          <rect class="box" x="36" y="302" width="185" height="76" rx="8"></rect>
+          <text x="58" y="334" font-size="16" font-weight="720">Runtime providers</text>
+          <text x="58" y="358" font-size="13" class="muted-text">tmux, subprocess, ACP, etc.</text>
+
+          <rect class="accent-box" x="302" y="100" width="230" height="108" rx="8"></rect>
+          <text x="328" y="134" font-size="18" font-weight="760">Machine supervisor</text>
+          <text x="328" y="160" font-size="13" class="muted-text">registry, API listener, city reconcile</text>
+          <text x="328" y="184" font-size="13" class="muted-text">constructs CityRuntime per city</text>
+
+          <rect class="accent-box" x="610" y="62" width="220" height="116" rx="8"></rect>
+          <text x="636" y="96" font-size="18" font-weight="760">CityRuntime.tick</text>
+          <text x="636" y="122" font-size="13" class="muted-text">reload, orders, cleanup, demand</text>
+          <text x="636" y="146" font-size="13" class="muted-text">desired state, reconcile, services</text>
+
+          <rect class="box" x="610" y="238" width="220" height="92" rx="8"></rect>
+          <text x="636" y="272" font-size="17" font-weight="740">DesiredStateResult</text>
+          <text x="636" y="297" font-size="13" class="muted-text">session plan + partial flags</text>
+
+          <rect class="accent-box" x="910" y="150" width="180" height="110" rx="8"></rect>
+          <text x="934" y="184" font-size="18" font-weight="760">Reconciler</text>
+          <text x="934" y="210" font-size="13" class="muted-text">wake, sleep, drain</text>
+          <text x="934" y="234" font-size="13" class="muted-text">bounded start waves</text>
+
+          <path class="line" d="M221 80 L302 132"></path>
+          <path class="line" d="M221 210 L302 164"></path>
+          <path class="line" d="M532 154 L610 120"></path>
+          <path class="line" d="M720 178 L720 238"></path>
+          <path class="line" d="M830 284 L910 218"></path>
+          <path class="line" d="M1000 260 C980 356 740 378 221 340"></path>
+          <path class="line dashed" d="M221 340 C390 326 488 302 610 284"></path>
+          <path class="line dashed" d="M720 62 C704 24 446 20 128 42"></path>
+        </svg>
+        <p class="small muted">Dashed paths are observation or feedback loops: provider state feeds desired-state checks, and config/watch changes flow back into subsequent ticks. The event log observes infrastructure facts but is not the source of agent transcript truth.</p>
+      </div>
+    </section>
+
+    <section id="how">
+      <div class="section-head">
+        <div class="section-no">04</div>
+        <h2>How Orchestration Actually Runs</h2>
+      </div>
+      <div class="stack">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Stage</th>
+                <th>What Happens</th>
+                <th>Load-Bearing Files</th>
+                <th>Why It Matters</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span class="tag info">1. Config load</span></td>
+                <td><code>city.toml</code> is loaded with includes, pack expansion, provider catalogs, agents, named sessions, rigs, formulas, orders, services, API, convergence, and validation.</td>
+                <td><code>internal/config/config.go</code>, <code>compose.go</code>, <code>pack.go</code>, <code>resolve.go</code></td>
+                <td>Config is activation. A pack/include change can alter watch targets, agent definitions, order layers, provider selection, and runtime reload behavior.</td>
+              </tr>
+              <tr>
+                <td><span class="tag info">2. Start request</span></td>
+                <td>The normal <code>gc start</code> path resolves the city, runs pre-start checks, then registers it with the machine supervisor. Foreground/controller mode is a compatibility path.</td>
+                <td><code>cmd/gc/cmd_start.go</code></td>
+                <td>Do not assume the CLI owns the long-running controller. The supervisor usually owns the durable runtime loop.</td>
+              </tr>
+              <tr>
+                <td><span class="tag info">3. Supervisor reconcile</span></td>
+                <td>The supervisor holds a registry, API listener, control socket, event recorder, and live city map. It applies backoff, loads city config, prepares dependencies, opens events/stores, creates a provider, and constructs a <code>CityRuntime</code>.</td>
+                <td><code>cmd/gc/cmd_supervisor.go</code>, <code>internal/supervisor/*</code>, <code>internal/api/supervisor.go</code></td>
+                <td>This is the boundary between machine-level process ownership and per-city orchestration.</td>
+              </tr>
+              <tr>
+                <td><span class="tag info">4. Runtime startup</span></td>
+                <td><code>CityRuntime.run</code> starts config watching, provider tracking, store setup, telemetry, health gates, startup cleanup, initial session sync/reconcile, and convergence startup reconcile.</td>
+                <td><code>cmd/gc/city_runtime.go</code></td>
+                <td>The city is not ready just because the process exists. Startup establishes store, provider, event, service, and session-control state.</td>
+              </tr>
+              <tr>
+                <td><span class="tag info">5. Tick phases</span></td>
+                <td>Each tick handles dirty config/reload, filesystem pressure, managed-Dolt preflight, due orders, session snapshots, dead-runtime cleanup, demand load, desired state, bead/index sync, reconciliation, wisp GC, services, auto-suspend, and convergence.</td>
+                <td><code>city_runtime.go</code>, <code>build_desired_state.go</code>, <code>order_dispatch.go</code></td>
+                <td>This is the main control loop. Order dispatch intentionally happens before expensive session reconciliation so formula-triggered work is not starved.</td>
+              </tr>
+              <tr>
+                <td><span class="tag info">6. Desired state</span></td>
+                <td><code>DesiredStateResult</code> combines config, store reads, session bead snapshots, runtime provider observations, scale checks, demand, assigned-work snapshots, and partial-query markers.</td>
+                <td><code>cmd/gc/build_desired_state.go</code></td>
+                <td>Partial store/session flags are safety-critical. Incomplete evidence must defer destructive drains rather than imply missing work.</td>
+              </tr>
+              <tr>
+                <td><span class="tag info">7. Reconciliation</span></td>
+                <td>The bead-driven reconciler checks provider health, dependency order, circuit breakers, stale pending-create rollback, undesired sessions, desired liveness, drain acknowledgements, restart requests, and bounded start waves.</td>
+                <td><code>cmd/gc/session_reconciler.go</code>, <code>session_lifecycle_parallel.go</code></td>
+                <td>This is where durable intent becomes live process action. It is deliberately guarded because false negatives can kill useful sessions.</td>
+              </tr>
+              <tr>
+                <td><span class="tag info">8. Shutdown</span></td>
+                <td>Supervisor shutdown cancels city contexts. City shutdown waits for async starts/stops, closes trace/service state, optionally preserves sessions for re-adoption, drains orders, and gracefully or forcibly stops visible provider sessions.</td>
+                <td><code>cmd/gc/cmd_supervisor.go</code>, <code>cmd/gc/city_runtime.go</code></td>
+                <td>Shutdown is not a simple process kill. It decides whether sessions should be preserved, drained, or stopped.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="grid-3">
+          <div class="panel">
+            <h3>Work Creation</h3>
+            <p>Work usually enters through Beads, formulas, sling, or orders. A formula compiles to a recipe; a molecule writes that recipe into a bead graph; sling routes or attaches intent; an order creates tracking rows before launching formula or exec work.</p>
+          </div>
+          <div class="panel">
+            <h3>Session Creation</h3>
+            <p>Sessions are bead-backed. Immediate creation writes active metadata and starts a provider. Deferred creation writes <code>state=start-pending</code> with a claim so the controller can safely start it later.</p>
+          </div>
+          <div class="panel">
+            <h3>Observation</h3>
+            <p>Events record infrastructure facts such as session lifecycle, bead operations, orders, controller state, and provider health. Agent messages and tool output live in provider transcript/log surfaces, not just events.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="state">
+      <div class="section-head">
+        <div class="section-no">05</div>
+        <h2>State Ownership</h2>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>State Layer</th>
+              <th>Owned By</th>
+              <th>Examples</th>
+              <th>Operational Consequence</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>City configuration</td>
+              <td><code>internal/config</code>, city layout, pack/include expansion</td>
+              <td><code>city.toml</code>, prompts, formulas, orders, hooks, scripts, <code>.gc</code> files</td>
+              <td>Config is layered and watched; provenance affects reload and runtime reconciliation.</td>
+            </tr>
+            <tr>
+              <td>Supervisor machine truth</td>
+              <td><code>internal/supervisor</code></td>
+              <td><code>GC_HOME</code>, <code>cities.toml</code>, <code>supervisor.toml</code>, locks, sockets</td>
+              <td>Machine-level registration is separate from city-local files and provider processes.</td>
+            </tr>
+            <tr>
+              <td>Durable domain truth</td>
+              <td><code>internal/beads</code> store interface and concrete providers</td>
+              <td>Work, sessions, mail, molecules, waits, order tracking, metadata</td>
+              <td>The configured store string does not always equal the concrete implementation. Native, CLI, file, and exec-backed paths can differ.</td>
+            </tr>
+            <tr>
+              <td>Session identity</td>
+              <td><code>internal/session</code> plus provider metadata</td>
+              <td><code>GC_SESSION_ID</code>, <code>GC_SESSION_NAME</code>, generation, continuation epoch, instance token</td>
+              <td>Runtime processes are matched back to session beads through injected identity and provider metadata.</td>
+            </tr>
+            <tr>
+              <td>Live runtime state</td>
+              <td><code>internal/runtime</code> provider implementations</td>
+              <td>tmux panes, subprocess control sockets, ACP processes, K8s/Cloudflare/t3bridge provider state</td>
+              <td>Provider liveness, process liveness, attach support, readiness, and interaction support are provider-specific.</td>
+            </tr>
+            <tr>
+              <td>Observation state</td>
+              <td><code>internal/events</code> and provider transcripts</td>
+              <td><code>.gc/events.jsonl</code>, supervisor events, session transcript logs</td>
+              <td>Events are best-effort infrastructure records. Do not treat them as authoritative transcripts.</td>
+            </tr>
+            <tr>
+              <td>Derived state</td>
+              <td><code>CityRuntime</code>, API handlers, dashboard, generated OpenAPI/client surfaces</td>
+              <td>Desired-state snapshots, API responses, dashboard views</td>
+              <td>Derived views are useful for inspection, but they should not become a second source of business logic.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="sessions">
+      <div class="section-head">
+        <div class="section-no">06</div>
+        <h2>Session And Work Mechanics</h2>
+      </div>
+      <div class="grid-2">
+        <div class="panel">
+          <h3>Worker Boundary</h3>
+          <p><code>internal/worker.Handle</code> is the current migration boundary for lifecycle, messaging, transcript, interaction, peeking, and live observation. New CLI/API session work should verify whether it is expected to route through <code>worker.Handle</code> or whether a direct <code>session.Manager</code> path is an allowed exception.</p>
+          <p class="small muted">Why this matters: direct session-manager construction still appears in some paths, but upstream guidance identifies the worker handle as the production boundary for session lifecycle.</p>
+        </div>
+        <div class="panel">
+          <h3>Start Safety</h3>
+          <p>Starts are fenced by durable session metadata, pending-create claims, generation, continuation epoch, instance token, startup timeout, stale key detection, provider-health snapshots, and bounded parallel start waves.</p>
+          <p class="small muted">This is why a simple "start if not running" rewrite would be dangerous. The controller is protecting against duplicate starts, stale provider state, partial stores, and recovery races.</p>
+        </div>
+      </div>
+      <div class="panel" style="margin-top: 14px;">
+        <h3>Formula, Molecule, Sling, And Orders Flow</h3>
+        <ol>
+          <li><code>internal/formula</code> loads a workflow template, resolves inheritance, applies control flow/advice/aspects/conditions/retries/graph controls, and flattens to a recipe.</li>
+          <li><code>internal/molecule</code> instantiates the recipe as durable bead graph state, or attaches a sub-DAG with idempotency and expected-epoch fencing.</li>
+          <li><code>internal/sling</code> exposes intent-style operations: route a bead, launch a formula, attach a formula, or expand a convoy. It depends on narrow interfaces instead of owning stores directly.</li>
+          <li><code>internal/orders</code> maps cooldown, cron, condition, event, or manual triggers to formula or exec dispatch. Runtime dispatch creates tracking beads before launching work.</li>
+        </ol>
+      </div>
+    </section>
+
+    <section id="extensions">
+      <div class="section-head">
+        <div class="section-no">07</div>
+        <h2>Integration And Extension Surfaces</h2>
+      </div>
+      <div class="grid-3">
+        <div class="panel">
+          <h3>CLI</h3>
+          <p>The <code>gc</code> command tree covers city lifecycle, supervisor, sessions, sling, orders, formulas, convergence, beads, events, hooks, config, packs, services, and diagnostics. Some mutations are direct local operations; others route through the supervisor for lock coordination.</p>
+        </div>
+        <div class="panel">
+          <h3>HTTP/SSE API</h3>
+          <p>The API is a typed Huma projection over supervisor and per-city routes. OpenAPI is generated from live route registration. The dashboard is a static SPA over that API, not a control-plane owner.</p>
+        </div>
+        <div class="panel">
+          <h3>Runtime Providers</h3>
+          <p><code>runtime.Provider</code> is the live-session contract: start, stop, interrupt, attach, liveness, nudge, metadata, peek, list, activity, copy, raw keys, live reconfiguration, and capabilities.</p>
+        </div>
+        <div class="panel">
+          <h3>Bead Stores</h3>
+          <p><code>[beads]</code> can resolve to file, exec, native Dolt, or <code>bd</code> CLI-backed paths. Preflight and fallback decisions mean tests should pin provider mode intentionally.</p>
+        </div>
+        <div class="panel">
+          <h3>Config/Packs</h3>
+          <p>Agents, named sessions, rigs, providers, packs, formulas, orders, hooks, services, GitHub settings, convergence, and runtime-specific fields are declarative extension points.</p>
+        </div>
+        <div class="panel">
+          <h3>Environment</h3>
+          <p>Important controls include <code>GC_SESSION</code>, <code>GC_EVENTS</code>, <code>GC_BEADS</code>, <code>GC_HOME</code>, <code>XDG_RUNTIME_DIR</code>, <code>GC_ISOLATED</code>, and diagnostic toggles such as supervisor pprof.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="risks">
+      <div class="section-head">
+        <div class="section-no">08</div>
+        <h2>Risks And Review Rules</h2>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Risk</th>
+              <th>Severity</th>
+              <th>Mitigation</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Partial store/session reads are mistaken for complete evidence and live sessions are drained or closed.</td>
+              <td><span class="tag risk">high</span></td>
+              <td>Preserve <code>StoreQueryPartial</code>, <code>SessionQueryPartial</code>, assigned-work snapshots, and provider-health gates. Add characterization tests before simplifying.</td>
+            </tr>
+            <tr>
+              <td>Session lifecycle changes bypass <code>worker.Handle</code> or duplicate worker/session-manager responsibilities.</td>
+              <td><span class="tag warn">medium</span></td>
+              <td>Before editing session CLI/API paths, trace whether the production contract is worker-backed or an explicit direct-manager exception.</td>
+            </tr>
+            <tr>
+              <td>Configured provider names are treated as concrete implementations.</td>
+              <td><span class="tag warn">medium</span></td>
+              <td>Inspect factory/preflight/fallback paths. Pin provider mode in tests instead of assuming <code>bd</code>, Dolt, file, or exec behavior from config alone.</td>
+            </tr>
+            <tr>
+              <td>Events are used as authoritative agent transcripts.</td>
+              <td><span class="tag warn">medium</span></td>
+              <td>Use events for infrastructure facts. Use provider transcript/log discovery for conversation, tool call, and model-output facts.</td>
+            </tr>
+            <tr>
+              <td>Config-only changes accidentally alter reload/watch/runtime behavior.</td>
+              <td><span class="tag warn">medium</span></td>
+              <td>Check include/pack provenance, order scans, provider resolution, soft reload acceptance, and runtime watcher behavior.</td>
+            </tr>
+            <tr>
+              <td>Parent repo edits accidentally modify submodule internals.</td>
+              <td><span class="tag risk">high</span></td>
+              <td>For parent-level research, edit only <code>docs/research/codebases/gascity/</code>. Treat <code>external/gascity</code> as source material unless the task is explicitly submodule-local.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="sources">
+      <div class="section-head">
+        <div class="section-no">09</div>
+        <h2>Canonical Sources And Read Path</h2>
+      </div>
+      <div class="grid-2">
+        <div class="panel">
+          <h3>Markdown Report Set</h3>
+          <ul>
+            <li><a href="../agent/00-index.md">00-index.md</a> - target, commit, reading map, scope limits.</li>
+            <li><a href="../agent/01-core-architecture.md">01-core-architecture.md</a> - modules, responsibilities, ownership.</li>
+            <li><a href="../agent/02-runtime-lifecycle.md">02-runtime-lifecycle.md</a> - startup, tick, reconciliation, shutdown.</li>
+            <li><a href="../agent/03-data-state-and-persistence.md">03-data-state-and-persistence.md</a> - state layers and consistency notes.</li>
+            <li><a href="../agent/04-integration-and-extension-points.md">04-integration-and-extension-points.md</a> - CLI/API/providers/config/formulas/orders/env.</li>
+            <li><a href="../agent/05-operational-model.md">05-operational-model.md</a> - build, run, test, inspect, diagnostics.</li>
+            <li><a href="../agent/90-open-questions.md">90-open-questions.md</a> - gaps, inferred claims, risks, follow-up reads.</li>
+          </ul>
+        </div>
+        <div class="panel">
+          <h3>Highest-Yield Source Files</h3>
+          <ul>
+            <li><code>external/gascity/cmd/gc/main.go</code> - CLI entry and command registration.</li>
+            <li><code>external/gascity/cmd/gc/cmd_start.go</code> - start path and supervisor registration.</li>
+            <li><code>external/gascity/cmd/gc/cmd_supervisor.go</code> - machine supervisor lifecycle and city runtime construction.</li>
+            <li><code>external/gascity/cmd/gc/city_runtime.go</code> - per-city controller loop.</li>
+            <li><code>external/gascity/cmd/gc/build_desired_state.go</code> - demand and desired session state.</li>
+            <li><code>external/gascity/cmd/gc/session_reconciler.go</code> - wake/sleep/drain/restart decisions.</li>
+            <li><code>external/gascity/internal/{config,beads,session,worker,runtime,formula,molecule,sling,orders,events}</code> - domain primitives.</li>
+          </ul>
+        </div>
+      </div>
+      <details style="margin-top: 14px;">
+        <summary>Scope notes and uncertainty</summary>
+        <div>
+          This page is derived from the checked-out Gascity submodule at commit <code>ec67043b8c9cd5f763ac699e22c6d9f75be6ebb5</code>. It does not claim upstream <code>main</code> or released docs are identical. The research pass did not deep-trace <code>internal/extmsg</code>, <code>internal/convergence</code>, <code>internal/mail</code>, <code>internal/convoy</code>, <code>internal/graphroute</code>, every runtime provider, generated OpenAPI, or the dashboard implementation. The phrase "bead-backed desired-state engine" is an inference from the desired-state, runtime tick, and session reconciler paths, not a quoted upstream term.
+        </div>
+      </details>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      Source: <code>docs/research/codebases/gascity/agent/*.md</code>, grounded in the checked-out <code>external/gascity</code> submodule. Markdown is canonical for future agents; this HTML file is the current contents and review surface for humans.
+    </div>
+  </footer>
+</body>
+</html>
