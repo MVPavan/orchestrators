@@ -89,7 +89,7 @@ The Markdown reports should help a future agent become productive quickly:
 
 The HTML report should help the user review the same understanding quickly:
 
-- Use a single `html/index.html` by default.
+- use [$html-artifact](.codex/skills/html-artifact/SKILL.md) Use index as only contents page, detailed codebase realted content move it to differenent pages, with detailed diagrams where ever possible, espicially for architectures.
 - Present the architecture map, main flows, risks, and open questions.
 - Link or visibly reference the Markdown reports as the canonical source.
 - Keep it readable and structured; avoid decorative interfaces that obscure the technical content.
