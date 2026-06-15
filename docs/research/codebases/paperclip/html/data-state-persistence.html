@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Paperclip Data, State, Persistence</title>
+  <style>
+    :root{color-scheme:light dark;--bg:#f6f7f9;--surface:#fff;--soft:#eef2f6;--text:#17202b;--muted:#607083;--line:#d7dee7;--line-strong:#aeb8c6;--accent:#12695c;--accent-soft:#e3f2ef;--shadow:0 1px 2px rgba(16,24,40,.08);--red:#a13333;--red-soft:#fce8e8;--amber:#8a5a00;--amber-soft:#fff4df;--green:#0f766e;--green-soft:#e6f5f2}@media(prefers-color-scheme:dark){:root{--bg:#101318;--surface:#181c23;--soft:#222833;--text:#e9edf3;--muted:#a4afbd;--line:#333b47;--line-strong:#465160;--accent:#79d0bd;--accent-soft:#16352f;--shadow:none;--red:#ff9d9d;--red-soft:#341c1f;--amber:#f3c26e;--amber-soft:#352514;--green:#6fd6c8;--green-soft:#102b28}}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px/1.62 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;letter-spacing:0}.wrap{width:min(1180px,calc(100% - 40px));margin:0 auto}header{background:var(--surface);border-bottom:1px solid var(--line)}.hero{padding:34px 0 24px}.back{display:inline-block;margin-bottom:14px;color:var(--accent);font-weight:650;text-decoration:none}.back:hover{text-decoration:underline;text-underline-offset:3px}.eyebrow{margin:0 0 8px;color:var(--muted);font-size:13px;font-weight:720;text-transform:uppercase}h1{margin:0;font-size:44px;line-height:1.08;letter-spacing:0}.subtitle{max-width:850px;margin:12px 0 0;color:var(--muted);font-size:17px}.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:22px}.kpi{min-height:104px;padding:16px;background:var(--soft);border:1px solid var(--line);border-radius:8px}.kpi strong{display:block;font-size:25px;line-height:1.15;font-variant-numeric:tabular-nums}.kpi span{display:block;margin-top:6px;color:var(--muted);font-size:13px}main{padding:30px 0 56px}section{margin:0 0 30px}.section-head{display:grid;grid-template-columns:64px 1fr;gap:14px;align-items:end;margin-bottom:14px}.section-no{color:var(--line-strong);font-size:30px;line-height:1;font-weight:780;font-variant-numeric:tabular-nums}h2{margin:0;font-size:25px;line-height:1.2;letter-spacing:0}h3{margin:18px 0 8px;font-size:17px}p{margin:0 0 12px}ul{margin:0;padding-left:20px}li{margin:6px 0}a{color:var(--accent);text-decoration-thickness:1px;text-underline-offset:3px}code{padding:1px 5px;border:1px solid var(--line);border-radius:5px;background:var(--soft);font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.92em}.panel{padding:20px;background:var(--surface);border:1px solid var(--line);border-radius:8px;box-shadow:var(--shadow)}.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}.diagram{display:block;width:100%;min-height:550px;background:var(--soft);border:1px solid var(--line);border-radius:8px}.diagram text{fill:var(--text);font:13px system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}.diagram .muted{fill:var(--muted);font-size:11px}.diagram .box{fill:var(--surface);stroke:var(--line-strong);rx:8}.diagram .core{fill:var(--accent-soft);stroke:var(--accent);rx:8}.diagram .arrow{stroke:var(--accent);stroke-width:2;fill:none;marker-end:url(#arrow)}table{width:100%;border-collapse:collapse;margin-top:8px}th,td{border-bottom:1px solid var(--line);padding:10px 8px;text-align:left;vertical-align:top}th{color:var(--muted);font-size:12px;text-transform:uppercase}.tag{display:inline-block;border-radius:999px;padding:2px 8px;font-size:12px;font-weight:750;white-space:nowrap}.tag.high{color:var(--red);background:var(--red-soft)}.tag.medium{color:var(--amber);background:var(--amber-soft)}.tag.low{color:var(--green);background:var(--green-soft)}footer{margin-top:30px;padding-top:18px;border-top:1px solid var(--line);color:var(--muted);font-size:13px}@media(max-width:760px){.wrap{width:min(100% - 22px,1180px)}.hero{padding-top:24px}h1{font-size:34px}.kpis,.grid{grid-template-columns:1fr}.section-head{grid-template-columns:44px 1fr}.diagram{min-height:680px}}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap hero">
+      <a class="back" href="index.html">Back to contents</a>
+      <p class="eyebrow">Paperclip architecture artifact 03</p>
+      <h1>Data, State, Persistence</h1>
+      <p class="subtitle">Paperclip persists its control plane in Postgres through Drizzle, with separate provider boundaries for object storage and secrets.</p>
+      <div class="kpis" aria-label="Persistence facts">
+        <div class="kpi"><strong>Postgres</strong><span>External or embedded local runtime</span></div>
+        <div class="kpi"><strong>Runs</strong><span>Wakeups and heartbeat rows are durable</span></div>
+        <div class="kpi"><strong>Locks</strong><span>Issue and agent execution gates</span></div>
+        <div class="kpi"><strong>Providers</strong><span>Storage and secrets outside table rows</span></div>
+      </div>
+    </div>
+  </header>
+  <main class="wrap">
+    <section>
+      <div class="section-head"><div class="section-no">01</div><h2>Persistence Topology</h2></div>
+      <div class="panel">
+        <svg class="diagram" viewBox="0 0 1180 560" role="img" aria-label="Paperclip persistence topology">
+          <defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="#12695c"></path></marker></defs>
+          <rect class="core" x="435" y="42" width="300" height="76"></rect><text x="585" y="72" text-anchor="middle">Drizzle/Postgres</text><text x="585" y="94" text-anchor="middle" class="muted">operational control-plane database</text>
+          <rect class="box" x="70" y="170" width="190" height="74"></rect><text x="165" y="198" text-anchor="middle">Identity</text><text x="165" y="220" text-anchor="middle" class="muted">companies, users, memberships</text>
+          <rect class="box" x="310" y="170" width="190" height="74"></rect><text x="405" y="198" text-anchor="middle">Agents</text><text x="405" y="220" text-anchor="middle" class="muted">runtime config, hierarchy</text>
+          <rect class="box" x="550" y="170" width="190" height="74"></rect><text x="645" y="198" text-anchor="middle">Work</text><text x="645" y="220" text-anchor="middle" class="muted">issues, relations, goals</text>
+          <rect class="box" x="790" y="170" width="190" height="74"></rect><text x="885" y="198" text-anchor="middle">Execution</text><text x="885" y="220" text-anchor="middle" class="muted">wakeups, runs, events</text>
+          <rect class="box" x="70" y="310" width="190" height="74"></rect><text x="165" y="338" text-anchor="middle">Workspaces</text><text x="165" y="360" text-anchor="middle" class="muted">execution + runtime services</text>
+          <rect class="box" x="310" y="310" width="190" height="74"></rect><text x="405" y="338" text-anchor="middle">Governance</text><text x="405" y="360" text-anchor="middle" class="muted">approvals, budgets, costs</text>
+          <rect class="box" x="550" y="310" width="190" height="74"></rect><text x="645" y="338" text-anchor="middle">Automation</text><text x="645" y="360" text-anchor="middle" class="muted">routines, triggers, runs</text>
+          <rect class="box" x="790" y="310" width="190" height="74"></rect><text x="885" y="338" text-anchor="middle">Plugins</text><text x="885" y="360" text-anchor="middle" class="muted">installs, jobs, webhooks</text>
+          <rect class="box" x="235" y="450" width="210" height="64"></rect><text x="340" y="477" text-anchor="middle">Object Storage</text><text x="340" y="497" text-anchor="middle" class="muted">company-prefixed keys</text>
+          <rect class="box" x="725" y="450" width="210" height="64"></rect><text x="830" y="477" text-anchor="middle">Secrets Provider</text><text x="830" y="497" text-anchor="middle" class="muted">runtime bindings</text>
+          <path class="arrow" d="M520 118 L165 170"></path><path class="arrow" d="M560 118 L405 170"></path><path class="arrow" d="M610 118 L645 170"></path><path class="arrow" d="M660 118 L885 170"></path>
+          <path class="arrow" d="M520 118 L165 310"></path><path class="arrow" d="M560 118 L405 310"></path><path class="arrow" d="M610 118 L645 310"></path><path class="arrow" d="M660 118 L885 310"></path>
+          <path class="arrow" d="M450 384 L340 450"></path><path class="arrow" d="M735 384 L830 450"></path>
+        </svg>
+      </div>
+    </section>
+    <section>
+      <div class="section-head"><div class="section-no">02</div><h2>State Groups</h2></div>
+      <div class="panel">
+        <table>
+          <thead><tr><th>Group</th><th>State held</th><th>Source anchor</th></tr></thead>
+          <tbody>
+            <tr><td>Agents</td><td>Company, role, status, hierarchy, adapter/runtime config, default environment, budgets, permissions.</td><td><code>external/paperclip/packages/db/src/schema/agents.ts:14-44</code></td></tr>
+            <tr><td>Wakeups and runs</td><td>Wakeup source/reason/payload/idempotency plus heartbeat status, result, errors, usage, session, logs, retry and process fields.</td><td><code>agent_wakeup_requests.ts:5-40</code>, <code>heartbeat_runs.ts:6-59</code></td></tr>
+            <tr><td>Issues</td><td>Work item state, dependency relations, execution locks, workspaces, liveness, recovery and productivity metadata.</td><td><code>issues.ts:22-144</code></td></tr>
+            <tr><td>Execution workspaces</td><td>Mode, strategy, cwd, repo/ref/branch, provider references, source issue, status, metadata.</td><td><code>execution_workspaces.ts:15-68</code></td></tr>
+            <tr><td>Runtime services</td><td>Service command/cwd/env, ports, URLs, provider metadata, owner run, health, lifecycle, reuse key.</td><td><code>workspace_runtime_services.ts:18-71</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+    <section>
+      <div class="section-head"><div class="section-no">03</div><h2>Concurrency Model</h2></div>
+      <div class="grid">
+        <div class="panel"><h3>Agent-start lock</h3><p>Queued runs are claimed through <code>startNextQueuedRunForAgent()</code>, which serializes launch decisions per agent before calling execution. Source: <code>external/paperclip/server/src/services/heartbeat.ts:7666-7755</code>.</p></div>
+        <div class="panel"><h3>Issue execution fields</h3><p>Checkout validates assignment, tree holds, dependencies, stale locks, and then updates assignee/status/checkout/run fields. Source: <code>external/paperclip/server/src/services/issues.ts:5480-5688</code>.</p></div>
+        <div class="panel"><h3>Dependency readiness</h3><p><code>blocks</code> relations and workspace-finalization barriers decide whether dependents can wake. Source: <code>external/paperclip/server/src/services/issues.ts:622-750</code>.</p></div>
+        <div class="panel"><h3>Recovery loops</h3><p>Startup maintenance resumes queued runs, promotes retries, recovers orphaned runs, checks watchdogs, and sweeps stale locks. Source: <code>external/paperclip/server/src/index.ts:753-895</code>.</p></div>
+      </div>
+    </section>
+    <footer>
+      Source basis: <code>../agent/03-data-state-and-persistence.md</code>, Drizzle schema files, heartbeat, issue service, storage service, secrets service, and config.
+    </footer>
+  </main>
+</body>
+</html>

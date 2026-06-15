@@ -1,0 +1,369 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>OpenHands Core Architecture</title>
+  <style>
+    :root {
+      --bg: #f7f8fa;
+      --surface: #ffffff;
+      --soft: #eef2f5;
+      --ink: #17202a;
+      --muted: #5d6978;
+      --line: #d7dee7;
+      --accent: #0f766e;
+      --blue: #2f5597;
+      --amber: #9a5b00;
+      --red: #a53d3d;
+      --shadow: 0 10px 24px rgba(23, 32, 42, 0.08);
+      color-scheme: light dark;
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #11161c;
+        --surface: #18212b;
+        --soft: #202b36;
+        --ink: #edf2f7;
+        --muted: #aeb9c6;
+        --line: #354251;
+        --accent: #2dd4bf;
+        --blue: #8ab4ff;
+        --amber: #f0b35a;
+        --red: #ff9b9b;
+        --shadow: 0 12px 28px rgba(0, 0, 0, 0.28);
+      }
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--ink); line-height: 1.55; }
+    a { color: var(--blue); text-decoration-thickness: 0.08em; text-underline-offset: 0.18em; }
+    header, main, footer { width: min(1180px, calc(100% - 40px)); margin: 0 auto; }
+    header { padding: 28px 0 20px; }
+    nav { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 26px; }
+    nav a { background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 7px 12px; text-decoration: none; font-weight: 700; font-size: 0.88rem; }
+    .eyebrow { color: var(--accent); font-size: 0.78rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; }
+    h1 { margin: 8px 0 10px; font-size: clamp(2rem, 6vw, 4.2rem); line-height: 0.95; letter-spacing: 0; }
+    .lede { max-width: 900px; color: var(--muted); font-size: 1.08rem; }
+    section { margin: 28px 0; }
+    h2 { margin: 0 0 12px; font-size: 1.45rem; letter-spacing: 0; }
+    h3 { margin: 0 0 8px; font-size: 1.02rem; }
+    p { margin: 0 0 12px; }
+    .panel, .diagram, .fact, .risk {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+    }
+    .panel { padding: 18px; }
+    .diagram { padding: 14px; overflow-x: auto; }
+    .diagram svg { min-width: 860px; width: 100%; height: auto; display: block; }
+    .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+    .two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .fact { padding: 15px; }
+    .fact strong { display: block; margin-bottom: 5px; }
+    .fact span { color: var(--muted); }
+    code { background: var(--soft); border: 1px solid var(--line); border-radius: 5px; padding: 1px 5px; font-size: 0.9em; }
+    table { width: 100%; border-collapse: collapse; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; overflow: hidden; box-shadow: var(--shadow); }
+    th, td { border-bottom: 1px solid var(--line); padding: 11px 12px; text-align: left; vertical-align: top; }
+    th { background: var(--soft); font-size: 0.83rem; text-transform: uppercase; letter-spacing: 0.05em; }
+    tr:last-child td { border-bottom: 0; }
+    .muted { color: var(--muted); }
+    .refs { color: var(--muted); font-size: 0.9rem; }
+    footer { padding: 24px 0 42px; color: var(--muted); font-size: 0.9rem; }
+    @media (max-width: 860px) {
+      header, main, footer { width: min(100% - 28px, 1180px); }
+      .grid, .two { grid-template-columns: 1fr; }
+      nav { gap: 8px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <nav aria-label="artifact navigation">
+      <a href="index.html">Contents</a>
+      <a href="runtime-lifecycle.html">Runtime</a>
+      <a href="data-state.html">Data</a>
+      <a href="integrations.html">Integrations</a>
+      <a href="operations.html">Operations</a>
+      <a href="open-questions.html">Open Questions</a>
+    </nav>
+    <div class="eyebrow">OpenHands detail page</div>
+    <h1>Core Architecture</h1>
+    <p class="lede">OpenHands Local GUI is best read as an orchestration application around the OpenHands SDK and sandbox-hosted agent-server. The app-server owns web/API composition, persistence, user/session state, sandbox lifecycle, extension loading, provider integration, and the handoff into the actual running agent process.</p>
+  </header>
+
+  <main>
+    <section aria-labelledby="thesis">
+      <h2 id="thesis">Architectural Thesis</h2>
+      <div class="grid">
+        <div class="fact"><strong>Primary boundary</strong><span>The app-server builds a fully populated SDK start request and POSTs it to the sandbox agent-server rather than executing the live agent loop in the web process.</span></div>
+        <div class="fact"><strong>Dominant dependency direction</strong><span>Routers depend on injected service interfaces, which resolve configured implementations for storage, sandbox, providers, MCP, settings, and conversation services.</span></div>
+        <div class="fact"><strong>Extension strategy</strong><span>Deployment behavior changes through injectors, store classes, and enterprise dynamic imports more often than through router rewrites.</span></div>
+      </div>
+      <p class="refs">Grounding: <code>external/OpenHands/openhands/app_server/app_conversation/live_status_app_conversation_service.py:319</code>, <code>external/OpenHands/openhands/app_server/app_conversation/live_status_app_conversation_service.py:369</code>, <code>external/OpenHands/openhands/app_server/config.py:191</code>, <code>external/OpenHands/enterprise/server/config.py:55</code>.</p>
+    </section>
+
+    <section aria-labelledby="topology">
+      <h2 id="topology">System Topology</h2>
+      <div class="diagram" role="img" aria-label="OpenHands system topology diagram">
+        <svg viewBox="0 0 1120 610" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+              <path d="M0,0 L0,6 L9,3 z" fill="#2f5597"/>
+            </marker>
+            <style>
+              .box{fill:#ffffff;stroke:#d7dee7;stroke-width:2;rx:8}
+              .soft{fill:#eef2f5;stroke:#d7dee7;stroke-width:2;rx:8}
+              .green{fill:#e7f6f2;stroke:#0f766e;stroke-width:2;rx:8}
+              .amber{fill:#fff4df;stroke:#9a5b00;stroke-width:2;rx:8}
+              .blue{fill:#eaf1ff;stroke:#2f5597;stroke-width:2;rx:8}
+              .text{font:600 15px system-ui, sans-serif;fill:#17202a}
+              .small{font:500 12px system-ui, sans-serif;fill:#5d6978}
+              .line{stroke:#2f5597;stroke-width:2.4;fill:none;marker-end:url(#arrow)}
+              .dash{stroke:#9a5b00;stroke-width:2;fill:none;stroke-dasharray:6 5;marker-end:url(#arrow)}
+            </style>
+          </defs>
+          <rect class="blue" x="30" y="70" width="190" height="120"/>
+          <text class="text" x="55" y="105">React SPA</text>
+          <text class="small" x="55" y="130">Routes, Query hooks, API client</text>
+          <text class="small" x="55" y="150">Runtime URL helpers</text>
+          <text class="small" x="55" y="170">Zustand/browser state</text>
+
+          <rect class="green" x="310" y="40" width="250" height="190"/>
+          <text class="text" x="335" y="76">FastAPI app-server</text>
+          <text class="small" x="335" y="103">/api/v1 routers</text>
+          <text class="small" x="335" y="123">AppConversationService</text>
+          <text class="small" x="335" y="143">Config injectors</text>
+          <text class="small" x="335" y="163">Settings, secrets, metadata</text>
+          <text class="small" x="335" y="183">MCP app at /mcp</text>
+          <text class="small" x="335" y="203">Optional built frontend mount</text>
+
+          <rect class="box" x="650" y="40" width="210" height="90"/>
+          <text class="text" x="674" y="74">Persistence</text>
+          <text class="small" x="674" y="98">SQLite/Postgres/GCP SQL</text>
+          <text class="small" x="674" y="116">File/S3/GCS events</text>
+
+          <rect class="box" x="650" y="160" width="210" height="90"/>
+          <text class="text" x="674" y="194">Provider clients</text>
+          <text class="small" x="674" y="218">GitHub, GitLab, Bitbucket</text>
+          <text class="small" x="674" y="236">Forgejo, Azure DevOps, SSO</text>
+
+          <rect class="amber" x="310" y="310" width="250" height="170"/>
+          <text class="text" x="335" y="346">Sandbox service</text>
+          <text class="small" x="335" y="373">Docker runtime</text>
+          <text class="small" x="335" y="393">Remote runtime</text>
+          <text class="small" x="335" y="413">Process/local runtime</text>
+          <text class="small" x="335" y="433">Session key and exposed URLs</text>
+          <text class="small" x="335" y="453">Wait for AGENT_SERVER</text>
+
+          <rect class="green" x="650" y="320" width="230" height="150"/>
+          <text class="text" x="674" y="356">Sandbox agent-server</text>
+          <text class="small" x="674" y="382">/api/conversations</text>
+          <text class="small" x="674" y="402">/api/conversations/{id}/events</text>
+          <text class="small" x="674" y="422">/api/skills and /api/hooks</text>
+          <text class="small" x="674" y="442">SDK runtime and tools package</text>
+
+          <rect class="soft" x="930" y="320" width="160" height="150"/>
+          <text class="text" x="954" y="356">Workspace</text>
+          <text class="small" x="954" y="382">Repo clone/init</text>
+          <text class="small" x="954" y="402">.openhands/setup.sh</text>
+          <text class="small" x="954" y="422">Git hooks</text>
+          <text class="small" x="954" y="442">Project skills/hooks</text>
+
+          <rect class="soft" x="650" y="515" width="440" height="60"/>
+          <text class="text" x="674" y="548">Enterprise overlay</text>
+          <text class="small" x="812" y="548">SaaS config, auth, tenant stores, analytics, extra routers</text>
+
+          <path class="line" d="M220 130 H310"/>
+          <path class="line" d="M560 95 H650"/>
+          <path class="line" d="M560 190 H650"/>
+          <path class="line" d="M435 230 V310"/>
+          <path class="line" d="M560 395 H650"/>
+          <path class="line" d="M880 395 H930"/>
+          <path class="dash" d="M170 190 C210 260 240 385 310 395"/>
+          <path class="dash" d="M765 470 V515"/>
+          <path class="dash" d="M870 515 C780 495 705 488 560 455"/>
+
+          <text class="small" x="235" y="118">REST /api/v1</text>
+          <text class="small" x="568" y="83">metadata/events</text>
+          <text class="small" x="570" y="179">provider API</text>
+          <text class="small" x="447" y="276">start/resume sandbox</text>
+          <text class="small" x="575" y="383">start request + session key</text>
+          <text class="small" x="195" y="292">selected direct runtime calls</text>
+        </svg>
+      </div>
+    </section>
+
+    <section aria-labelledby="composition">
+      <h2 id="composition">Backend Composition</h2>
+      <div class="two grid">
+        <div class="panel">
+          <h3>App construction</h3>
+          <p>The app initializes the Tavily MCP proxy, builds a FastMCP HTTP app at <code>/mcp</code>, combines its lifespan with the configured app lifespan, creates the FastAPI app, mounts routers, optionally mounts <code>frontend/build</code>, and installs middleware.</p>
+          <p class="refs">Refs: <code>external/OpenHands/openhands/app_server/app.py:30</code>, <code>external/OpenHands/openhands/app_server/app.py:33</code>, <code>external/OpenHands/openhands/app_server/app.py:54</code>, <code>external/OpenHands/openhands/app_server/app.py:71</code>.</p>
+        </div>
+        <div class="panel">
+          <h3>Router ownership</h3>
+          <p>The V1 router is a composition layer. It aggregates events, app conversations, pending messages, sandbox management, settings, secrets, user, skills, webhooks, web client config, git, and config routes while feature modules keep their own behavior.</p>
+          <p class="refs">Refs: <code>external/OpenHands/openhands/app_server/v1_router.py:23</code>, <code>external/OpenHands/openhands/app_server/v1_router.py:37</code>.</p>
+        </div>
+      </div>
+    </section>
+
+    <section aria-labelledby="dependency">
+      <h2 id="dependency">Dependency Direction</h2>
+      <div class="diagram" role="img" aria-label="OpenHands dependency injector architecture">
+        <svg viewBox="0 0 1080 360" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <marker id="arrow2" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+              <path d="M0,0 L0,6 L9,3 z" fill="#2f5597"/>
+            </marker>
+            <style>
+              .node{fill:#fff;stroke:#d7dee7;stroke-width:2;rx:8}
+              .cfg{fill:#e7f6f2;stroke:#0f766e;stroke-width:2;rx:8}
+              .impl{fill:#eaf1ff;stroke:#2f5597;stroke-width:2;rx:8}
+              .ent{fill:#fff4df;stroke:#9a5b00;stroke-width:2;rx:8}
+              .label{font:700 15px system-ui, sans-serif;fill:#17202a}
+              .small{font:500 12px system-ui, sans-serif;fill:#5d6978}
+              .edge{stroke:#2f5597;stroke-width:2.2;fill:none;marker-end:url(#arrow2)}
+            </style>
+          </defs>
+          <rect class="node" x="30" y="115" width="170" height="90"/>
+          <text class="label" x="58" y="150">Routers</text>
+          <text class="small" x="58" y="174">FastAPI dependencies</text>
+
+          <rect class="cfg" x="280" y="60" width="230" height="200"/>
+          <text class="label" x="308" y="96">AppServerConfig</text>
+          <text class="small" x="308" y="124">config_from_env()</text>
+          <text class="small" x="308" y="146">global config singleton</text>
+          <text class="small" x="308" y="168">typed injector fields</text>
+          <text class="small" x="308" y="190">default env-derived stores</text>
+          <text class="small" x="308" y="212">get_* dependency funcs</text>
+          <text class="small" x="308" y="234">lifespan and middleware</text>
+
+          <rect class="impl" x="590" y="20" width="190" height="70"/>
+          <text class="label" x="616" y="52">Conversation</text>
+          <text class="small" x="616" y="72">metadata, start tasks</text>
+          <rect class="impl" x="590" y="110" width="190" height="70"/>
+          <text class="label" x="616" y="142">Sandbox</text>
+          <text class="small" x="616" y="162">Docker, remote, process</text>
+          <rect class="impl" x="590" y="200" width="190" height="70"/>
+          <text class="label" x="616" y="232">Storage</text>
+          <text class="small" x="616" y="252">DB, events, file store</text>
+
+          <rect class="impl" x="850" y="20" width="190" height="70"/>
+          <text class="label" x="876" y="52">Providers</text>
+          <text class="small" x="876" y="72">git, auth, callbacks</text>
+          <rect class="impl" x="850" y="110" width="190" height="70"/>
+          <text class="label" x="876" y="142">Settings</text>
+          <text class="small" x="876" y="162">profiles, secrets</text>
+          <rect class="ent" x="850" y="230" width="190" height="80"/>
+          <text class="label" x="876" y="262">SaaS config</text>
+          <text class="small" x="876" y="282">overrides stores/auth</text>
+
+          <path class="edge" d="M200 160 H280"/>
+          <path class="edge" d="M510 110 C545 80 555 55 590 55"/>
+          <path class="edge" d="M510 150 H590"/>
+          <path class="edge" d="M510 205 C545 225 555 235 590 235"/>
+          <path class="edge" d="M780 55 H850"/>
+          <path class="edge" d="M780 145 H850"/>
+          <path class="edge" d="M780 235 C820 245 820 268 850 270"/>
+        </svg>
+      </div>
+      <p class="muted">The useful mental model is not "routers call implementation classes directly"; it is "routers ask the configured server graph for a service". This is why the enterprise overlay can replace stores and auth while preserving most route shapes.</p>
+    </section>
+
+    <section aria-labelledby="domain">
+      <h2 id="domain">Conversation Domain Center</h2>
+      <div class="diagram" role="img" aria-label="Conversation domain model">
+        <svg viewBox="0 0 1080 430" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <marker id="arrow3" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+              <path d="M0,0 L0,6 L9,3 z" fill="#2f5597"/>
+            </marker>
+            <style>
+              .box{fill:#fff;stroke:#d7dee7;stroke-width:2;rx:8}
+              .main{fill:#e7f6f2;stroke:#0f766e;stroke-width:2;rx:8}
+              .wait{fill:#fff4df;stroke:#9a5b00;stroke-width:2;rx:8}
+              .runtime{fill:#eaf1ff;stroke:#2f5597;stroke-width:2;rx:8}
+              .t{font:700 15px system-ui, sans-serif;fill:#17202a}
+              .s{font:500 12px system-ui, sans-serif;fill:#5d6978}
+              .edge{stroke:#2f5597;stroke-width:2.2;fill:none;marker-end:url(#arrow3)}
+            </style>
+          </defs>
+          <rect class="main" x="390" y="35" width="280" height="110"/>
+          <text class="t" x="418" y="70">AppConversationService</text>
+          <text class="s" x="418" y="96">Async startup generator</text>
+          <text class="s" x="418" y="116">Build SDK request and persist state</text>
+
+          <rect class="wait" x="45" y="190" width="220" height="120"/>
+          <text class="t" x="70" y="226">StartTask</text>
+          <text class="s" x="70" y="252">status and detail</text>
+          <text class="s" x="70" y="272">eventual conversation id</text>
+          <text class="s" x="70" y="292">task polling target</text>
+
+          <rect class="box" x="330" y="190" width="250" height="120"/>
+          <text class="t" x="358" y="226">AppConversationInfo</text>
+          <text class="s" x="358" y="252">persisted metadata</text>
+          <text class="s" x="358" y="272">repo, provider, title, metrics</text>
+          <text class="s" x="358" y="292">parent, tags, timestamps</text>
+
+          <rect class="runtime" x="655" y="190" width="235" height="120"/>
+          <text class="t" x="682" y="226">AppConversation</text>
+          <text class="s" x="682" y="252">metadata plus live status</text>
+          <text class="s" x="682" y="272">conversation URL</text>
+          <text class="s" x="682" y="292">session API key</text>
+
+          <rect class="runtime" x="445" y="350" width="190" height="60"/>
+          <text class="t" x="474" y="383">SandboxInfo</text>
+          <text class="s" x="474" y="401">runtime status and URLs</text>
+
+          <rect class="box" x="915" y="190" width="130" height="120"/>
+          <text class="t" x="944" y="226">Events</text>
+          <text class="s" x="944" y="252">file/S3/GCS</text>
+          <text class="s" x="944" y="272">callbacks</text>
+          <text class="s" x="944" y="292">pending queue</text>
+
+          <path class="edge" d="M450 145 L235 190"/>
+          <path class="edge" d="M500 145 L455 190"/>
+          <path class="edge" d="M600 145 L735 190"/>
+          <path class="edge" d="M540 310 V350"/>
+          <path class="edge" d="M890 250 H915"/>
+          <path class="edge" d="M265 250 H330"/>
+          <path class="edge" d="M580 250 H655"/>
+        </svg>
+      </div>
+      <p class="refs">Grounding: <code>external/OpenHands/openhands/app_server/app_conversation/app_conversation_models.py:106</code>, <code>external/OpenHands/openhands/app_server/app_conversation/app_conversation_models.py:151</code>, <code>external/OpenHands/openhands/app_server/app_conversation/app_conversation_models.py:240</code>, <code>external/OpenHands/openhands/app_server/app_conversation/app_conversation_router.py:360</code>.</p>
+    </section>
+
+    <section aria-labelledby="boundary">
+      <h2 id="boundary">Runtime Boundary</h2>
+      <table>
+        <thead><tr><th>Owned by app-server</th><th>Owned by sandbox agent-server/runtime</th><th>Why it matters</th></tr></thead>
+        <tbody>
+          <tr><td>User, settings, secrets, LLM profiles, provider tokens, metadata, event callback registration.</td><td>Running conversation endpoint, event ingestion for a live conversation, skills/hooks loading, workspace-local execution.</td><td>Most durable state and policy lives outside the sandbox; live execution depends on reachable runtime URLs and session keys.</td></tr>
+          <tr><td>Startup orchestration, sandbox selection, request assembly, persistence, pending message replay.</td><td>SDK request execution, tool runtime, workspace operations, runtime-specific endpoints such as VSCode and upload.</td><td>Failures split into orchestration failures versus runtime failures; debugging should first locate which side owns the failing step.</td></tr>
+          <tr><td>Enterprise auth, organization scoping, SaaS stores, analytics, billing/sharing routers.</td><td>Same agent-server contract, but with tenant-scoped state fed into the request and callbacks.</td><td>The enterprise overlay changes policy and storage, not the basic app-server to sandbox agent-server handoff.</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section aria-labelledby="source-layout">
+      <h2 id="source-layout">Source Layout Signal</h2>
+      <div class="grid">
+        <div class="panel"><h3><code>openhands/app_server/</code></h3><p>Current V1 ASGI app, service interfaces, injectors, routers, conversation lifecycle, stores, sandbox adapters, and integration glue.</p></div>
+        <div class="panel"><h3><code>openhands/server/</code></h3><p>Compatibility wrapper; <code>listen.py</code> re-exports <code>openhands.app_server.app:app</code>.</p></div>
+        <div class="panel"><h3><code>frontend/</code></h3><p>React SPA using React Router, TanStack Query, Axios, Monaco, xterm, Zustand, HeroUI, i18n, and Vite/React Router tooling.</p></div>
+        <div class="panel"><h3><code>skills/</code></h3><p>Shareable instruction/microagent material used by the V1 skills path and legacy V0 terminology.</p></div>
+        <div class="panel"><h3><code>enterprise/</code></h3><p>Source-available SaaS/Enterprise overlay that stacks middleware and replaces implementations through config and imports.</p></div>
+        <div class="panel"><h3>Operational roots</h3><p><code>containers/</code>, <code>docker-compose.yml</code>, <code>config.template.toml</code>, and <code>Makefile</code> define run and package surfaces.</p></div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    Source report: <a href="../agent/01-core-architecture.md">../agent/01-core-architecture.md</a>
+  </footer>
+</body>
+</html>

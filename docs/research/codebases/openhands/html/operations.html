@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>OpenHands Operational Model</title>
+  <style>
+    :root { --bg:#f7f8fa; --surface:#fff; --soft:#eef2f5; --ink:#17202a; --muted:#5d6978; --line:#d7dee7; --accent:#0f766e; --blue:#2f5597; --amber:#9a5b00; --shadow:0 10px 24px rgba(23,32,42,.08); color-scheme: light dark; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    @media (prefers-color-scheme: dark) { :root { --bg:#11161c; --surface:#18212b; --soft:#202b36; --ink:#edf2f7; --muted:#aeb9c6; --line:#354251; --accent:#2dd4bf; --blue:#8ab4ff; --amber:#f0b35a; --shadow:0 12px 28px rgba(0,0,0,.28); } }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--ink); line-height: 1.55; }
+    a { color: var(--blue); text-decoration-thickness: .08em; text-underline-offset: .18em; }
+    header, main, footer { width: min(1180px, calc(100% - 40px)); margin: 0 auto; }
+    header { padding: 28px 0 20px; }
+    nav { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 26px; }
+    nav a { background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 7px 12px; text-decoration: none; font-weight: 700; font-size: .88rem; }
+    .eyebrow { color: var(--accent); font-size: .78rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+    h1 { margin: 8px 0 10px; font-size: clamp(2rem, 6vw, 4.2rem); line-height: .95; letter-spacing: 0; }
+    .lede { max-width: 900px; color: var(--muted); font-size: 1.08rem; }
+    section { margin: 28px 0; }
+    h2 { margin: 0 0 12px; font-size: 1.45rem; letter-spacing: 0; }
+    h3 { margin: 0 0 8px; font-size: 1.02rem; }
+    .panel, .diagram, .fact { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; box-shadow: var(--shadow); }
+    .panel { padding: 18px; }
+    .diagram { padding: 14px; overflow-x: auto; }
+    .diagram svg { min-width: 900px; width: 100%; height: auto; display: block; }
+    .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+    .two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .fact { padding: 15px; }
+    .fact strong { display: block; margin-bottom: 5px; }
+    .fact span, p, li { color: var(--muted); }
+    code { background: var(--soft); border: 1px solid var(--line); border-radius: 5px; padding: 1px 5px; font-size: .9em; }
+    table { width: 100%; border-collapse: collapse; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; overflow: hidden; box-shadow: var(--shadow); }
+    th, td { border-bottom: 1px solid var(--line); padding: 11px 12px; text-align: left; vertical-align: top; }
+    th { background: var(--soft); font-size: .83rem; text-transform: uppercase; letter-spacing: .05em; }
+    tr:last-child td { border-bottom: 0; }
+    .refs { color: var(--muted); font-size: .9rem; }
+    footer { padding: 24px 0 42px; color: var(--muted); font-size: .9rem; }
+    @media (max-width: 860px) { header, main, footer { width: min(100% - 28px, 1180px); } .grid, .two { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <header>
+    <nav aria-label="artifact navigation">
+      <a href="index.html">Contents</a>
+      <a href="architecture.html">Architecture</a>
+      <a href="runtime-lifecycle.html">Runtime</a>
+      <a href="data-state.html">Data</a>
+      <a href="integrations.html">Integrations</a>
+      <a href="open-questions.html">Open Questions</a>
+    </nav>
+    <div class="eyebrow">OpenHands detail page</div>
+    <h1>Operational Model</h1>
+    <p class="lede">Operationally, this repo has heavy dependency, Docker, and environment-sensitive paths. For this architecture research task, OpenHands runtime commands were not executed; verification stays focused on generated docs and source-reference sanity in the parent repository.</p>
+  </header>
+
+  <main>
+    <section aria-labelledby="modes">
+      <h2 id="modes">Run And Package Modes</h2>
+      <div class="diagram" role="img" aria-label="OpenHands run and package modes">
+        <svg viewBox="0 0 1060 430" xmlns="http://www.w3.org/2000/svg">
+          <defs><marker id="arr" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="#2f5597"/></marker><style>.cmd{fill:#eaf1ff;stroke:#2f5597;stroke-width:2;rx:8}.app{fill:#e7f6f2;stroke:#0f766e;stroke-width:2;rx:8}.dock{fill:#fff4df;stroke:#9a5b00;stroke-width:2;rx:8}.t{font:700 15px system-ui,sans-serif;fill:#17202a}.s{font:500 12px system-ui,sans-serif;fill:#5d6978}.e{stroke:#2f5597;stroke-width:2.2;fill:none;marker-end:url(#arr)}</style></defs>
+          <rect class="cmd" x="50" y="55" width="210" height="85"/><text class="t" x="80" y="90">make build</text><text class="s" x="80" y="116">deps, hooks, frontend build</text>
+          <rect class="cmd" x="50" y="175" width="210" height="85"/><text class="t" x="80" y="210">make run</text><text class="s" x="80" y="236">backend then frontend</text>
+          <rect class="dock" x="50" y="295" width="210" height="85"/><text class="t" x="80" y="330">make docker-run</text><text class="s" x="80" y="356">docker compose up</text>
+          <rect class="app" x="370" y="115" width="260" height="135"/><text class="t" x="405" y="150">App-server</text><text class="s" x="405" y="176">uvicorn app entry</text><text class="s" x="405" y="196">optional frontend mount</text><text class="s" x="405" y="216">runtime selected by env</text>
+          <rect class="dock" x="750" y="80" width="240" height="110"/><text class="t" x="780" y="115">Packaged Docker app</text><text class="s" x="780" y="141">port 3000</text><text class="s" x="780" y="161">Docker socket mount</text><text class="s" x="780" y="181">~/.openhands volume</text>
+          <rect class="dock" x="750" y="245" width="240" height="110"/><text class="t" x="780" y="280">Dev Docker compose</text><text class="s" x="780" y="306">privileged</text><text class="s" x="780" y="326">source mounted at /app</text><text class="s" x="780" y="346">community-maintained</text>
+          <path class="e" d="M260 98 C315 110 330 130 370 150"/><path class="e" d="M260 218 H370"/><path class="e" d="M260 338 C330 325 340 250 370 225"/><path class="e" d="M630 150 H750"/><path class="e" d="M630 215 C685 235 705 300 750 300"/>
+        </svg>
+      </div>
+    </section>
+
+    <section aria-labelledby="commands">
+      <h2 id="commands">Build And Run Surface</h2>
+      <table>
+        <thead><tr><th>Command or artifact</th><th>Behavior</th><th>Research-pass handling</th></tr></thead>
+        <tbody>
+          <tr><td><code>make build</code></td><td>Checks dependencies, installs Python and frontend dependencies, installs pre-commit hooks, and builds the frontend.</td><td>Not run; it is dependency-installing and unnecessary for source-grounded docs.</td></tr>
+          <tr><td><code>make start-backend</code></td><td>Runs Poetry-managed Uvicorn on <code>openhands.server.listen:app</code>.</td><td>Not run; runtime execution was out of scope.</td></tr>
+          <tr><td><code>make start-frontend</code></td><td>Runs the React Router frontend dev script with backend/frontend host env.</td><td>Not run; docs artifact does not require frontend build.</td></tr>
+          <tr><td><code>make docker-run</code></td><td>Exports workspace/sandbox/date variables and invokes Docker Compose.</td><td>Not run; requires Docker access and container operations.</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section aria-labelledby="docker">
+      <h2 id="docker">Docker And Packaged App</h2>
+      <div class="two grid">
+        <div class="panel">
+          <h3>Packaged app</h3>
+          <p><code>docker-compose.yml</code> builds <code>containers/app/Dockerfile</code>, exposes port 3000, mounts the Docker socket, maps <code>~/.openhands</code> to <code>/.openhands</code>, and mounts the workspace base into <code>/opt/workspace_base</code>.</p>
+          <p class="refs">Refs: <code>external/OpenHands/docker-compose.yml:2</code>, <code>external/OpenHands/docker-compose.yml:24</code>.</p>
+        </div>
+        <div class="panel">
+          <h3>Runtime image</h3>
+          <p>The app Dockerfile uses frontend-builder, backend-builder, and runtime stages. It sets defaults including <code>RUN_AS_OPENHANDS</code>, <code>SANDBOX_LOCAL_RUNTIME_URL</code>, <code>WORKSPACE_BASE</code>, <code>FILE_STORE=local</code>, and <code>INIT_GIT_IN_EMPTY_WORKSPACE=1</code>.</p>
+          <p class="refs">Refs: <code>external/OpenHands/containers/app/Dockerfile:1</code>, <code>external/OpenHands/containers/app/Dockerfile:105</code>.</p>
+        </div>
+      </div>
+    </section>
+
+    <section aria-labelledby="config-template">
+      <h2 id="config-template">Configuration Template</h2>
+      <div class="grid">
+        <div class="fact"><strong><code>[core]</code></strong><span>Workspace, cache, file store, browser enablement, budgets, max iterations, runtime, JWT, concurrency, and age limits.</span></div>
+        <div class="fact"><strong><code>[agent]</code></strong><span>Enabled tools, browsing/editor/Jupyter/command/think/finish flags, prompt extensions, disabled microagents, history truncation, and condensation request.</span></div>
+        <div class="fact"><strong><code>[sandbox]</code></strong><span>Timeout, user id, image, host network, build args, auto lint, plugins, runtime env vars, platform, mounts, GPU/KVM-adjacent settings, and ports.</span></div>
+        <div class="fact"><strong><code>[security]</code></strong><span>Confirmation mode and security analyzer for headless or CLI contexts.</span></div>
+        <div class="fact"><strong><code>[mcp]</code></strong><span>SSE, streamable HTTP, and stdio MCP server examples.</span></div>
+        <div class="fact"><strong><code>[model_routing]</code></strong><span>Experimental router selection.</span></div>
+      </div>
+    </section>
+
+    <section aria-labelledby="enterprise">
+      <h2 id="enterprise">Enterprise Operations</h2>
+      <div class="panel">
+        <p>Enterprise has separate setup and run instructions. The repo guidance names Python 3.12, Poetry, Node.js 22.x, and optional Docker, then instructs developers to build the main project, install enterprise dependencies, and install enterprise pre-commit hooks. Enterprise tests use <code>poetry run --project=enterprise pytest</code> with xdist/forking and enterprise-specific config; server startup uses enterprise make targets.</p>
+        <p class="refs">Refs: <code>external/OpenHands/AGENTS.md:174</code>, <code>external/OpenHands/AGENTS.md:196</code>, <code>external/OpenHands/enterprise/saas_server.py:81</code>, <code>external/OpenHands/enterprise/server/app_lifespan/saas_app_lifespan_service.py:19</code>.</p>
+      </div>
+    </section>
+
+    <section aria-labelledby="risk">
+      <h2 id="risk">Operational Risk Signals</h2>
+      <table>
+        <thead><tr><th>Signal</th><th>Reason it matters</th></tr></thead>
+        <tbody>
+          <tr><td>Dependency and runtime commands are heavy.</td><td>Build paths install backend and frontend dependencies, install hooks, and may build/pull containers.</td></tr>
+          <tr><td>Runtime behavior is environment-sensitive.</td><td>Sandbox mode, DB backend, event storage, CORS, web URL, and provider base URL depend on runtime configuration.</td></tr>
+          <tr><td>Packaged local GUI can access Docker socket.</td><td>This is expected for sandbox container management but increases operational blast radius.</td></tr>
+          <tr><td>Enterprise overrides can be brittle.</td><td>The enterprise README explicitly warns about middleware stacking and user-id versus token assumption drift.</td></tr>
+        </tbody>
+      </table>
+    </section>
+  </main>
+
+  <footer>Source report: <a href="../agent/05-operational-model.md">../agent/05-operational-model.md</a></footer>
+</body>
+</html>

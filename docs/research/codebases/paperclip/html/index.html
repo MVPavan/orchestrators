@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Paperclip Architecture Artifacts</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #f6f7f9;
+      --surface: #ffffff;
+      --soft: #eef2f6;
+      --text: #17202b;
+      --muted: #607083;
+      --line: #d7dee7;
+      --accent: #12695c;
+      --accent-soft: #e3f2ef;
+      --shadow: 0 1px 2px rgba(16, 24, 40, 0.08);
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #101318;
+        --surface: #181c23;
+        --soft: #222833;
+        --text: #e9edf3;
+        --muted: #a4afbd;
+        --line: #333b47;
+        --accent: #79d0bd;
+        --accent-soft: #16352f;
+        --shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font: 15px/1.65 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      letter-spacing: 0;
+    }
+    main {
+      width: min(1080px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 42px 0 64px;
+    }
+    header {
+      padding-bottom: 24px;
+      border-bottom: 1px solid var(--line);
+    }
+    .eyebrow {
+      margin: 0 0 10px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0;
+      text-transform: uppercase;
+    }
+    h1 {
+      margin: 0 0 12px;
+      font-size: 48px;
+      line-height: 1.08;
+      letter-spacing: 0;
+    }
+    p {
+      margin: 0 0 12px;
+      color: var(--muted);
+    }
+    a {
+      color: var(--accent);
+      text-decoration-thickness: 1px;
+      text-underline-offset: 3px;
+    }
+    code {
+      padding: 2px 5px;
+      border-radius: 4px;
+      background: var(--soft);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: .92em;
+    }
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+      margin: 28px 0;
+    }
+    .card {
+      display: block;
+      min-height: 176px;
+      padding: 22px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--surface);
+      box-shadow: var(--shadow);
+      color: inherit;
+      text-decoration: none;
+    }
+    .card:hover {
+      border-color: var(--accent);
+      background: var(--accent-soft);
+    }
+    .card span {
+      display: inline-block;
+      margin-bottom: 18px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-size: 12px;
+      font-weight: 750;
+      letter-spacing: 0;
+      text-transform: uppercase;
+    }
+    .card h2 {
+      margin: 0 0 8px;
+      font-size: 22px;
+      line-height: 1.22;
+      letter-spacing: 0;
+    }
+    .card p {
+      margin: 0;
+      color: var(--muted);
+    }
+    footer {
+      margin-top: 30px;
+      padding-top: 18px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 13px;
+    }
+    @media (max-width: 760px) {
+      main { width: min(100% - 22px, 1080px); padding-top: 28px; }
+      h1 { font-size: 34px; }
+      .cards { grid-template-columns: 1fr; }
+      .card { min-height: auto; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <p class="eyebrow">Paperclip codebase research</p>
+      <h1>Architecture Artifacts</h1>
+      <p>This index is only the table of contents. Each linked page is a standalone HTML artifact with focused content, source references, and architecture diagrams.</p>
+    </header>
+
+    <nav class="cards" aria-label="Paperclip architecture reports">
+      <a class="card" href="core-architecture.html">
+        <span>01</span>
+        <h2>Core Architecture</h2>
+        <p>Server-centered control plane, package boundaries, service layer, adapters, plugins, and execution workspace boundary.</p>
+      </a>
+      <a class="card" href="runtime-lifecycle.html">
+        <span>02</span>
+        <h2>Runtime Lifecycle</h2>
+        <p>Startup, HTTP routing, wakeup queueing, heartbeat execution, routine scheduling, plugin activation, and shutdown.</p>
+      </a>
+      <a class="card" href="data-state-persistence.html">
+        <span>03</span>
+        <h2>Data, State, Persistence</h2>
+        <p>Postgres/Drizzle schema groups, issue locks, heartbeat runs, execution workspaces, runtime services, storage, and secrets.</p>
+      </a>
+      <a class="card" href="integrations-extensions.html">
+        <span>04</span>
+        <h2>Integrations And Extensions</h2>
+        <p>REST clients, CLI, MCP, adapters, plugin workers, environment runtimes, auth, storage, secrets, and telemetry boundaries.</p>
+      </a>
+      <a class="card" href="operational-model.html">
+        <span>05</span>
+        <h2>Operational Model</h2>
+        <p>Local and production runtime assumptions, commands, background maintenance, observability, verification gaps, and open risks.</p>
+      </a>
+    </nav>
+
+    <footer>
+      Source basis: local code under <code>external/paperclip</code> at snapshot <code>412a04c964915fd45e15675f064d24332d50f6cc</code>. Agent markdown source reports remain in <code>../agent/</code>.
+    </footer>
+  </main>
+</body>
+</html>

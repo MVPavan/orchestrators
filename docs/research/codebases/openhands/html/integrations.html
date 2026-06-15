@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>OpenHands Integration And Extension Points</title>
+  <style>
+    :root { --bg:#f7f8fa; --surface:#fff; --soft:#eef2f5; --ink:#17202a; --muted:#5d6978; --line:#d7dee7; --accent:#0f766e; --blue:#2f5597; --amber:#9a5b00; --shadow:0 10px 24px rgba(23,32,42,.08); color-scheme: light dark; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    @media (prefers-color-scheme: dark) { :root { --bg:#11161c; --surface:#18212b; --soft:#202b36; --ink:#edf2f7; --muted:#aeb9c6; --line:#354251; --accent:#2dd4bf; --blue:#8ab4ff; --amber:#f0b35a; --shadow:0 12px 28px rgba(0,0,0,.28); } }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--ink); line-height: 1.55; }
+    a { color: var(--blue); text-decoration-thickness: .08em; text-underline-offset: .18em; }
+    header, main, footer { width: min(1180px, calc(100% - 40px)); margin: 0 auto; }
+    header { padding: 28px 0 20px; }
+    nav { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 26px; }
+    nav a { background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 7px 12px; text-decoration: none; font-weight: 700; font-size: .88rem; }
+    .eyebrow { color: var(--accent); font-size: .78rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+    h1 { margin: 8px 0 10px; font-size: clamp(2rem, 6vw, 4.2rem); line-height: .95; letter-spacing: 0; }
+    .lede { max-width: 900px; color: var(--muted); font-size: 1.08rem; }
+    section { margin: 28px 0; }
+    h2 { margin: 0 0 12px; font-size: 1.45rem; letter-spacing: 0; }
+    h3 { margin: 0 0 8px; font-size: 1.02rem; }
+    .panel, .diagram, .fact { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; box-shadow: var(--shadow); }
+    .panel { padding: 18px; }
+    .diagram { padding: 14px; overflow-x: auto; }
+    .diagram svg { min-width: 900px; width: 100%; height: auto; display: block; }
+    .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+    .two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .fact { padding: 15px; }
+    .fact strong { display: block; margin-bottom: 5px; }
+    .fact span, p, li { color: var(--muted); }
+    code { background: var(--soft); border: 1px solid var(--line); border-radius: 5px; padding: 1px 5px; font-size: .9em; }
+    table { width: 100%; border-collapse: collapse; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; overflow: hidden; box-shadow: var(--shadow); }
+    th, td { border-bottom: 1px solid var(--line); padding: 11px 12px; text-align: left; vertical-align: top; }
+    th { background: var(--soft); font-size: .83rem; text-transform: uppercase; letter-spacing: .05em; }
+    tr:last-child td { border-bottom: 0; }
+    .refs { color: var(--muted); font-size: .9rem; }
+    footer { padding: 24px 0 42px; color: var(--muted); font-size: .9rem; }
+    @media (max-width: 860px) { header, main, footer { width: min(100% - 28px, 1180px); } .grid, .two { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <header>
+    <nav aria-label="artifact navigation">
+      <a href="index.html">Contents</a>
+      <a href="architecture.html">Architecture</a>
+      <a href="runtime-lifecycle.html">Runtime</a>
+      <a href="data-state.html">Data</a>
+      <a href="operations.html">Operations</a>
+      <a href="open-questions.html">Open Questions</a>
+    </nav>
+    <div class="eyebrow">OpenHands detail page</div>
+    <h1>Integration And Extension Points</h1>
+    <p class="lede">The extension surface is distributed across the public app API, MCP tools, git provider abstractions, LLM profile switching, skills/hooks/plugin loading through the agent-server, frontend API conventions, and the enterprise SaaS overlay.</p>
+  </header>
+
+  <main>
+    <section aria-labelledby="integration-map">
+      <h2 id="integration-map">Integration Map</h2>
+      <div class="diagram" role="img" aria-label="Integration and extension map">
+        <svg viewBox="0 0 1140 560" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <marker id="arr" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="#2f5597"/></marker>
+            <style>.center{fill:#e7f6f2;stroke:#0f766e;stroke-width:2;rx:8}.box{fill:#fff;stroke:#d7dee7;stroke-width:2;rx:8}.blue{fill:#eaf1ff;stroke:#2f5597;stroke-width:2;rx:8}.amber{fill:#fff4df;stroke:#9a5b00;stroke-width:2;rx:8}.t{font:700 15px system-ui,sans-serif;fill:#17202a}.s{font:500 12px system-ui,sans-serif;fill:#5d6978}.e{stroke:#2f5597;stroke-width:2.2;fill:none;marker-end:url(#arr)}.d{stroke:#9a5b00;stroke-width:2;fill:none;stroke-dasharray:6 5;marker-end:url(#arr)}</style>
+          </defs>
+          <rect class="center" x="430" y="205" width="280" height="130"/><text class="t" x="465" y="245">OpenHands app-server</text><text class="s" x="465" y="271">/api/v1 and /mcp</text><text class="s" x="465" y="291">provider/user context</text><text class="s" x="465" y="311">conversation startup</text>
+          <rect class="blue" x="60" y="55" width="230" height="105"/><text class="t" x="90" y="90">Frontend API path</text><text class="s" x="90" y="116">UI -> query hooks -> API client</text><text class="s" x="90" y="136">direct runtime URLs where needed</text>
+          <rect class="box" x="455" y="55" width="230" height="105"/><text class="t" x="485" y="90">MCP tools</text><text class="s" x="485" y="116">FastMCP /mcp</text><text class="s" x="485" y="136">PR/MR creation tools</text>
+          <rect class="box" x="820" y="55" width="250" height="105"/><text class="t" x="850" y="90">Git providers</text><text class="s" x="850" y="116">GitHub, GitLab, Bitbucket</text><text class="s" x="850" y="136">Forgejo, Azure DevOps, SSO</text>
+          <rect class="blue" x="60" y="385" width="250" height="105"/><text class="t" x="90" y="420">LLM profiles</text><text class="s" x="90" y="446">settings-backed named configs</text><text class="s" x="90" y="466">SwitchLLMTool when available</text>
+          <rect class="amber" x="455" y="385" width="250" height="105"/><text class="t" x="485" y="420">Skills, hooks, plugins</text><text class="s" x="485" y="446">agent-server loads project/user/org</text><text class="s" x="485" y="466">plugins into startup request</text>
+          <rect class="amber" x="820" y="385" width="250" height="105"/><text class="t" x="850" y="420">Enterprise overlay</text><text class="s" x="850" y="446">auth, billing, orgs, analytics</text><text class="s" x="850" y="466">store/provider overrides</text>
+          <path class="e" d="M290 108 C370 125 400 180 430 230"/><path class="e" d="M570 160 V205"/><path class="e" d="M820 108 C760 145 720 180 690 205"/><path class="e" d="M310 438 C385 415 415 360 455 315"/><path class="e" d="M580 385 V335"/><path class="d" d="M820 438 C770 410 730 360 710 315"/>
+        </svg>
+      </div>
+    </section>
+
+    <section aria-labelledby="api">
+      <h2 id="api">Public App API</h2>
+      <div class="two grid">
+        <div class="panel">
+          <h3>V1 API surface</h3>
+          <p>The app-server exposes <code>/api/v1</code> routes for events, app conversations, pending messages, sandbox management, sandbox specs, settings, secrets, user, skills, webhooks, web client config, git, and config.</p>
+          <p class="refs">Refs: <code>external/OpenHands/openhands/app_server/v1_router.py:23</code>, <code>external/OpenHands/openhands/app_server/v1_router.py:37</code>.</p>
+        </div>
+        <div class="panel">
+          <h3>Frontend boundary</h3>
+          <p>The frontend path follows the repository guidance: UI components call TanStack Query hooks, hooks use <code>frontend/src/api</code>, and API clients hit app-server endpoints or direct runtime URLs for runtime-specific operations.</p>
+          <p class="refs">Refs: <code>external/OpenHands/AGENTS.md:148</code>, <code>external/OpenHands/frontend/src/api/conversation-service/v1-conversation-service.api.ts:29</code>.</p>
+        </div>
+      </div>
+    </section>
+
+    <section aria-labelledby="mcp-git">
+      <h2 id="mcp-git">MCP And Git Providers</h2>
+      <table>
+        <thead><tr><th>Surface</th><th>What it integrates</th><th>Architecture detail</th></tr></thead>
+        <tbody>
+          <tr><td>MCP</td><td>FastMCP app at <code>/mcp</code>, optional Tavily proxy, provider-side PR/MR creation tools.</td><td>MCP keeps some tool credentials server-side and can update conversation metadata after extracting PR numbers.</td></tr>
+          <tr><td>Provider layer</td><td>GitHub, GitLab, Bitbucket, Bitbucket Data Center, Forgejo, Azure DevOps, Enterprise SSO.</td><td><code>ProviderHandler</code> maps provider type to service classes, aggregates repo/task/branch results, verifies repository-provider compatibility, and builds authenticated git URLs.</td></tr>
+          <tr><td>Startup clone</td><td>Selected repository checkout in the sandbox workspace.</td><td>Uses authenticated URLs from user context; Azure DevOps has a special bearer-token clone path.</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section aria-labelledby="profiles">
+      <h2 id="profiles">LLM Profiles And Model Switching</h2>
+      <div class="diagram" role="img" aria-label="LLM profile and switching flow">
+        <svg viewBox="0 0 980 290" xmlns="http://www.w3.org/2000/svg">
+          <defs><marker id="arr2" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="#2f5597"/></marker><style>.b{fill:#fff;stroke:#d7dee7;stroke-width:2;rx:8}.g{fill:#e7f6f2;stroke:#0f766e;stroke-width:2;rx:8}.a{fill:#fff4df;stroke:#9a5b00;stroke-width:2;rx:8}.t{font:700 15px system-ui,sans-serif;fill:#17202a}.s{font:500 12px system-ui,sans-serif;fill:#5d6978}.e{stroke:#2f5597;stroke-width:2.2;fill:none;marker-end:url(#arr2)}</style></defs>
+          <rect class="b" x="45" y="95" width="210" height="95"/><text class="t" x="75" y="130">Settings</text><text class="s" x="75" y="156">agent and conversation settings</text><text class="s" x="75" y="176">named LLM profiles</text>
+          <rect class="g" x="330" y="95" width="230" height="95"/><text class="t" x="360" y="130">Startup builder</text><text class="s" x="360" y="156">configures LLM and MCP</text><text class="s" x="360" y="176">adds SwitchLLMTool</text>
+          <rect class="a" x="635" y="95" width="280" height="95"/><text class="t" x="665" y="130">Sandbox agent-server</text><text class="s" x="665" y="156">profile store mirrors app-server profiles</text><text class="s" x="665" y="176">switch tool resolves locally</text>
+          <path class="e" d="M255 142 H330"/><path class="e" d="M560 142 H635"/>
+        </svg>
+      </div>
+      <p class="refs">Refs: <code>external/OpenHands/openhands/app_server/app_conversation/live_status_app_conversation_service.py:1404</code>, <code>external/OpenHands/openhands/app_server/app_conversation/live_status_app_conversation_service.py:1482</code>, <code>external/OpenHands/openhands/app_server/app_conversation/live_status_app_conversation_service.py:786</code>.</p>
+    </section>
+
+    <section aria-labelledby="skills-hooks">
+      <h2 id="skills-hooks">Skills, Hooks, And Plugins</h2>
+      <div class="grid">
+        <div class="fact"><strong>Skills</strong><span>V1 skills and V0 microagents are backed by the same shareable/repository instruction system. Startup asks the sandbox agent-server <code>/api/skills</code> endpoint to load public, user, project, org, and sandbox skills.</span></div>
+        <div class="fact"><strong>Hooks</strong><span>The app-server hook loader explicitly acts as a thin proxy; the agent-server loads hooks from the project directory and returns parsed hook config.</span></div>
+        <div class="fact"><strong>Plugins</strong><span>SDK plugin sources and parameter dictionaries flow into conversation settings and can also append parameter text to the initial message path.</span></div>
+      </div>
+    </section>
+
+    <section aria-labelledby="enterprise">
+      <h2 id="enterprise">Enterprise Overlay</h2>
+      <div class="panel">
+        <p>Enterprise SaaS startup sets <code>OPENHANDS_CONFIG_CLS</code> to a SaaS config class unless already set, disables the base SPA mount while enterprise routes are registered, imports the base app, registers auth, billing, sharing, organization, integration, API key, verified model, email, analytics, and provider-specific routers, adds middleware, then mounts the SPA last.</p>
+        <p>Architecturally, Enterprise changes app mode, store classes, auth class, analytics user provider, feature flags, and provider configuration. It also introduces SaaS auth with cookie and bearer/API key paths plus effective-org resolution.</p>
+        <p class="refs">Refs: <code>external/OpenHands/enterprise/saas_server.py:7</code>, <code>external/OpenHands/enterprise/saas_server.py:206</code>, <code>external/OpenHands/enterprise/server/config.py:55</code>, <code>external/OpenHands/enterprise/server/auth/saas_user_auth.py:56</code>.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer>Source report: <a href="../agent/04-integration-and-extension-points.md">../agent/04-integration-and-extension-points.md</a></footer>
+</body>
+</html>

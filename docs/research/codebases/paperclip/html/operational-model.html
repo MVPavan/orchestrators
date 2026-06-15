@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Paperclip Operational Model</title>
+  <style>
+    :root{color-scheme:light dark;--bg:#f6f7f9;--surface:#fff;--soft:#eef2f6;--text:#17202b;--muted:#607083;--line:#d7dee7;--line-strong:#aeb8c6;--accent:#12695c;--accent-soft:#e3f2ef;--shadow:0 1px 2px rgba(16,24,40,.08);--red:#a13333;--red-soft:#fce8e8;--amber:#8a5a00;--amber-soft:#fff4df;--green:#0f766e;--green-soft:#e6f5f2}@media(prefers-color-scheme:dark){:root{--bg:#101318;--surface:#181c23;--soft:#222833;--text:#e9edf3;--muted:#a4afbd;--line:#333b47;--line-strong:#465160;--accent:#79d0bd;--accent-soft:#16352f;--shadow:none;--red:#ff9d9d;--red-soft:#341c1f;--amber:#f3c26e;--amber-soft:#352514;--green:#6fd6c8;--green-soft:#102b28}}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px/1.62 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;letter-spacing:0}.wrap{width:min(1180px,calc(100% - 40px));margin:0 auto}header{background:var(--surface);border-bottom:1px solid var(--line)}.hero{padding:34px 0 24px}.back{display:inline-block;margin-bottom:14px;color:var(--accent);font-weight:650;text-decoration:none}.back:hover{text-decoration:underline;text-underline-offset:3px}.eyebrow{margin:0 0 8px;color:var(--muted);font-size:13px;font-weight:720;text-transform:uppercase}h1{margin:0;font-size:44px;line-height:1.08;letter-spacing:0}.subtitle{max-width:850px;margin:12px 0 0;color:var(--muted);font-size:17px}.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:22px}.kpi{min-height:104px;padding:16px;background:var(--soft);border:1px solid var(--line);border-radius:8px}.kpi strong{display:block;font-size:25px;line-height:1.15;font-variant-numeric:tabular-nums}.kpi span{display:block;margin-top:6px;color:var(--muted);font-size:13px}main{padding:30px 0 56px}section{margin:0 0 30px}.section-head{display:grid;grid-template-columns:64px 1fr;gap:14px;align-items:end;margin-bottom:14px}.section-no{color:var(--line-strong);font-size:30px;line-height:1;font-weight:780;font-variant-numeric:tabular-nums}h2{margin:0;font-size:25px;line-height:1.2;letter-spacing:0}h3{margin:18px 0 8px;font-size:17px}p{margin:0 0 12px}ul{margin:0;padding-left:20px}li{margin:6px 0}a{color:var(--accent);text-decoration-thickness:1px;text-underline-offset:3px}code{padding:1px 5px;border:1px solid var(--line);border-radius:5px;background:var(--soft);font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.92em}.panel{padding:20px;background:var(--surface);border:1px solid var(--line);border-radius:8px;box-shadow:var(--shadow)}.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}.diagram{display:block;width:100%;min-height:500px;background:var(--soft);border:1px solid var(--line);border-radius:8px}.diagram text{fill:var(--text);font:13px system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}.diagram .muted{fill:var(--muted);font-size:11px}.diagram .box{fill:var(--surface);stroke:var(--line-strong);rx:8}.diagram .core{fill:var(--accent-soft);stroke:var(--accent);rx:8}.diagram .arrow{stroke:var(--accent);stroke-width:2;fill:none;marker-end:url(#arrow)}table{width:100%;border-collapse:collapse;margin-top:8px}th,td{border-bottom:1px solid var(--line);padding:10px 8px;text-align:left;vertical-align:top}th{color:var(--muted);font-size:12px;text-transform:uppercase}.tag{display:inline-block;border-radius:999px;padding:2px 8px;font-size:12px;font-weight:750;white-space:nowrap}.tag.high{color:var(--red);background:var(--red-soft)}.tag.medium{color:var(--amber);background:var(--amber-soft)}.tag.low{color:var(--green);background:var(--green-soft)}footer{margin-top:30px;padding-top:18px;border-top:1px solid var(--line);color:var(--muted);font-size:13px}@media(max-width:760px){.wrap{width:min(100% - 22px,1180px)}.hero{padding-top:24px}h1{font-size:34px}.kpis,.grid{grid-template-columns:1fr}.section-head{grid-template-columns:44px 1fr}.diagram{min-height:620px}}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap hero">
+      <a class="back" href="index.html">Back to contents</a>
+      <p class="eyebrow">Paperclip architecture artifact 05</p>
+      <h1>Operational Model</h1>
+      <p class="subtitle">Paperclip can run as a local self-contained process with embedded Postgres, but operational correctness depends on database migrations, schedulers, recovery loops, auth mode, plugin and adapter handling, backups, and observability.</p>
+      <div class="kpis" aria-label="Operational facts">
+        <div class="kpi"><strong>3100</strong><span>Default server port</span></div>
+        <div class="kpi"><strong>54329</strong><span>Embedded Postgres default port</span></div>
+        <div class="kpi"><strong>30s</strong><span>Default heartbeat scheduler interval</span></div>
+        <div class="kpi"><strong>Node 20</strong><span>Minimum runtime from package metadata</span></div>
+      </div>
+    </div>
+  </header>
+  <main class="wrap">
+    <section>
+      <div class="section-head"><div class="section-no">01</div><h2>Runtime Modes</h2></div>
+      <div class="panel">
+        <svg class="diagram" viewBox="0 0 1180 520" role="img" aria-label="Paperclip operational runtime mode diagram">
+          <defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="#12695c"></path></marker></defs>
+          <rect class="core" x="80" y="72" width="260" height="104"></rect><text x="210" y="112" text-anchor="middle">Local Trusted Runtime</text><text x="210" y="136" text-anchor="middle" class="muted">single Node process, local board actor</text>
+          <rect class="box" x="88" y="230" width="244" height="72"></rect><text x="210" y="260" text-anchor="middle">Embedded Postgres</text><text x="210" y="282" text-anchor="middle" class="muted">auto-created local database</text>
+          <rect class="box" x="88" y="350" width="244" height="72"></rect><text x="210" y="380" text-anchor="middle">Local Disk Storage</text><text x="210" y="402" text-anchor="middle" class="muted">company-prefixed objects</text>
+
+          <rect class="core" x="480" y="72" width="260" height="104"></rect><text x="610" y="112" text-anchor="middle">Authenticated Deployment</text><text x="610" y="136" text-anchor="middle" class="muted">Better Auth, API keys, JWTs</text>
+          <rect class="box" x="488" y="230" width="244" height="72"></rect><text x="610" y="260" text-anchor="middle">External Postgres</text><text x="610" y="282" text-anchor="middle" class="muted">required for public authenticated mode</text>
+          <rect class="box" x="488" y="350" width="244" height="72"></rect><text x="610" y="380" text-anchor="middle">Configured Providers</text><text x="610" y="402" text-anchor="middle" class="muted">storage, secrets, telemetry</text>
+
+          <rect class="box" x="875" y="128" width="220" height="76"></rect><text x="985" y="158" text-anchor="middle">Background Loops</text><text x="985" y="180" text-anchor="middle" class="muted">heartbeat, routines, recovery</text>
+          <rect class="box" x="875" y="280" width="220" height="76"></rect><text x="985" y="310" text-anchor="middle">Operational Records</text><text x="985" y="332" text-anchor="middle" class="muted">runs, activity, costs, backups</text>
+          <path class="arrow" d="M340 124 H480"></path><path class="arrow" d="M740 124 C805 124 810 166 875 166"></path><path class="arrow" d="M732 386 C805 386 810 318 875 318"></path><path class="arrow" d="M332 266 C400 266 420 266 488 266"></path>
+          <text x="590" y="472" text-anchor="middle" class="muted">Both modes share the same server service layer and database-backed execution model; auth and provider choices differ.</text>
+        </svg>
+      </div>
+    </section>
+    <section>
+      <div class="section-head"><div class="section-no">02</div><h2>Commands And Defaults</h2></div>
+      <div class="panel">
+        <table>
+          <thead><tr><th>Area</th><th>Fact</th><th>Source anchor</th></tr></thead>
+          <tbody>
+            <tr><td>Quickstart</td><td><code>npx paperclipai onboard --yes</code>; manual path is <code>pnpm install</code> then <code>pnpm dev</code>.</td><td><code>external/paperclip/README.md:279-323</code></td></tr>
+            <tr><td>Scripts</td><td><code>dev</code>, <code>build</code>, <code>typecheck</code>, <code>test</code>, CLI entry, DB generate/migrate scripts.</td><td><code>external/paperclip/package.json:5-54</code></td></tr>
+            <tr><td>Runtime versions</td><td>Node <code>&gt;=20</code>, pnpm <code>9.15.4</code>.</td><td><code>external/paperclip/package.json:62-65</code></td></tr>
+            <tr><td>Config defaults</td><td>Local trusted mode, local encrypted secrets, local disk storage, port 3100, embedded Postgres port 54329, scheduler enabled.</td><td><code>external/paperclip/server/src/config.ts:111-165</code>, <code>288-336</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+    <section>
+      <div class="section-head"><div class="section-no">03</div><h2>Operations Checklist</h2></div>
+      <div class="grid">
+        <div class="panel"><h3>Before runtime claims</h3><ul><li>Install dependencies in <code>external/paperclip</code>.</li><li>Run <code>pnpm typecheck</code> and <code>pnpm test</code>.</li><li>Boot <code>pnpm dev</code> and verify DB, migrations, health route, UI, and scheduler logs.</li></ul></div>
+        <div class="panel"><h3>Before production claims</h3><ul><li>Verify external Postgres migration path.</li><li>Audit authenticated deployment exposure and trusted origins.</li><li>Check backup schedule and restore story.</li></ul></div>
+        <div class="panel"><h3>Before plugin trust</h3><ul><li>Review manifest validation and capability gates.</li><li>Check plugin database namespace isolation.</li><li>Review worker environment and host handlers.</li></ul></div>
+        <div class="panel"><h3>Before adapter trust</h3><ul><li>Inspect workspace path and remote target handling.</li><li>Check JWT/token scoping.</li><li>Confirm log redaction and command execution behavior.</li></ul></div>
+      </div>
+    </section>
+    <section>
+      <div class="section-head"><div class="section-no">04</div><h2>Open Operational Risks</h2></div>
+      <div class="panel">
+        <table>
+          <thead><tr><th>Risk</th><th>Severity</th><th>Mitigation</th></tr></thead>
+          <tbody>
+            <tr><td>Source-only research</td><td><span class="tag medium">Medium</span></td><td>Run Paperclip's own checks and a local boot before treating behavior as runtime-proven.</td></tr>
+            <tr><td>Plugin trust</td><td><span class="tag high">High</span></td><td>Security review manifest validation, host handlers, DB migrations, process environment, and worker restart behavior.</td></tr>
+            <tr><td>Adapter execution</td><td><span class="tag high">High</span></td><td>Audit token flow, workspace realization, command execution, logs, and execution target handling.</td></tr>
+            <tr><td>Parent repo tracking</td><td><span class="tag low">Low</span></td><td>Clarify whether <code>external/paperclip</code> should remain a local checkout or become tracked parent metadata.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+    <footer>
+      Source basis: <code>../agent/05-operational-model.md</code>, <code>../agent/90-open-questions.md</code>, README, package scripts, config, startup, auth, plugin, and adapter source files.
+    </footer>
+  </main>
+</body>
+</html>

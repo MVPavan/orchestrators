@@ -1,0 +1,892 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>External Codebase Architecture Comparison</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #f7f7f4;
+      --surface: #ffffff;
+      --surface-2: #f0f1ed;
+      --text: #20231f;
+      --muted: #646a61;
+      --line: #d9ddd4;
+      --accent: #256c62;
+      --accent-soft: #e2f0ec;
+      --amber: #9a5b00;
+      --amber-soft: #fff3d8;
+      --red: #9e2f2f;
+      --red-soft: #ffe8e8;
+      --green: #1f6f43;
+      --green-soft: #e2f2e8;
+      --blue: #315f9c;
+      --blue-soft: #e5edf8;
+      --shadow: 0 1px 2px rgba(32, 35, 31, 0.08);
+      --radius: 8px;
+      --space-1: 4px;
+      --space-2: 8px;
+      --space-3: 12px;
+      --space-4: 16px;
+      --space-5: 24px;
+      --space-6: 32px;
+      --space-7: 48px;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #111310;
+        --surface: #181b17;
+        --surface-2: #20251f;
+        --text: #eceee8;
+        --muted: #a6ad9f;
+        --line: #31372f;
+        --accent: #79c6b7;
+        --accent-soft: #17352f;
+        --amber: #e4b86b;
+        --amber-soft: #382913;
+        --red: #ee8b8b;
+        --red-soft: #3c2020;
+        --green: #82cf9c;
+        --green-soft: #193425;
+        --blue: #94b8f0;
+        --blue-soft: #1c2b41;
+        --shadow: none;
+      }
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      font-size: 16px;
+      line-height: 1.6;
+    }
+
+    a {
+      color: var(--accent);
+      text-decoration-thickness: 1px;
+      text-underline-offset: 3px;
+    }
+
+    .page {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: var(--space-6) var(--space-5) var(--space-7);
+    }
+
+    header {
+      border-bottom: 1px solid var(--line);
+      padding: var(--space-5) 0 var(--space-6);
+    }
+
+    .eyebrow {
+      margin: 0 0 var(--space-2);
+      color: var(--muted);
+      font-size: 0.83rem;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 0;
+      max-width: 900px;
+      font-size: clamp(2rem, 4vw, 3.25rem);
+      line-height: 1.08;
+      font-weight: 760;
+    }
+
+    .subtitle {
+      max-width: 880px;
+      margin: var(--space-4) 0 0;
+      color: var(--muted);
+      font-size: 1.08rem;
+    }
+
+    .kpis {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: var(--space-3);
+      margin: var(--space-6) 0 0;
+    }
+
+    .tile,
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .tile {
+      padding: var(--space-4);
+      min-height: 112px;
+    }
+
+    .tile strong {
+      display: block;
+      margin-bottom: var(--space-1);
+      font-size: 2rem;
+      line-height: 1;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .tile span {
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-2);
+      margin: var(--space-5) 0 var(--space-7);
+    }
+
+    nav a {
+      display: inline-flex;
+      align-items: center;
+      min-height: 36px;
+      padding: 0 var(--space-3);
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      color: var(--text);
+      font-size: 0.92rem;
+      text-decoration: none;
+    }
+
+    section {
+      margin: var(--space-7) 0 0;
+    }
+
+    .section-heading {
+      display: grid;
+      grid-template-columns: 56px 1fr;
+      gap: var(--space-4);
+      align-items: baseline;
+      border-bottom: 1px solid var(--line);
+      padding-bottom: var(--space-3);
+      margin-bottom: var(--space-5);
+    }
+
+    .section-heading .num {
+      color: var(--muted);
+      font-size: 1.4rem;
+      font-weight: 760;
+      font-variant-numeric: tabular-nums;
+    }
+
+    h2 {
+      margin: 0;
+      font-size: 1.65rem;
+      line-height: 1.2;
+    }
+
+    h3 {
+      margin: 0 0 var(--space-2);
+      font-size: 1.05rem;
+      line-height: 1.3;
+    }
+
+    p {
+      margin: 0 0 var(--space-4);
+    }
+
+    .lead {
+      max-width: 920px;
+      font-size: 1.04rem;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: var(--space-4);
+    }
+
+    .grid-4 {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: var(--space-3);
+    }
+
+    .card {
+      padding: var(--space-4);
+    }
+
+    .card p:last-child,
+    .card ul:last-child {
+      margin-bottom: 0;
+    }
+
+    .mini-label {
+      display: block;
+      margin-bottom: var(--space-2);
+      color: var(--muted);
+      font-size: 0.78rem;
+      font-weight: 740;
+      text-transform: uppercase;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      min-height: 24px;
+      padding: 0 var(--space-2);
+      border-radius: 999px;
+      font-size: 0.78rem;
+      font-weight: 720;
+      white-space: nowrap;
+    }
+
+    .tag.green { background: var(--green-soft); color: var(--green); }
+    .tag.amber { background: var(--amber-soft); color: var(--amber); }
+    .tag.red { background: var(--red-soft); color: var(--red); }
+    .tag.blue { background: var(--blue-soft); color: var(--blue); }
+    .tag.accent { background: var(--accent-soft); color: var(--accent); }
+
+    .table-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--surface);
+      box-shadow: var(--shadow);
+    }
+
+    table {
+      width: 100%;
+      min-width: 860px;
+      border-collapse: collapse;
+      font-size: 0.92rem;
+    }
+
+    th,
+    td {
+      vertical-align: top;
+      padding: var(--space-3);
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+    }
+
+    th {
+      background: var(--surface-2);
+      color: var(--muted);
+      font-size: 0.78rem;
+      font-weight: 760;
+      text-transform: uppercase;
+    }
+
+    tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .diagram {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: var(--space-4);
+      box-shadow: var(--shadow);
+      overflow-x: auto;
+    }
+
+    svg {
+      max-width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    .flow-list {
+      display: grid;
+      gap: var(--space-3);
+      margin-top: var(--space-4);
+    }
+
+    .flow {
+      display: grid;
+      grid-template-columns: 132px 1fr;
+      gap: var(--space-3);
+      align-items: start;
+      padding: var(--space-3);
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+    }
+
+    .flow strong {
+      font-size: 0.92rem;
+    }
+
+    .flow code,
+    .sources code {
+      font-size: 0.86rem;
+    }
+
+    code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+      color: var(--text);
+      background: var(--surface-2);
+      border-radius: 4px;
+      padding: 0 4px;
+    }
+
+    ul {
+      margin: 0 0 var(--space-4);
+      padding-left: 1.2rem;
+    }
+
+    li + li {
+      margin-top: var(--space-2);
+    }
+
+    details {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: var(--space-3) var(--space-4);
+      box-shadow: var(--shadow);
+    }
+
+    details + details {
+      margin-top: var(--space-3);
+    }
+
+    summary {
+      cursor: pointer;
+      font-weight: 720;
+    }
+
+    footer {
+      margin-top: var(--space-7);
+      padding-top: var(--space-5);
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 0.88rem;
+    }
+
+    .sources {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: var(--space-3);
+      margin-top: var(--space-4);
+    }
+
+    .source-card {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: var(--space-3);
+    }
+
+    .source-card a {
+      display: block;
+      margin-bottom: var(--space-2);
+      font-weight: 720;
+    }
+
+    .callout {
+      padding: var(--space-4);
+      background: var(--accent-soft);
+      border: 1px solid color-mix(in srgb, var(--accent) 35%, var(--line));
+      border-radius: var(--radius);
+    }
+
+    @media (max-width: 900px) {
+      .kpis,
+      .grid-4,
+      .sources {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .grid-2 {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 720px) {
+      .page {
+        padding: var(--space-5) var(--space-4) var(--space-6);
+      }
+
+      .kpis,
+      .grid-4,
+      .sources {
+        grid-template-columns: 1fr;
+      }
+
+      .section-heading {
+        grid-template-columns: 1fr;
+        gap: var(--space-1);
+      }
+
+      .flow {
+        grid-template-columns: 1fr;
+      }
+
+      nav a {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header>
+      <p class="eyebrow">Architecture comparison · external codebases</p>
+      <h1>What the four external repositories solve, and how their architectures differ</h1>
+      <p class="subtitle">
+        A cross-codebase synthesis derived from the source-grounded reports under
+        <code>docs/research/codebases/</code>. The goal is not to rank them; it is to make their
+        different problem statements, control planes, runtime models, persistence choices, and
+        extension seams easy to compare.
+      </p>
+      <div class="kpis" aria-label="Report facts">
+        <div class="tile">
+          <strong>4</strong>
+          <span>external repositories compared</span>
+        </div>
+        <div class="tile">
+          <strong>28</strong>
+          <span>canonical Markdown architecture reports used</span>
+        </div>
+        <div class="tile">
+          <strong>2</strong>
+          <span>Go orchestration runtimes: Gastown and Gascity</span>
+        </div>
+        <div class="tile">
+          <strong>2</strong>
+          <span>app/server products: Paperclip and OpenHands</span>
+        </div>
+      </div>
+    </header>
+
+    <nav aria-label="Sections">
+      <a href="#summary">Summary</a>
+      <a href="#map">Solution Map</a>
+      <a href="#comparison">Core Comparison</a>
+      <a href="#flows">Runtime Flows</a>
+      <a href="#state">State And Persistence</a>
+      <a href="#extension">Extension Seams</a>
+      <a href="#tradeoffs">Tradeoffs</a>
+      <a href="#sources">Sources</a>
+    </nav>
+
+    <section id="summary">
+      <div class="section-heading">
+        <span class="num">01</span>
+        <h2>Executive Summary</h2>
+      </div>
+      <p class="lead">
+        The core difference is the level where each project chooses to own orchestration. Gastown owns
+        local multi-agent work through towns, rigs, Beads, git worktrees, tmux sessions, and a merge
+        queue. Gascity owns a configurable desired-state runtime that reconciles <code>city.toml</code>,
+        packs, formulas, orders, beads, and runtime providers. Paperclip owns a server-side product
+        control plane with Postgres-backed work, governance, queues, environments, plugins, and
+        adapters. OpenHands owns the app-server and frontend around sandboxed software-engineering
+        conversations, while delegating actual agent execution to a sandbox-hosted agent-server.
+      </p>
+
+      <div class="grid-4">
+        <article class="card">
+          <span class="mini-label">Gastown</span>
+          <h3>Durable local agent town</h3>
+          <p>
+            Solves durable coordination for many coding agents across repos. It treats git worktrees,
+            Beads/Dolt records, tmux sessions, mail/events, and merge queue state as one operational
+            system.
+          </p>
+          <span class="tag accent">town / rig / polecat</span>
+        </article>
+        <article class="card">
+          <span class="mini-label">Gascity</span>
+          <h3>Configurable orchestration engine</h3>
+          <p>
+            Solves configurable multi-agent workflows without hardcoded roles. It turns config,
+            demand, stores, providers, formulas, and orders into reconciled live sessions.
+          </p>
+          <span class="tag blue">desired state</span>
+        </article>
+        <article class="card">
+          <span class="mini-label">Paperclip</span>
+          <h3>AI-company control plane</h3>
+          <p>
+            Solves productized agent operations: teams, issues, budgets, workspaces, plugins,
+            governance, adapters, live events, and recovery around a central server.
+          </p>
+          <span class="tag green">server / heartbeat</span>
+        </article>
+        <article class="card">
+          <span class="mini-label">OpenHands</span>
+          <h3>Sandboxed conversation app</h3>
+          <p>
+            Solves user-facing software-engineering conversations. The app-server manages metadata,
+            settings, sandboxes, repositories, skills, hooks, and provider integration, then starts
+            the real conversation inside the sandbox agent-server.
+          </p>
+          <span class="tag amber">app-server / sandbox</span>
+        </article>
+      </div>
+    </section>
+
+    <section id="map">
+      <div class="section-heading">
+        <span class="num">02</span>
+        <h2>Solution Space Map</h2>
+      </div>
+      <div class="diagram" role="img" aria-label="Two-axis map comparing codebase architecture positions">
+        <svg viewBox="0 0 980 520" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+              <path d="M0,0 L0,6 L9,3 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+          <rect x="1" y="1" width="978" height="518" rx="8" fill="none" stroke="var(--line)"></rect>
+          <line x1="120" y1="420" x2="860" y2="420" stroke="var(--muted)" stroke-width="2" marker-end="url(#arrow)"></line>
+          <line x1="120" y1="420" x2="120" y2="80" stroke="var(--muted)" stroke-width="2" marker-end="url(#arrow)"></line>
+          <text x="490" y="470" text-anchor="middle" fill="var(--muted)" font-size="18">local/runtime infrastructure → product-facing application</text>
+          <text x="38" y="248" transform="rotate(-90 38 248)" text-anchor="middle" fill="var(--muted)" font-size="18">fixed operational model → configurable/delegated model</text>
+
+          <rect x="170" y="282" width="182" height="86" rx="8" fill="var(--accent-soft)" stroke="var(--accent)"></rect>
+          <text x="261" y="314" text-anchor="middle" fill="var(--text)" font-size="21" font-weight="700">Gastown</text>
+          <text x="261" y="342" text-anchor="middle" fill="var(--muted)" font-size="14">towns, rigs, Beads, tmux</text>
+
+          <rect x="265" y="122" width="190" height="92" rx="8" fill="var(--blue-soft)" stroke="var(--blue)"></rect>
+          <text x="360" y="154" text-anchor="middle" fill="var(--text)" font-size="21" font-weight="700">Gascity</text>
+          <text x="360" y="182" text-anchor="middle" fill="var(--muted)" font-size="14">declarative desired state</text>
+
+          <rect x="610" y="180" width="192" height="92" rx="8" fill="var(--green-soft)" stroke="var(--green)"></rect>
+          <text x="706" y="212" text-anchor="middle" fill="var(--text)" font-size="21" font-weight="700">Paperclip</text>
+          <text x="706" y="240" text-anchor="middle" fill="var(--muted)" font-size="14">server control plane</text>
+
+          <rect x="655" y="314" width="188" height="92" rx="8" fill="var(--amber-soft)" stroke="var(--amber)"></rect>
+          <text x="749" y="346" text-anchor="middle" fill="var(--text)" font-size="21" font-weight="700">OpenHands</text>
+          <text x="749" y="374" text-anchor="middle" fill="var(--muted)" font-size="14">app-server plus sandbox</text>
+        </svg>
+      </div>
+      <p class="lead" style="margin-top: 24px;">
+        Gastown and Gascity are closest to orchestration infrastructure. Paperclip and OpenHands are
+        closer to end-user products, but they differ sharply: Paperclip centralizes execution policy
+        in its own server, while OpenHands keeps the web app as an orchestration layer around a
+        separate sandbox agent-server.
+      </p>
+    </section>
+
+    <section id="comparison">
+      <div class="section-heading">
+        <span class="num">03</span>
+        <h2>Core Comparison</h2>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Codebase</th>
+              <th>Core problem solved</th>
+              <th>How it solves it</th>
+              <th>Primary unit of work</th>
+              <th>Architecture center</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Gastown</strong><br><code>external/gastown</code></td>
+              <td>Durable local coordination of many AI coding agents across one or more repositories.</td>
+              <td>Creates a town workspace and per-project rigs; routes Beads work to named agents; gives workers git worktrees and tmux sessions; submits completion through Beads-backed merge requests; refinery merges after gates.</td>
+              <td>Bead plus assignment hook; merge request bead for integration.</td>
+              <td><code>gt</code> CLI, town/rig filesystem, Beads/Dolt, git worktrees, tmux, daemon/refinery.</td>
+            </tr>
+            <tr>
+              <td><strong>Gascity</strong><br><code>external/gascity</code></td>
+              <td>Configurable multi-agent orchestration without hardcoding roles or one fixed workflow.</td>
+              <td>Loads <code>city.toml</code>, includes, packs, formulas, orders, beads, and runtime providers; computes desired state; reconciles sessions through a supervisor and per-city runtime loop.</td>
+              <td>Session bead, task bead, molecule graph, order-tracking bead.</td>
+              <td><code>gc</code> CLI, machine supervisor, <code>CityRuntime</code>, config model, provider/store interfaces.</td>
+            </tr>
+            <tr>
+              <td><strong>Paperclip</strong><br><code>external/paperclip</code></td>
+              <td>Productized operation of an AI company: teams, agents, governance, budgets, workspaces, plugins, and work execution.</td>
+              <td>Runs a Node/Express server over Postgres; queues heartbeat runs; validates budgets/dependencies/locks; realizes workspaces and environments; executes selected adapters; stores logs, usage, costs, and run results.</td>
+              <td>Issue plus wakeup request plus heartbeat run.</td>
+              <td>Server service layer, Drizzle/Postgres schema, heartbeat service, environment orchestrator, adapter and plugin registries.</td>
+            </tr>
+            <tr>
+              <td><strong>OpenHands</strong><br><code>external/OpenHands</code></td>
+              <td>User-facing software-engineering conversations in sandboxed runtime environments.</td>
+              <td>Uses a FastAPI app-server and React frontend to manage settings, metadata, sandboxes, repos, skills, hooks, git providers, and start tasks; posts SDK start requests into a sandbox-hosted agent-server.</td>
+              <td>Conversation start task and conversation metadata; live execution is owned by sandbox/agent-server state.</td>
+              <td>App-server dependency injection, conversation service, sandbox service, event/settings/secrets stores, frontend API hooks.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="flows">
+      <div class="section-heading">
+        <span class="num">04</span>
+        <h2>Runtime Flows</h2>
+      </div>
+      <div class="flow-list">
+        <div class="flow">
+          <strong>Gastown</strong>
+          <span><code>gt sling</code> validates a bead, allocates or reuses a polecat, creates a worktree and assignment hook, starts a tmux agent session, then <code>gt done</code> or <code>gt mq submit</code> moves completed work into a refinery merge queue.</span>
+        </div>
+        <div class="flow">
+          <strong>Gascity</strong>
+          <span><code>gc start</code> registers a city with the supervisor. The supervisor builds a <code>CityRuntime</code>, watches config, loads demand, builds desired session state, and runs a bead-driven reconciler against runtime providers.</span>
+        </div>
+        <div class="flow">
+          <strong>Paperclip</strong>
+          <span>A user, timer, routine, dependency release, or API call enqueues a wakeup. The heartbeat service claims a queued run, checks policy and locks, creates context, realizes workspace/environment, calls an adapter, then persists outcome and cost.</span>
+        </div>
+        <div class="flow">
+          <strong>OpenHands</strong>
+          <span>The frontend creates a conversation and receives a start task. The app-server waits for a sandbox, prepares repository/setup/skills/hooks, posts a start request to the sandbox agent-server, stores metadata, and forwards later messages or runtime calls with guards.</span>
+        </div>
+      </div>
+
+      <div class="grid-2" style="margin-top: 24px;">
+        <article class="card">
+          <span class="mini-label">Key distinction</span>
+          <h3>Who owns live execution?</h3>
+          <p>
+            Gastown and Gascity own live session lifecycles directly through local process providers
+            such as tmux. Paperclip owns the run orchestration and calls adapters, but environment
+            drivers and adapter packages execute the runtime-specific work. OpenHands intentionally
+            steps back after conversation startup: the sandbox agent-server owns the running
+            conversation.
+          </p>
+        </article>
+        <article class="card">
+          <span class="mini-label">Key distinction</span>
+          <h3>How work becomes durable</h3>
+          <p>
+            Gastown and Gascity make Beads central. Paperclip uses a relational product schema where
+            issues, wakeups, runs, workspaces, costs, plugins, and runtime services are all durable
+            rows. OpenHands splits metadata/start tasks into SQL, event bodies into file/object
+            storage, and live sandbox facts into sandbox services.
+          </p>
+        </article>
+      </div>
+    </section>
+
+    <section id="state">
+      <div class="section-heading">
+        <span class="num">05</span>
+        <h2>State And Persistence</h2>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Dimension</th>
+              <th>Gastown</th>
+              <th>Gascity</th>
+              <th>Paperclip</th>
+              <th>OpenHands</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Durable truth</strong></td>
+              <td>Town and rig Beads backed by Dolt, plus git repositories/worktrees and config files.</td>
+              <td><code>city.toml</code>, packs/includes, bead stores, supervisor registry, session beads, event logs.</td>
+              <td>Postgres/Drizzle schema for almost all product and run state.</td>
+              <td>SQL metadata/start tasks/callbacks/pending messages, file/object event storage, settings/secrets stores.</td>
+            </tr>
+            <tr>
+              <td><strong>Live truth</strong></td>
+              <td>Tmux sessions, heartbeats, agent process liveness, git workspace state.</td>
+              <td>Runtime provider sessions, controller maps, provider metadata, session snapshots.</td>
+              <td>Server process, schedulers, locks, adapters, environment leases, WebSocket live events.</td>
+              <td>Sandbox status, exposed service URLs, session API keys, sandbox agent-server runtime state.</td>
+            </tr>
+            <tr>
+              <td><strong>Consistency tools</strong></td>
+              <td>Per-bead locks, polecat pool locks, daemon lock, merge slots, Beads routes/redirects.</td>
+              <td>Partial-query flags, generation/epoch/instance tokens, file locks, atomic renames, bounded reconciliation.</td>
+              <td>Transactions, agent-start locks, issue execution locks, workspace-finalize barriers, recovery sweeps.</td>
+              <td>Start-task persistence, DB keep-open background work, event callback result records, sandbox service polling.</td>
+            </tr>
+            <tr>
+              <td><strong>Failure posture</strong></td>
+              <td>Recovery daemon keeps Dolt, Deacon, Witnesses, Refineries, Mayor, convoys, and maintenance loops alive.</td>
+              <td>Supervisor and <code>CityRuntime</code> avoid destructive drains when evidence is partial or provider health is uncertain.</td>
+              <td>Startup resumes queued work, reconciles runtime services, sweeps stale locks, and restarts schedulers.</td>
+              <td>Startup failures are written to start tasks; live runtime failures are mediated through sandbox and agent-server boundaries.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="extension">
+      <div class="section-heading">
+        <span class="num">06</span>
+        <h2>Integration And Extension Seams</h2>
+      </div>
+      <div class="grid-2">
+        <article class="card">
+          <span class="mini-label">Gastown</span>
+          <h3>Agent presets and runtime-distributed content</h3>
+          <p>
+            Agent support is centralized in preset metadata: commands, resume behavior, process
+            names, hooks, instruction files, config dirs, and ACP support. Hooks and plugin content
+            are installed or synced into runtime directories rather than linked as Go packages.
+          </p>
+        </article>
+        <article class="card">
+          <span class="mini-label">Gascity</span>
+          <h3>Config, providers, packs, formulas, orders</h3>
+          <p>
+            Extension primarily happens through config and interfaces: runtime providers, bead store
+            providers, packs, rich agent definitions, formulas/molecules, and order triggers. The
+            HTTP/SSE API is a typed projection over the same object model.
+          </p>
+        </article>
+        <article class="card">
+          <span class="mini-label">Paperclip</span>
+          <h3>Adapters and out-of-process plugins</h3>
+          <p>
+            Adapters execute concrete AI runtimes. Plugins are separate workers over JSON-RPC stdio
+            and can contribute jobs, tools, webhooks, UI, migrations, and external adapters. CLI,
+            UI, and MCP are intentionally API clients.
+          </p>
+        </article>
+        <article class="card">
+          <span class="mini-label">OpenHands</span>
+          <h3>Injected services and sandbox delegation</h3>
+          <p>
+            Deployment behavior changes through app-server injectors and enterprise overrides.
+            Skills, hooks, and plugin sources are included in the conversation start request, but
+            loading and execution are delegated to the sandbox agent-server.
+          </p>
+        </article>
+      </div>
+    </section>
+
+    <section id="tradeoffs">
+      <div class="section-heading">
+        <span class="num">07</span>
+        <h2>Tradeoffs And Reuse Implications</h2>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Project</th>
+              <th>Strongest architectural idea to reuse</th>
+              <th>Primary tradeoff</th>
+              <th>Watch before copying</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Gastown</strong></td>
+              <td>Local git/worktree plus Beads coordination, with merge queue and named agent identities as first-class state.</td>
+              <td>Power comes from coordinating several external state systems, not from a single database.</td>
+              <td>Dolt/Beads version assumptions, tmux lifecycle edge cases, provider hook drift, formula/wisp/deacon paths not fully traced.</td>
+            </tr>
+            <tr>
+              <td><strong>Gascity</strong></td>
+              <td>Declarative desired-state reconciliation with explicit partial-read safeguards and provider/store abstractions.</td>
+              <td>Flexibility makes config, reload, provider selection, and session reconciliation highly coupled.</td>
+              <td>Worker-boundary migration, provider-specific guarantees, config provenance, event logs not being transcripts.</td>
+            </tr>
+            <tr>
+              <td><strong>Paperclip</strong></td>
+              <td>Central product control plane where issues, queues, environments, adapters, plugins, budgets, costs, and governance share one durable model.</td>
+              <td>The service layer is broad; core execution crosses many domains in one heartbeat path.</td>
+              <td>Plugin security, adapter trust, migration history, workspace-finalize barriers, local-trusted threat model.</td>
+            </tr>
+            <tr>
+              <td><strong>OpenHands</strong></td>
+              <td>Clean app-server versus sandbox-agent-server boundary, with start tasks hiding slow setup from the initial HTTP response.</td>
+              <td>Critical execution semantics live behind pinned SDK/agent-server packages and runtime APIs.</td>
+              <td>OSS versus Enterprise tenant assumptions, direct frontend runtime URLs, remote sandbox API contract, pinned package internals.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout" style="margin-top: 24px;">
+        <strong>Practical synthesis:</strong> for an orchestrators project, Gastown is the richest
+        source for local multi-agent git operations, Gascity is the strongest source for configurable
+        desired-state control, Paperclip is the strongest source for a product-grade server control
+        plane, and OpenHands is the strongest source for sandboxed conversation startup and deployment
+        overlays.
+      </div>
+    </section>
+
+    <section id="sources">
+      <div class="section-heading">
+        <span class="num">08</span>
+        <h2>Sources, Scope, And Open Questions</h2>
+      </div>
+      <p class="lead">
+        This page is a synthesis of existing source-grounded Markdown reports. It did not rerun the
+        upstream applications or test suites. The Markdown reports remain the canonical source because
+        they carry the detailed file and line references into each upstream codebase.
+      </p>
+      <div class="sources">
+        <div class="source-card">
+          <a href="../../gastown/agent/00-index.md">Gastown reports</a>
+          <code>407e109d1743</code>
+          <p>Analysis date: 2026-06-13.</p>
+        </div>
+        <div class="source-card">
+          <a href="../../gascity/agent/00-index.md">Gascity reports</a>
+          <code>ec67043b8c9c</code>
+          <p>Analysis date: 2026-06-13.</p>
+        </div>
+        <div class="source-card">
+          <a href="../../paperclip/agent/00-index.md">Paperclip reports</a>
+          <code>412a04c96491</code>
+          <p>Analysis date: 2026-06-14.</p>
+        </div>
+        <div class="source-card">
+          <a href="../../openhands/agent/00-index.md">OpenHands reports</a>
+          <code>2d34bb7ce650</code>
+          <p>Analysis date: 2026-06-14.</p>
+        </div>
+      </div>
+
+      <details style="margin-top: 24px;">
+        <summary>Important open questions carried forward</summary>
+        <ul>
+          <li>The live tree contains four external repositories, while the current project overlay still documents only <code>gascity</code> and <code>gastown</code> as submodules. Parent-repo tracking status for <code>external/paperclip</code> and <code>external/OpenHands</code> should be clarified before metadata cleanup.</li>
+          <li>Paperclip and OpenHands findings are source-grounded but not runtime-verified; dependency installation, migrations, local boot, UI/API flows, and test suites were not run in the underlying research passes.</li>
+          <li>OpenHands execution semantics behind the pinned <code>openhands-sdk</code>, <code>openhands-agent-server</code>, and <code>openhands-tools</code> packages remain outside the local repository analysis.</li>
+          <li>Gascity provider-specific behavior and the active worker-handle migration need targeted reads before changing session lifecycle paths.</li>
+          <li>Gastown formula/molecule/wisp semantics, <code>gt prime</code> generation, and full Deacon patrol behavior need deeper tracing before relying on those areas as stable interfaces.</li>
+        </ul>
+      </details>
+
+      <details>
+        <summary>Canonical Markdown report sets used</summary>
+        <ul>
+          <li><code>docs/research/codebases/gastown/agent/00-index.md</code> through <code>90-open-questions.md</code></li>
+          <li><code>docs/research/codebases/gascity/agent/00-index.md</code> through <code>90-open-questions.md</code></li>
+          <li><code>docs/research/codebases/paperclip/agent/00-index.md</code> through <code>90-open-questions.md</code></li>
+          <li><code>docs/research/codebases/openhands/agent/00-index.md</code> through <code>90-open-questions.md</code></li>
+        </ul>
+      </details>
+    </section>
+
+    <footer>
+      Generated on 2026-06-14 from local research artifacts in
+      <code>docs/research/codebases/</code>. This is a human-facing comparison layer; the linked
+      Markdown reports are the canonical detailed source references.
+    </footer>
+  </div>
+</body>
+</html>

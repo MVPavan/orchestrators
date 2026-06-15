@@ -7,3 +7,13 @@
 	path = external/gastown
 	url = https://github.com/gastownhall/gastown.git
 	branch = main
+
+[submodule "OpenHands"]
+	path = external/OpenHands
+	url = https://github.com/OpenHands/OpenHands.git
+	branch = main
+
+[submodule "paperclip"]
+	path = external/paperclip
+	url = https://github.com/paperclipai/paperclip.git
+	branch = master

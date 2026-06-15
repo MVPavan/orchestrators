@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>OpenHands Runtime Lifecycle</title>
+  <style>
+    :root {
+      --bg: #f7f8fa; --surface: #ffffff; --soft: #eef2f5; --ink: #17202a; --muted: #5d6978; --line: #d7dee7; --accent: #0f766e; --blue: #2f5597; --amber: #9a5b00; --shadow: 0 10px 24px rgba(23, 32, 42, 0.08);
+      color-scheme: light dark; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root { --bg:#11161c; --surface:#18212b; --soft:#202b36; --ink:#edf2f7; --muted:#aeb9c6; --line:#354251; --accent:#2dd4bf; --blue:#8ab4ff; --amber:#f0b35a; --shadow:0 12px 28px rgba(0,0,0,.28); }
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--ink); line-height: 1.55; }
+    a { color: var(--blue); text-decoration-thickness: .08em; text-underline-offset: .18em; }
+    header, main, footer { width: min(1180px, calc(100% - 40px)); margin: 0 auto; }
+    header { padding: 28px 0 20px; }
+    nav { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 26px; }
+    nav a { background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 7px 12px; text-decoration: none; font-weight: 700; font-size: .88rem; }
+    .eyebrow { color: var(--accent); font-size: .78rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+    h1 { margin: 8px 0 10px; font-size: clamp(2rem, 6vw, 4.2rem); line-height: .95; letter-spacing: 0; }
+    .lede { max-width: 900px; color: var(--muted); font-size: 1.08rem; }
+    section { margin: 28px 0; }
+    h2 { margin: 0 0 12px; font-size: 1.45rem; letter-spacing: 0; }
+    h3 { margin: 0 0 8px; font-size: 1.02rem; }
+    .panel, .diagram, .fact { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; box-shadow: var(--shadow); }
+    .panel { padding: 18px; }
+    .diagram { padding: 14px; overflow-x: auto; }
+    .diagram svg { min-width: 900px; width: 100%; height: auto; display: block; }
+    .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+    .two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .fact { padding: 15px; }
+    .fact strong { display: block; margin-bottom: 5px; }
+    .fact span, p, li { color: var(--muted); }
+    code { background: var(--soft); border: 1px solid var(--line); border-radius: 5px; padding: 1px 5px; font-size: .9em; }
+    table { width: 100%; border-collapse: collapse; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; overflow: hidden; box-shadow: var(--shadow); }
+    th, td { border-bottom: 1px solid var(--line); padding: 11px 12px; text-align: left; vertical-align: top; }
+    th { background: var(--soft); font-size: .83rem; text-transform: uppercase; letter-spacing: .05em; }
+    tr:last-child td { border-bottom: 0; }
+    .refs { color: var(--muted); font-size: .9rem; }
+    footer { padding: 24px 0 42px; color: var(--muted); font-size: .9rem; }
+    @media (max-width: 860px) { header, main, footer { width: min(100% - 28px, 1180px); } .grid, .two { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <header>
+    <nav aria-label="artifact navigation">
+      <a href="index.html">Contents</a>
+      <a href="architecture.html">Architecture</a>
+      <a href="data-state.html">Data</a>
+      <a href="integrations.html">Integrations</a>
+      <a href="operations.html">Operations</a>
+      <a href="open-questions.html">Open Questions</a>
+    </nav>
+    <div class="eyebrow">OpenHands detail page</div>
+    <h1>Runtime Lifecycle</h1>
+    <p class="lede">The local GUI starts quickly by returning a start task, then keeps the backend conversation startup generator alive in the background while sandbox creation, workspace setup, SDK request construction, agent-server conversation creation, and pending message replay complete.</p>
+  </header>
+
+  <main>
+    <section aria-labelledby="startup-facts">
+      <h2 id="startup-facts">Lifecycle Facts</h2>
+      <div class="grid">
+        <div class="fact"><strong>ASGI compatibility entry</strong><span>Run commands still point at <code>openhands.server.listen:app</code>, but that module re-exports <code>openhands.app_server.app</code>.</span></div>
+        <div class="fact"><strong>Frontend returns a task</strong><span><code>useCreateConversation()</code> receives a start task and the route polling hook navigates only after the task becomes <code>READY</code>.</span></div>
+        <div class="fact"><strong>Startup is backgrounded</strong><span><code>POST /app-conversations</code> returns the first task and consumes the remaining async generator after the HTTP response.</span></div>
+      </div>
+    </section>
+
+    <section aria-labelledby="asgi">
+      <h2 id="asgi">ASGI Startup</h2>
+      <div class="diagram" role="img" aria-label="ASGI startup sequence">
+        <svg viewBox="0 0 1120 320" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <marker id="arr" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="#2f5597"/></marker>
+            <style>.b{fill:#fff;stroke:#d7dee7;stroke-width:2;rx:8}.g{fill:#e7f6f2;stroke:#0f766e;stroke-width:2;rx:8}.a{fill:#fff4df;stroke:#9a5b00;stroke-width:2;rx:8}.t{font:700 14px system-ui,sans-serif;fill:#17202a}.s{font:500 12px system-ui,sans-serif;fill:#5d6978}.e{stroke:#2f5597;stroke-width:2.2;fill:none;marker-end:url(#arr)}</style>
+          </defs>
+          <rect class="b" x="30" y="110" width="140" height="80"/><text class="t" x="55" y="143">uvicorn</text><text class="s" x="55" y="165">server.listen:app</text>
+          <rect class="b" x="230" y="110" width="160" height="80"/><text class="t" x="255" y="143">listen.py</text><text class="s" x="255" y="165">re-export app</text>
+          <rect class="g" x="450" y="70" width="200" height="160"/><text class="t" x="480" y="105">app_server.app</text><text class="s" x="480" y="128">load config</text><text class="s" x="480" y="150">init Tavily MCP</text><text class="s" x="480" y="172">mount /mcp</text><text class="s" x="480" y="194">include routers</text><text class="s" x="480" y="216">install middleware</text>
+          <rect class="a" x="720" y="70" width="170" height="80"/><text class="t" x="744" y="103">OSS lifespan</text><text class="s" x="744" y="125">run migrations</text>
+          <rect class="b" x="720" y="190" width="170" height="80"/><text class="t" x="744" y="223">Frontend mount</text><text class="s" x="744" y="245">if build exists</text>
+          <rect class="g" x="955" y="110" width="135" height="80"/><text class="t" x="978" y="143">Ready app</text><text class="s" x="978" y="165">/api/v1 and /mcp</text>
+          <path class="e" d="M170 150 H230"/><path class="e" d="M390 150 H450"/><path class="e" d="M650 110 H720"/><path class="e" d="M650 190 H720"/><path class="e" d="M890 150 H955"/>
+        </svg>
+      </div>
+      <p class="refs">Refs: <code>external/OpenHands/Makefile:259</code>, <code>external/OpenHands/containers/app/Dockerfile:104</code>, <code>external/OpenHands/openhands/server/listen.py:7</code>, <code>external/OpenHands/openhands/app_server/app_lifespan/oss_app_lifespan_service.py:38</code>.</p>
+    </section>
+
+    <section aria-labelledby="conversation-sequence">
+      <h2 id="conversation-sequence">Conversation Startup Sequence</h2>
+      <div class="diagram" role="img" aria-label="Conversation startup sequence diagram">
+        <svg viewBox="0 0 1180 640" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <marker id="arr2" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="#2f5597"/></marker>
+            <style>.lane{stroke:#d7dee7;stroke-width:2}.head{fill:#eaf1ff;stroke:#2f5597;stroke-width:2;rx:8}.srv{fill:#e7f6f2;stroke:#0f766e;stroke-width:2;rx:8}.run{fill:#fff4df;stroke:#9a5b00;stroke-width:2;rx:8}.store{fill:#fff;stroke:#d7dee7;stroke-width:2;rx:8}.t{font:700 14px system-ui,sans-serif;fill:#17202a}.s{font:500 12px system-ui,sans-serif;fill:#5d6978}.msg{stroke:#2f5597;stroke-width:2;fill:none;marker-end:url(#arr2)}.note{font:600 12px system-ui,sans-serif;fill:#17202a}</style>
+          </defs>
+          <rect class="head" x="35" y="25" width="150" height="52"/><text class="t" x="66" y="57">Browser</text>
+          <rect class="srv" x="250" y="25" width="170" height="52"/><text class="t" x="280" y="57">App router</text>
+          <rect class="srv" x="485" y="25" width="185" height="52"/><text class="t" x="512" y="57">Conversation service</text>
+          <rect class="run" x="735" y="25" width="150" height="52"/><text class="t" x="770" y="57">Sandbox</text>
+          <rect class="run" x="950" y="25" width="180" height="52"/><text class="t" x="975" y="57">Agent-server</text>
+          <line class="lane" x1="110" y1="77" x2="110" y2="610"/><line class="lane" x1="335" y1="77" x2="335" y2="610"/><line class="lane" x1="578" y1="77" x2="578" y2="610"/><line class="lane" x1="810" y1="77" x2="810" y2="610"/><line class="lane" x1="1040" y1="77" x2="1040" y2="610"/>
+
+          <path class="msg" d="M110 110 H335"/><text class="note" x="143" y="101">POST /api/v1/app-conversations</text>
+          <path class="msg" d="M335 150 H578"/><text class="note" x="372" y="141">start async generator</text>
+          <path class="msg" d="M578 190 H335"/><text class="note" x="376" y="181">yield StartTask</text>
+          <path class="msg" d="M335 230 H110"/><text class="note" x="153" y="221">return task-{uuid}</text>
+
+          <rect class="store" x="70" y="250" width="190" height="48"/><text class="s" x="92" y="280">poll getStartTask every 3s</text>
+          <path class="msg" d="M578 320 H810"/><text class="note" x="614" y="311">wait or create sandbox</text>
+          <path class="msg" d="M810 360 H578"/><text class="note" x="625" y="351">AGENT_SERVER URL + key</text>
+          <path class="msg" d="M578 400 H810"/><text class="note" x="602" y="391">workspace setup scripts and skills</text>
+          <path class="msg" d="M578 440 H1040"/><text class="note" x="685" y="431">POST SDK StartConversationRequest</text>
+          <path class="msg" d="M1040 480 H578"/><text class="note" x="720" y="471">conversation id and runtime URL</text>
+          <rect class="store" x="485" y="510" width="185" height="66"/><text class="s" x="510" y="536">persist metadata</text><text class="s" x="510" y="556">callbacks and pending</text><text class="s" x="510" y="576">mark task READY</text>
+          <path class="msg" d="M578 590 H110"/><text class="note" x="195" y="581">poll sees READY and navigates to conversation id</text>
+        </svg>
+      </div>
+      <p class="refs">Refs: <code>external/OpenHands/frontend/src/hooks/mutation/use-create-conversation.ts:30</code>, <code>external/OpenHands/frontend/src/hooks/query/use-task-polling.ts:21</code>, <code>external/OpenHands/openhands/app_server/app_conversation/app_conversation_router.py:360</code>, <code>external/OpenHands/openhands/app_server/app_conversation/live_status_app_conversation_service.py:270</code>, <code>external/OpenHands/openhands/app_server/app_conversation/live_status_app_conversation_service.py:342</code>.</p>
+    </section>
+
+    <section aria-labelledby="workspace">
+      <h2 id="workspace">Repository And Workspace Setup</h2>
+      <div class="two grid">
+        <div class="panel">
+          <h3>Project root decision</h3>
+          <p>Selected repositories resolve to <code>{working_dir}/{repo_name}</code>. Empty workspaces use the configured working directory directly.</p>
+        </div>
+        <div class="panel">
+          <h3>Setup stages</h3>
+          <ul>
+            <li><code>PREPARING_REPOSITORY</code>: create workspace, initialize git, or clone with authenticated credentials.</li>
+            <li><code>RUNNING_SETUP_SCRIPT</code>: run <code>.openhands/setup.sh</code> if available.</li>
+            <li><code>SETTING_UP_GIT_HOOKS</code>: install OpenHands pre-commit hook while preserving an existing local hook.</li>
+            <li><code>SETTING_UP_SKILLS</code>: ask the agent-server to load public, user, project, org, and sandbox skills.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section aria-labelledby="sandbox">
+      <h2 id="sandbox">Sandbox Lifecycle</h2>
+      <div class="diagram" role="img" aria-label="Sandbox lifecycle state diagram">
+        <svg viewBox="0 0 1040 340" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <marker id="arr3" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="#2f5597"/></marker>
+            <style>.state{fill:#fff;stroke:#d7dee7;stroke-width:2;rx:8}.good{fill:#e7f6f2;stroke:#0f766e;stroke-width:2;rx:8}.warn{fill:#fff4df;stroke:#9a5b00;stroke-width:2;rx:8}.t{font:700 14px system-ui,sans-serif;fill:#17202a}.s{font:500 12px system-ui,sans-serif;fill:#5d6978}.e{stroke:#2f5597;stroke-width:2.2;fill:none;marker-end:url(#arr3)}</style>
+          </defs>
+          <rect class="state" x="40" y="130" width="145" height="70"/><text class="t" x="76" y="158">Search</text><text class="s" x="66" y="180">existing sandbox</text>
+          <rect class="warn" x="255" y="70" width="165" height="70"/><text class="t" x="292" y="98">Start</text><text class="s" x="285" y="120">Docker/remote/process</text>
+          <rect class="warn" x="255" y="205" width="165" height="70"/><text class="t" x="294" y="233">Resume</text><text class="s" x="285" y="255">if paused/stopped</text>
+          <rect class="good" x="500" y="130" width="170" height="70"/><text class="t" x="540" y="158">Running</text><text class="s" x="530" y="180">check /alive when needed</text>
+          <rect class="good" x="745" y="130" width="210" height="70"/><text class="t" x="780" y="158">Runtime contract</text><text class="s" x="780" y="180">AGENT_SERVER URL + key</text>
+          <rect class="state" x="500" y="250" width="170" height="60"/><text class="t" x="546" y="276">Pause</text><text class="s" x="540" y="296">guarded by service</text>
+          <rect class="state" x="745" y="250" width="210" height="60"/><text class="t" x="796" y="276">Delete</text><text class="s" x="782" y="296">runtime and records</text>
+          <path class="e" d="M185 150 C215 120 225 105 255 105"/><path class="e" d="M185 180 C215 215 225 240 255 240"/><path class="e" d="M420 105 C465 110 470 135 500 150"/><path class="e" d="M420 240 C465 235 470 195 500 180"/><path class="e" d="M670 165 H745"/><path class="e" d="M585 200 V250"/><path class="e" d="M670 280 H745"/>
+        </svg>
+      </div>
+      <p class="refs">Refs: <code>external/OpenHands/openhands/app_server/sandbox/sandbox_service.py:30</code>, <code>external/OpenHands/openhands/app_server/sandbox/sandbox_service.py:93</code>, <code>external/OpenHands/openhands/app_server/sandbox/docker_sandbox_service.py:381</code>, <code>external/OpenHands/openhands/app_server/sandbox/remote_sandbox_service.py:73</code>.</p>
+    </section>
+
+    <section aria-labelledby="followup">
+      <h2 id="followup">Follow-Up Runtime Operations</h2>
+      <table>
+        <thead><tr><th>Operation family</th><th>Path</th><th>Architectural implication</th></tr></thead>
+        <tbody>
+          <tr><td>Send message</td><td>App-server validates metadata and sandbox state, then POSTs to agent-server <code>/events</code>.</td><td>App-server remains the policy gate for conversation ownership and sandbox readiness.</td></tr>
+          <tr><td>VSCode URL, pause/resume, ask-agent, upload-file, runtime info</td><td>Frontend client builds URLs from <code>conversation_url</code> and includes the session API key.</td><td>Browser reachability to runtime URLs matters after startup.</td></tr>
+          <tr><td>Active conversation state</td><td>Frontend stores active conversation details so runtime-specific requests can include the current session API key.</td><td>The app-server/runtime boundary is visible in browser state, not just backend code.</td></tr>
+        </tbody>
+      </table>
+    </section>
+  </main>
+
+  <footer>Source report: <a href="../agent/02-runtime-lifecycle.md">../agent/02-runtime-lifecycle.md</a></footer>
+</body>
+</html>

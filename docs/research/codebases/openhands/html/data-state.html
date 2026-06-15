@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>OpenHands Data And State</title>
+  <style>
+    :root { --bg:#f7f8fa; --surface:#fff; --soft:#eef2f5; --ink:#17202a; --muted:#5d6978; --line:#d7dee7; --accent:#0f766e; --blue:#2f5597; --amber:#9a5b00; --shadow:0 10px 24px rgba(23,32,42,.08); color-scheme: light dark; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    @media (prefers-color-scheme: dark) { :root { --bg:#11161c; --surface:#18212b; --soft:#202b36; --ink:#edf2f7; --muted:#aeb9c6; --line:#354251; --accent:#2dd4bf; --blue:#8ab4ff; --amber:#f0b35a; --shadow:0 12px 28px rgba(0,0,0,.28); } }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--ink); line-height: 1.55; }
+    a { color: var(--blue); text-decoration-thickness: .08em; text-underline-offset: .18em; }
+    header, main, footer { width: min(1180px, calc(100% - 40px)); margin: 0 auto; }
+    header { padding: 28px 0 20px; }
+    nav { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 26px; }
+    nav a { background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 7px 12px; text-decoration: none; font-weight: 700; font-size: .88rem; }
+    .eyebrow { color: var(--accent); font-size: .78rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+    h1 { margin: 8px 0 10px; font-size: clamp(2rem, 6vw, 4.2rem); line-height: .95; letter-spacing: 0; }
+    .lede { max-width: 900px; color: var(--muted); font-size: 1.08rem; }
+    section { margin: 28px 0; }
+    h2 { margin: 0 0 12px; font-size: 1.45rem; letter-spacing: 0; }
+    h3 { margin: 0 0 8px; font-size: 1.02rem; }
+    .panel, .diagram, .fact { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; box-shadow: var(--shadow); }
+    .panel { padding: 18px; }
+    .diagram { padding: 14px; overflow-x: auto; }
+    .diagram svg { min-width: 900px; width: 100%; height: auto; display: block; }
+    .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+    .two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .fact { padding: 15px; }
+    .fact strong { display: block; margin-bottom: 5px; }
+    .fact span, p, li { color: var(--muted); }
+    code { background: var(--soft); border: 1px solid var(--line); border-radius: 5px; padding: 1px 5px; font-size: .9em; }
+    table { width: 100%; border-collapse: collapse; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; overflow: hidden; box-shadow: var(--shadow); }
+    th, td { border-bottom: 1px solid var(--line); padding: 11px 12px; text-align: left; vertical-align: top; }
+    th { background: var(--soft); font-size: .83rem; text-transform: uppercase; letter-spacing: .05em; }
+    tr:last-child td { border-bottom: 0; }
+    .refs { color: var(--muted); font-size: .9rem; }
+    footer { padding: 24px 0 42px; color: var(--muted); font-size: .9rem; }
+    @media (max-width: 860px) { header, main, footer { width: min(100% - 28px, 1180px); } .grid, .two { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <header>
+    <nav aria-label="artifact navigation">
+      <a href="index.html">Contents</a>
+      <a href="architecture.html">Architecture</a>
+      <a href="runtime-lifecycle.html">Runtime</a>
+      <a href="integrations.html">Integrations</a>
+      <a href="operations.html">Operations</a>
+      <a href="open-questions.html">Open Questions</a>
+    </nav>
+    <div class="eyebrow">OpenHands detail page</div>
+    <h1>Data And State</h1>
+    <p class="lede">State is split across environment-derived configuration, SQL session stores, file or object-backed event bodies, file or SaaS-backed settings and secrets, pending-message queues, live sandbox state, and enterprise tenant metadata.</p>
+  </header>
+
+  <main>
+    <section aria-labelledby="map">
+      <h2 id="map">Persistence Map</h2>
+      <div class="diagram" role="img" aria-label="OpenHands persistence map">
+        <svg viewBox="0 0 1160 610" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <marker id="arr" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="#2f5597"/></marker>
+            <style>.core{fill:#e7f6f2;stroke:#0f766e;stroke-width:2;rx:8}.store{fill:#fff;stroke:#d7dee7;stroke-width:2;rx:8}.obj{fill:#eaf1ff;stroke:#2f5597;stroke-width:2;rx:8}.tenant{fill:#fff4df;stroke:#9a5b00;stroke-width:2;rx:8}.t{font:700 15px system-ui,sans-serif;fill:#17202a}.s{font:500 12px system-ui,sans-serif;fill:#5d6978}.e{stroke:#2f5597;stroke-width:2.2;fill:none;marker-end:url(#arr)}.d{stroke:#9a5b00;stroke-width:2;fill:none;stroke-dasharray:6 5;marker-end:url(#arr)}</style>
+          </defs>
+          <rect class="core" x="430" y="35" width="270" height="110"/><text class="t" x="465" y="70">AppServerConfig</text><text class="s" x="465" y="96">OH env plus legacy fallbacks</text><text class="s" x="465" y="116">default ~/.openhands</text><text class="s" x="465" y="136">injector selection</text>
+          <rect class="store" x="70" y="215" width="210" height="110"/><text class="t" x="95" y="250">SQL session</text><text class="s" x="95" y="276">GCP Cloud SQL</text><text class="s" x="95" y="296">Postgres</text><text class="s" x="95" y="316">SQLite openhands.db</text>
+          <rect class="store" x="350" y="215" width="210" height="110"/><text class="t" x="375" y="250">Conversation DB</text><text class="s" x="375" y="276">conversation_metadata</text><text class="s" x="375" y="296">start_task</text><text class="s" x="375" y="316">pending_messages</text>
+          <rect class="obj" x="630" y="215" width="210" height="110"/><text class="t" x="655" y="250">Event bodies</text><text class="s" x="655" y="276">filesystem</text><text class="s" x="655" y="296">S3</text><text class="s" x="655" y="316">Google Cloud Storage</text>
+          <rect class="store" x="910" y="215" width="210" height="110"/><text class="t" x="935" y="250">Settings and secrets</text><text class="s" x="935" y="276">OSS JSON files</text><text class="s" x="935" y="296">SaaS DB stores</text><text class="s" x="935" y="316">encrypted custom secrets</text>
+          <rect class="obj" x="210" y="420" width="240" height="110"/><text class="t" x="235" y="455">Sandbox state</text><text class="s" x="235" y="481">SandboxInfo from runtime</text><text class="s" x="235" y="501">SandboxRecord identity fields</text><text class="s" x="235" y="521">remote v1_remote_sandbox table</text>
+          <rect class="tenant" x="540" y="420" width="260" height="110"/><text class="t" x="565" y="455">Enterprise tenant state</text><text class="s" x="565" y="481">conversation_metadata_saas</text><text class="s" x="565" y="501">user_id and org_id</text><text class="s" x="565" y="521">joined with base metadata</text>
+          <path class="e" d="M505 145 C390 165 250 180 175 215"/><path class="e" d="M535 145 C510 175 480 190 455 215"/><path class="e" d="M595 145 C650 175 710 185 735 215"/><path class="e" d="M655 145 C800 165 945 180 1015 215"/><path class="e" d="M455 325 C420 365 370 390 330 420"/><path class="d" d="M560 325 C585 365 620 390 670 420"/>
+        </svg>
+      </div>
+      <p class="refs">Refs: <code>external/OpenHands/openhands/app_server/config.py:75</code>, <code>external/OpenHands/openhands/app_server/services/db_session_injector.py:166</code>, <code>external/OpenHands/openhands/app_server/event/event_service_base.py:47</code>, <code>external/OpenHands/enterprise/storage/stored_conversation_metadata_saas.py:20</code>.</p>
+    </section>
+
+    <section aria-labelledby="config">
+      <h2 id="config">Configuration State</h2>
+      <div class="grid">
+        <div class="fact"><strong>Environment first</strong><span>Configuration is loaded through SDK env mapping with <code>OH</code> prefix, then legacy variables such as <code>OH_PERSISTENCE_DIR</code>, <code>FILE_STORE_PATH</code>, <code>WEB_HOST</code>, <code>LLM_BASE_URL</code>, and search keys are handled.</span></div>
+        <div class="fact"><strong>Default persistence</strong><span>When no persistence path is supplied, config defaults to <code>~/.openhands</code> and creates the directory during defaulting.</span></div>
+        <div class="fact"><strong>Runtime-dependent behavior</strong><span>Sandbox service and event storage are selected from config, so source defaults are not enough to predict a deployment without env values.</span></div>
+      </div>
+    </section>
+
+    <section aria-labelledby="sql">
+      <h2 id="sql">SQL Session Model</h2>
+      <table>
+        <thead><tr><th>Condition</th><th>Selected DB path</th><th>Lifecycle behavior</th></tr></thead>
+        <tbody>
+          <tr><td>GCP instance settings exist</td><td>GCP Cloud SQL connector path.</td><td>Request-scoped sessions commit or roll back at teardown unless explicitly kept open.</td></tr>
+          <tr><td>Database host configured</td><td>PostgreSQL via async/sync drivers.</td><td>Same dependency teardown semantics.</td></tr>
+          <tr><td>No database host configured</td><td>SQLite at <code>{persistence_dir}/openhands.db</code>.</td><td>Used by default local mode.</td></tr>
+          <tr><td>Conversation startup background work</td><td>Uses keep-open request state.</td><td>The initial HTTP response returns before startup persistence is complete, so DB resources must survive the response boundary.</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section aria-labelledby="metadata">
+      <h2 id="metadata">Conversation And Task State</h2>
+      <div class="two grid">
+        <div class="panel">
+          <h3>Conversation metadata</h3>
+          <p>OSS V1 metadata lives in <code>conversation_metadata</code> through <code>StoredConversationMetadata</code>. It stores conversation id, sandbox id, repository, branch, provider, title, trigger, PR numbers, LLM model, agent kind, metrics, parent id, public flag, tags, timestamps, and <code>conversation_version</code>.</p>
+          <p class="refs">Refs: <code>external/OpenHands/openhands/app_server/app_conversation/sql_app_conversation_info_service.py:65</code>, <code>external/OpenHands/openhands/app_server/app_conversation/sql_app_conversation_info_service.py:347</code>.</p>
+        </div>
+        <div class="panel">
+          <h3>Start task state</h3>
+          <p>Start tasks store task status, detail, eventual conversation id, sandbox id, agent-server URL, original request, and timestamps. They make frontend polling possible while backend startup continues.</p>
+          <p class="refs">Refs: <code>external/OpenHands/openhands/app_server/app_conversation/app_conversation_models.py:259</code>, <code>external/OpenHands/openhands/app_server/app_conversation/sql_app_conversation_start_task_service.py:54</code>.</p>
+        </div>
+      </div>
+    </section>
+
+    <section aria-labelledby="events">
+      <h2 id="events">Events, Settings, Secrets, And Pending Messages</h2>
+      <table>
+        <thead><tr><th>State family</th><th>Owner</th><th>Important behavior</th></tr></thead>
+        <tbody>
+          <tr><td>Event bodies</td><td><code>EventService</code> abstraction over filesystem, S3, or GCS.</td><td>Filesystem writes use temp file plus replace; callback execution is SQL-backed and captures processor exceptions as stored error results.</td></tr>
+          <tr><td>Settings</td><td>OSS file store or SaaS settings store.</td><td>Generic updates reject raw agent/conversation-settings replacement and ignore generic <code>llm_profiles</code> updates.</td></tr>
+          <tr><td>Secrets</td><td>OSS JSON file or SaaS encrypted custom secrets per user/org.</td><td>OSS drops provider-token entries without token; SaaS deletes/reinserts effective-org custom secrets on store.</td></tr>
+          <tr><td>Pending messages</td><td>SQL-backed queue keyed by conversation id.</td><td>Queued messages sent to <code>task-{uuid}</code> are rewritten to the real conversation id after startup and deleted regardless of per-message success.</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section aria-labelledby="tenant">
+      <h2 id="tenant">Enterprise Tenant State</h2>
+      <div class="diagram" role="img" aria-label="Enterprise tenant metadata join">
+        <svg viewBox="0 0 900 280" xmlns="http://www.w3.org/2000/svg">
+          <defs><marker id="arr2" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="#2f5597"/></marker><style>.base{fill:#eaf1ff;stroke:#2f5597;stroke-width:2;rx:8}.tenant{fill:#fff4df;stroke:#9a5b00;stroke-width:2;rx:8}.svc{fill:#e7f6f2;stroke:#0f766e;stroke-width:2;rx:8}.t{font:700 15px system-ui,sans-serif;fill:#17202a}.s{font:500 12px system-ui,sans-serif;fill:#5d6978}.e{stroke:#2f5597;stroke-width:2.2;fill:none;marker-end:url(#arr2)}</style></defs>
+          <rect class="base" x="40" y="90" width="240" height="100"/><text class="t" x="70" y="125">conversation_metadata</text><text class="s" x="70" y="151">base V1 conversation fields</text><text class="s" x="70" y="171">conversation id is join key</text>
+          <rect class="tenant" x="340" y="90" width="230" height="100"/><text class="t" x="370" y="125">conversation_metadata_saas</text><text class="s" x="370" y="151">conversation id, user id</text><text class="s" x="370" y="171">org id and indexes</text>
+          <rect class="svc" x="650" y="90" width="210" height="100"/><text class="t" x="680" y="125">SaaS service</text><text class="s" x="680" y="151">joins and filters</text><text class="s" x="680" y="171">writes tenant metadata</text>
+          <path class="e" d="M280 140 H340"/><path class="e" d="M570 140 H650"/>
+        </svg>
+      </div>
+      <p class="refs">Refs: <code>external/OpenHands/enterprise/server/utils/saas_app_conversation_info_injector.py:30</code>, <code>external/OpenHands/enterprise/server/utils/saas_app_conversation_info_injector.py:116</code>, <code>external/OpenHands/enterprise/server/utils/saas_app_conversation_info_injector.py:430</code>.</p>
+    </section>
+  </main>
+
+  <footer>Source report: <a href="../agent/03-data-state-and-persistence.md">../agent/03-data-state-and-persistence.md</a></footer>
+</body>
+</html>
