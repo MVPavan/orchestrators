@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Paperclip Core Architecture</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #f6f7f9;
+      --surface: #ffffff;
+      --soft: #eef2f6;
+      --text: #17202b;
+      --muted: #607083;
+      --line: #d7dee7;
+      --line-strong: #aeb8c6;
+      --accent: #12695c;
+      --accent-soft: #e3f2ef;
+      --red: #a13333;
+      --red-soft: #fce8e8;
+      --amber: #8a5a00;
+      --amber-soft: #fff4df;
+      --green: #0f766e;
+      --green-soft: #e6f5f2;
+      --shadow: 0 1px 2px rgba(16, 24, 40, 0.08);
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #101318;
+        --surface: #181c23;
+        --soft: #222833;
+        --text: #e9edf3;
+        --muted: #a4afbd;
+        --line: #333b47;
+        --line-strong: #465160;
+        --accent: #79d0bd;
+        --accent-soft: #16352f;
+        --red: #ff9d9d;
+        --red-soft: #341c1f;
+        --amber: #f3c26e;
+        --amber-soft: #352514;
+        --green: #6fd6c8;
+        --green-soft: #102b28;
+        --shadow: none;
+      }
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.62 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; letter-spacing: 0; }
+    .wrap { width: min(1180px, calc(100% - 40px)); margin: 0 auto; }
+    header { background: var(--surface); border-bottom: 1px solid var(--line); }
+    .hero { padding: 34px 0 24px; }
+    .back { display: inline-block; margin-bottom: 14px; color: var(--accent); font-weight: 650; text-decoration: none; }
+    .back:hover { text-decoration: underline; text-underline-offset: 3px; }
+    .eyebrow { margin: 0 0 8px; color: var(--muted); font-size: 13px; font-weight: 720; text-transform: uppercase; }
+    h1 { margin: 0; font-size: 44px; line-height: 1.08; letter-spacing: 0; }
+    .subtitle { max-width: 850px; margin: 12px 0 0; color: var(--muted); font-size: 17px; }
+    .kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-top: 22px; }
+    .kpi { min-height: 104px; padding: 16px; background: var(--soft); border: 1px solid var(--line); border-radius: 8px; }
+    .kpi strong { display: block; font-size: 25px; line-height: 1.15; font-variant-numeric: tabular-nums; }
+    .kpi span { display: block; margin-top: 6px; color: var(--muted); font-size: 13px; }
+    main { padding: 30px 0 56px; }
+    section { margin: 0 0 30px; }
+    .section-head { display: grid; grid-template-columns: 64px 1fr; gap: 14px; align-items: end; margin-bottom: 14px; }
+    .section-no { color: var(--line-strong); font-size: 30px; line-height: 1; font-weight: 780; font-variant-numeric: tabular-nums; }
+    h2 { margin: 0; font-size: 25px; line-height: 1.2; letter-spacing: 0; }
+    h3 { margin: 18px 0 8px; font-size: 17px; letter-spacing: 0; }
+    p { margin: 0 0 12px; }
+    ul { margin: 0; padding-left: 20px; }
+    li { margin: 6px 0; }
+    a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+    code { padding: 1px 5px; border: 1px solid var(--line); border-radius: 5px; background: var(--soft); font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: .92em; }
+    .panel { padding: 20px; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; box-shadow: var(--shadow); }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .diagram { display: block; width: 100%; min-height: 520px; background: var(--soft); border: 1px solid var(--line); border-radius: 8px; }
+    .diagram text { fill: var(--text); font: 13px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    .diagram .muted { fill: var(--muted); font-size: 11px; }
+    .diagram .box { fill: var(--surface); stroke: var(--line-strong); rx: 8; }
+    .diagram .core { fill: var(--accent-soft); stroke: var(--accent); rx: 8; }
+    .diagram .arrow { stroke: var(--accent); stroke-width: 2; fill: none; marker-end: url(#arrow); }
+    table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+    th, td { border-bottom: 1px solid var(--line); padding: 10px 8px; text-align: left; vertical-align: top; }
+    th { color: var(--muted); font-size: 12px; text-transform: uppercase; }
+    .tag { display: inline-block; border-radius: 999px; padding: 2px 8px; font-size: 12px; font-weight: 750; white-space: nowrap; }
+    .tag.high { color: var(--red); background: var(--red-soft); }
+    .tag.medium { color: var(--amber); background: var(--amber-soft); }
+    .tag.low { color: var(--green); background: var(--green-soft); }
+    footer { margin-top: 30px; padding-top: 18px; border-top: 1px solid var(--line); color: var(--muted); font-size: 13px; }
+    @media (max-width: 760px) {
+      .wrap { width: min(100% - 22px, 1180px); }
+      .hero { padding-top: 24px; }
+      h1 { font-size: 34px; }
+      .kpis, .grid { grid-template-columns: 1fr; }
+      .section-head { grid-template-columns: 44px 1fr; }
+      .diagram { min-height: 600px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap hero">
+      <a class="back" href="index.html">Back to contents</a>
+      <p class="eyebrow">Paperclip architecture artifact 01</p>
+      <h1>Core Architecture</h1>
+      <p class="subtitle">Paperclip is a server-centered orchestration control plane. The server owns durable state, execution policy, queues, workspace and environment setup, plugins, adapters, auth, and API surfaces.</p>
+      <div class="kpis" aria-label="Core architecture facts">
+        <div class="kpi"><strong>1</strong><span>Primary control-plane process</span></div>
+        <div class="kpi"><strong>3</strong><span>First-party client surfaces: UI, CLI, MCP</span></div>
+        <div class="kpi"><strong>2</strong><span>Extension planes: adapters and plugins</span></div>
+        <div class="kpi"><strong>DB</strong><span>Postgres via Drizzle</span></div>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section>
+      <div class="section-head"><div class="section-no">01</div><h2>Control-Plane Map</h2></div>
+      <div class="panel">
+        <svg class="diagram" viewBox="0 0 1120 540" role="img" aria-label="Paperclip core architecture map">
+          <defs>
+            <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+              <path d="M0,0 L0,6 L9,3 z" fill="#12695c"></path>
+            </marker>
+          </defs>
+          <rect class="box" x="38" y="70" width="160" height="62"></rect>
+          <text x="118" y="96" text-anchor="middle">React UI</text>
+          <text x="118" y="116" text-anchor="middle" class="muted">board views over /api</text>
+          <rect class="box" x="38" y="188" width="160" height="62"></rect>
+          <text x="118" y="214" text-anchor="middle">CLI</text>
+          <text x="118" y="234" text-anchor="middle" class="muted">command groups</text>
+          <rect class="box" x="38" y="306" width="160" height="62"></rect>
+          <text x="118" y="332" text-anchor="middle">MCP</text>
+          <text x="118" y="352" text-anchor="middle" class="muted">REST wrapper</text>
+
+          <rect class="core" x="298" y="55" width="260" height="330"></rect>
+          <text x="428" y="88" text-anchor="middle">Node / Express Server</text>
+          <text x="428" y="112" text-anchor="middle" class="muted">startup, API, auth, live events</text>
+          <rect class="box" x="330" y="142" width="196" height="54"></rect>
+          <text x="428" y="174" text-anchor="middle">Domain Services</text>
+          <rect class="box" x="330" y="220" width="196" height="54"></rect>
+          <text x="428" y="252" text-anchor="middle">Heartbeat Kernel</text>
+          <rect class="box" x="330" y="298" width="196" height="54"></rect>
+          <text x="428" y="330" text-anchor="middle">Plugin Host Services</text>
+
+          <rect class="box" x="665" y="42" width="170" height="64"></rect>
+          <text x="750" y="68" text-anchor="middle">Postgres</text>
+          <text x="750" y="88" text-anchor="middle" class="muted">Drizzle schema</text>
+          <rect class="box" x="665" y="142" width="170" height="64"></rect>
+          <text x="750" y="168" text-anchor="middle">Storage</text>
+          <text x="750" y="188" text-anchor="middle" class="muted">company-keyed objects</text>
+          <rect class="box" x="665" y="242" width="170" height="64"></rect>
+          <text x="750" y="268" text-anchor="middle">Secrets</text>
+          <text x="750" y="288" text-anchor="middle" class="muted">runtime bindings</text>
+          <rect class="box" x="665" y="342" width="170" height="64"></rect>
+          <text x="750" y="368" text-anchor="middle">Runtime Services</text>
+          <text x="750" y="388" text-anchor="middle" class="muted">persisted services</text>
+
+          <rect class="box" x="925" y="95" width="155" height="66"></rect>
+          <text x="1002" y="122" text-anchor="middle">Adapters</text>
+          <text x="1002" y="142" text-anchor="middle" class="muted">Claude, Codex, etc.</text>
+          <rect class="box" x="925" y="222" width="155" height="66"></rect>
+          <text x="1002" y="249" text-anchor="middle">Environments</text>
+          <text x="1002" y="269" text-anchor="middle" class="muted">local, ssh, sandbox</text>
+          <rect class="box" x="925" y="349" width="155" height="66"></rect>
+          <text x="1002" y="376" text-anchor="middle">Plugins</text>
+          <text x="1002" y="396" text-anchor="middle" class="muted">worker processes</text>
+
+          <path class="arrow" d="M198 101 H298"></path>
+          <path class="arrow" d="M198 219 H298"></path>
+          <path class="arrow" d="M198 337 H298"></path>
+          <path class="arrow" d="M558 106 H665"></path>
+          <path class="arrow" d="M558 169 H665"></path>
+          <path class="arrow" d="M558 247 H665"></path>
+          <path class="arrow" d="M558 325 H665"></path>
+          <path class="arrow" d="M835 128 H925"></path>
+          <path class="arrow" d="M835 255 H925"></path>
+          <path class="arrow" d="M835 382 H925"></path>
+          <text x="428" y="440" text-anchor="middle" class="muted">Server composition root: config, DB, auth, API, plugins, schedulers, recovery, live events</text>
+        </svg>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-head"><div class="section-no">02</div><h2>Module Boundaries</h2></div>
+      <div class="panel">
+        <table>
+          <thead><tr><th>Area</th><th>Role</th><th>Source anchor</th></tr></thead>
+          <tbody>
+            <tr><td><code>server/</code></td><td>Composition root, API routes, service layer, background schedulers, plugin host, live events.</td><td><code>external/paperclip/server/src/index.ts:102-116</code>, <code>server/src/app.ts:208-322</code></td></tr>
+            <tr><td><code>packages/db/</code></td><td>Drizzle client and shared schema for durable control-plane state.</td><td><code>external/paperclip/packages/db/src/client.ts:37-51</code>, <code>schema/index.ts:1-85</code></td></tr>
+            <tr><td><code>ui/</code></td><td>React board and admin surface over the server API.</td><td><code>external/paperclip/ui/src/App.tsx:73-177</code></td></tr>
+            <tr><td><code>cli/</code></td><td>Command surface for onboarding, heartbeat, agents, issues, projects, routines, plugins, secrets, and more.</td><td><code>external/paperclip/cli/src/index.ts:50-201</code></td></tr>
+            <tr><td><code>packages/adapters/*</code></td><td>Runtime-specific adapter metadata and execution wrappers.</td><td><code>external/paperclip/server/src/adapters/registry.ts:249-435</code></td></tr>
+            <tr><td><code>packages/plugins/sdk</code></td><td>Plugin worker SDK, JSON-RPC host protocol, context, and helpers.</td><td><code>external/paperclip/packages/plugins/sdk/src/index.ts:1-86</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-head"><div class="section-no">03</div><h2>Boundary Decisions</h2></div>
+      <div class="grid">
+        <div class="panel">
+          <h3>Server is the source of truth</h3>
+          <p>The UI, CLI, and MCP package operate as clients. The server owns business rules, durable state transitions, plugin loading, adapter registration, schedulers, recovery, and live events.</p>
+        </div>
+        <div class="panel">
+          <h3>Adapters execute, plugins extend</h3>
+          <p>Adapters are the concrete agent execution boundary. Plugins are broader extension modules that can add workers, tools, jobs, webhooks, UI, and external adapters.</p>
+        </div>
+        <div class="panel">
+          <h3>Workspaces isolate work</h3>
+          <p>The heartbeat path creates or reuses execution workspaces and then acquires environment leases before adapter execution.</p>
+        </div>
+        <div class="panel">
+          <h3>Database-backed operations</h3>
+          <p>Issues, wakeups, heartbeat runs, runtime services, costs, activity, plugin jobs, and workspaces all have durable state.</p>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-head"><div class="section-no">04</div><h2>Architectural Risk Table</h2></div>
+      <div class="panel">
+        <table>
+          <thead><tr><th>Risk</th><th>Severity</th><th>Why it matters</th></tr></thead>
+          <tbody>
+            <tr><td>Heartbeat integration path</td><td><span class="tag high">High</span></td><td>It composes locks, budgets, dependencies, secrets, skills, workspaces, environments, adapters, logs, costs, and session state.</td></tr>
+            <tr><td>Plugin host boundary</td><td><span class="tag high">High</span></td><td>Plugin activation can apply migrations, spawn workers, register tools/jobs/webhooks, and use host handlers.</td></tr>
+            <tr><td>Broad service layer</td><td><span class="tag medium">Medium</span></td><td>Cross-domain changes need source tracing through services rather than assuming isolated vertical slices.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <footer>
+      Source basis: <code>../agent/01-core-architecture.md</code>, <code>external/paperclip/server/src/index.ts</code>, <code>server/src/app.ts</code>, <code>server/src/services/index.ts</code>, <code>packages/db</code>, adapter registry, and plugin loader files.
+    </footer>
+  </main>
+</body>
+</html>

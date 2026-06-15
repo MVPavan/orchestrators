@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>OpenHands Architecture Research Contents</title>
+  <style>
+    :root {
+      --bg: #f7f8fa;
+      --surface: #ffffff;
+      --surface-2: #eef2f5;
+      --ink: #17202a;
+      --muted: #5d6978;
+      --line: #d7dee7;
+      --accent: #0f766e;
+      --accent-2: #2f5597;
+      --warn: #9a5b00;
+      --shadow: 0 10px 24px rgba(23, 32, 42, 0.08);
+      color-scheme: light dark;
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #11161c;
+        --surface: #18212b;
+        --surface-2: #202b36;
+        --ink: #edf2f7;
+        --muted: #aeb9c6;
+        --line: #354251;
+        --accent: #2dd4bf;
+        --accent-2: #8ab4ff;
+        --warn: #f0b35a;
+        --shadow: 0 12px 28px rgba(0, 0, 0, 0.28);
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      line-height: 1.55;
+    }
+    a { color: var(--accent-2); text-decoration-thickness: 0.08em; text-underline-offset: 0.18em; }
+    header, main, footer { width: min(1120px, calc(100% - 40px)); margin: 0 auto; }
+    header { padding: 44px 0 22px; }
+    .eyebrow { color: var(--accent); font-size: 0.78rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; }
+    h1 { margin: 8px 0 12px; font-size: clamp(2rem, 6vw, 4.4rem); line-height: 0.95; letter-spacing: 0; }
+    .lede { max-width: 840px; color: var(--muted); font-size: 1.08rem; }
+    .meta {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin: 28px 0 10px;
+    }
+    .tile, .card, .note {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+    }
+    .tile { padding: 15px; }
+    .tile strong { display: block; font-size: 1.2rem; }
+    .tile span { display: block; color: var(--muted); font-size: 0.86rem; margin-top: 4px; }
+    section { margin: 28px 0; }
+    h2 { margin: 0 0 12px; font-size: 1.45rem; letter-spacing: 0; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+    }
+    .card {
+      display: flex;
+      min-height: 220px;
+      flex-direction: column;
+      padding: 18px;
+    }
+    .card h3 { margin: 0 0 8px; font-size: 1.05rem; }
+    .card p { margin: 0 0 16px; color: var(--muted); }
+    .card ul { margin: 0 0 18px; padding-left: 18px; color: var(--muted); }
+    .card li { margin: 6px 0; }
+    .card .go { margin-top: auto; font-weight: 750; }
+    .note { padding: 18px; }
+    .note p { margin: 0; color: var(--muted); }
+    .markdown-links {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px 18px;
+      margin: 0;
+      padding-left: 18px;
+    }
+    footer { padding: 24px 0 42px; color: var(--muted); font-size: 0.9rem; }
+    @media (max-width: 860px) {
+      header, main, footer { width: min(100% - 28px, 1120px); }
+      .meta, .grid, .markdown-links { grid-template-columns: 1fr; }
+      .card { min-height: auto; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="eyebrow">Codebase architecture research</div>
+    <h1>OpenHands Contents</h1>
+    <p class="lede">A contents-only entry point for the OpenHands research artifact. Detailed architecture, lifecycle, persistence, integration, operations, and follow-up analysis now lives on separate standalone pages.</p>
+    <div class="meta" aria-label="research metadata">
+      <div class="tile"><strong>6</strong><span>HTML detail pages</span></div>
+      <div class="tile"><strong>7</strong><span>Markdown source reports</span></div>
+      <div class="tile"><strong>2d34bb7</strong><span>External source snapshot</span></div>
+      <div class="tile"><strong>0</strong><span>OpenHands source edits</span></div>
+    </div>
+  </header>
+
+  <main>
+    <section aria-labelledby="detail-pages">
+      <h2 id="detail-pages">Detail Pages</h2>
+      <div class="grid">
+        <article class="card">
+          <h3>Core Architecture</h3>
+          <p>The app-server, frontend, sandbox, SDK request boundary, dependency injectors, and enterprise overlay as a system.</p>
+          <ul>
+            <li>System topology</li>
+            <li>Dependency direction</li>
+            <li>Runtime boundary</li>
+          </ul>
+          <a class="go" href="architecture.html">Open architecture page</a>
+        </article>
+        <article class="card">
+          <h3>Runtime Lifecycle</h3>
+          <p>ASGI startup, frontend task polling, backend async startup, sandbox readiness, setup scripts, and follow-up runtime calls.</p>
+          <ul>
+            <li>Conversation startup sequence</li>
+            <li>Sandbox lifecycle</li>
+            <li>Direct runtime operations</li>
+          </ul>
+          <a class="go" href="runtime-lifecycle.html">Open lifecycle page</a>
+        </article>
+        <article class="card">
+          <h3>Data And State</h3>
+          <p>Configuration, SQL session selection, conversation metadata, events, settings, secrets, pending messages, and tenant state.</p>
+          <ul>
+            <li>Persistence map</li>
+            <li>State ownership</li>
+            <li>OSS versus SaaS scoping</li>
+          </ul>
+          <a class="go" href="data-state.html">Open state page</a>
+        </article>
+        <article class="card">
+          <h3>Integrations</h3>
+          <p>REST APIs, MCP, git providers, LLM profiles, skills, hooks, plugins, frontend boundaries, and enterprise integration points.</p>
+          <ul>
+            <li>MCP and git providers</li>
+            <li>Skills and hooks delegation</li>
+            <li>Enterprise overlay</li>
+          </ul>
+          <a class="go" href="integrations.html">Open integrations page</a>
+        </article>
+        <article class="card">
+          <h3>Operations</h3>
+          <p>Build/run commands, Docker packaging, config template shape, verification surface, enterprise operations, and risk signals.</p>
+          <ul>
+            <li>Run modes</li>
+            <li>Docker and packaged app</li>
+            <li>Operational risk</li>
+          </ul>
+          <a class="go" href="operations.html">Open operations page</a>
+        </article>
+        <article class="card">
+          <h3>Open Questions</h3>
+          <p>Unresolved areas, explicit inferences, deliberately unaudited surfaces, and recommended next files to inspect.</p>
+          <ul>
+            <li>High-signal follow-ups</li>
+            <li>Inference boundaries</li>
+            <li>Next reads</li>
+          </ul>
+          <a class="go" href="open-questions.html">Open questions page</a>
+        </article>
+      </div>
+    </section>
+
+    <section aria-labelledby="source-reports">
+      <h2 id="source-reports">Markdown Source Reports</h2>
+      <div class="note">
+        <ul class="markdown-links">
+          <li><a href="../agent/00-index.md">Agent index</a></li>
+          <li><a href="../agent/01-core-architecture.md">Core architecture</a></li>
+          <li><a href="../agent/02-runtime-lifecycle.md">Runtime lifecycle</a></li>
+          <li><a href="../agent/03-data-state-and-persistence.md">Data, state, and persistence</a></li>
+          <li><a href="../agent/04-integration-and-extension-points.md">Integration and extension points</a></li>
+          <li><a href="../agent/05-operational-model.md">Operational model</a></li>
+          <li><a href="../agent/90-open-questions.md">Open questions</a></li>
+        </ul>
+      </div>
+    </section>
+
+    <section aria-labelledby="scope-note">
+      <h2 id="scope-note">Scope Note</h2>
+      <div class="note">
+        <p>This artifact summarizes source-grounded architecture research conducted from the parent orchestrators repository. The external OpenHands tree is treated as read-only source material; this page set does not imply runtime execution, dependency installation, or a security audit.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    Generated under <code>docs/research/codebases/openhands/html/</code>. Detailed content is intentionally kept out of this contents page.
+  </footer>
+</body>
+</html>

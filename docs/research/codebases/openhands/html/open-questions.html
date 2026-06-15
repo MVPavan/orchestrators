@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>OpenHands Open Questions</title>
+  <style>
+    :root { --bg:#f7f8fa; --surface:#fff; --soft:#eef2f5; --ink:#17202a; --muted:#5d6978; --line:#d7dee7; --accent:#0f766e; --blue:#2f5597; --amber:#9a5b00; --shadow:0 10px 24px rgba(23,32,42,.08); color-scheme: light dark; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    @media (prefers-color-scheme: dark) { :root { --bg:#11161c; --surface:#18212b; --soft:#202b36; --ink:#edf2f7; --muted:#aeb9c6; --line:#354251; --accent:#2dd4bf; --blue:#8ab4ff; --amber:#f0b35a; --shadow:0 12px 28px rgba(0,0,0,.28); } }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--ink); line-height: 1.55; }
+    a { color: var(--blue); text-decoration-thickness: .08em; text-underline-offset: .18em; }
+    header, main, footer { width: min(1180px, calc(100% - 40px)); margin: 0 auto; }
+    header { padding: 28px 0 20px; }
+    nav { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 26px; }
+    nav a { background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 7px 12px; text-decoration: none; font-weight: 700; font-size: .88rem; }
+    .eyebrow { color: var(--accent); font-size: .78rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+    h1 { margin: 8px 0 10px; font-size: clamp(2rem, 6vw, 4.2rem); line-height: .95; letter-spacing: 0; }
+    .lede { max-width: 900px; color: var(--muted); font-size: 1.08rem; }
+    section { margin: 28px 0; }
+    h2 { margin: 0 0 12px; font-size: 1.45rem; letter-spacing: 0; }
+    h3 { margin: 0 0 8px; font-size: 1.02rem; }
+    .panel, .fact { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; box-shadow: var(--shadow); }
+    .panel { padding: 18px; }
+    .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+    .fact { padding: 15px; }
+    .fact strong { display: block; margin-bottom: 5px; }
+    .fact span, p, li { color: var(--muted); }
+    code { background: var(--soft); border: 1px solid var(--line); border-radius: 5px; padding: 1px 5px; font-size: .9em; }
+    table { width: 100%; border-collapse: collapse; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; overflow: hidden; box-shadow: var(--shadow); }
+    th, td { border-bottom: 1px solid var(--line); padding: 11px 12px; text-align: left; vertical-align: top; }
+    th { background: var(--soft); font-size: .83rem; text-transform: uppercase; letter-spacing: .05em; }
+    tr:last-child td { border-bottom: 0; }
+    footer { padding: 24px 0 42px; color: var(--muted); font-size: .9rem; }
+    @media (max-width: 860px) { header, main, footer { width: min(100% - 28px, 1180px); } .grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <header>
+    <nav aria-label="artifact navigation">
+      <a href="index.html">Contents</a>
+      <a href="architecture.html">Architecture</a>
+      <a href="runtime-lifecycle.html">Runtime</a>
+      <a href="data-state.html">Data</a>
+      <a href="integrations.html">Integrations</a>
+      <a href="operations.html">Operations</a>
+    </nav>
+    <div class="eyebrow">OpenHands detail page</div>
+    <h1>Open Questions</h1>
+    <p class="lede">This page separates unresolved source questions, explicit inferences, intentionally unaudited surfaces, and recommended next reads so future agents do not overstate the architecture pass.</p>
+  </header>
+
+  <main>
+    <section aria-labelledby="questions">
+      <h2 id="questions">High-Signal Open Questions</h2>
+      <table>
+        <thead><tr><th>Question</th><th>Status</th><th>Why it matters</th><th>Suggested follow-up</th></tr></thead>
+        <tbody>
+          <tr><td>What exactly lives inside the pinned SDK, agent-server, and tools packages?</td><td>Open</td><td>This repo builds requests and calls the agent-server, but agent execution semantics live behind that package boundary.</td><td>Inspect matching package source or vendor contents for version <code>1.28.0</code>.</td></tr>
+          <tr><td>How do deployed environment values differ from defaults?</td><td>Open</td><td>Runtime choice, DB backend, storage provider, CORS, web URL, provider base URL, and sandbox mode are env-sensitive.</td><td>Collect representative OSS local and SaaS/Enterprise configs with secrets redacted.</td></tr>
+          <tr><td>Is OSS conversation metadata intentionally unscoped by user?</td><td>Partially answered</td><td>Enterprise adds explicit user/org filtering; OSS service filtering appears V1-only in sampled paths.</td><td>Confirm the OSS threat model and intended deployment assumptions with maintainers or tests.</td></tr>
+          <tr><td>What is the full remote runtime API contract?</td><td>Open</td><td><code>RemoteSandboxService</code> adapts a legacy runtime HTTP protocol, but this pass traced only the app-server adapter.</td><td>Read remote runtime docs/source and exercise start/list/pause/resume/delete with a test server.</td></tr>
+          <tr><td>Which frontend workflows still rely on direct runtime URLs?</td><td>Partially answered</td><td>Direct runtime calls require correct <code>conversation_url</code>, session API key handling, and browser reachability.</td><td>Search all <code>buildRuntimeUrl</code>, direct <code>axios</code>, and <code>conversation_url</code> uses.</td></tr>
+          <tr><td>Are enterprise provider callbacks tenant-scoped consistently?</td><td>Open</td><td>Enterprise adds user/org scoping for conversations and pending messages, but provider callbacks can add separate paths.</td><td>Review provider-specific callback processors and enterprise unit tests.</td></tr>
+          <tr><td>How stable is V1 versus V0 terminology?</td><td>Open</td><td>The skills README says V1 skills are not yet released while code is V1-heavy and wrappers remain.</td><td>Check current release notes/docs and normalize downstream terminology accordingly.</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section aria-labelledby="inferences">
+      <h2 id="inferences">Claims That Are Inferences</h2>
+      <div class="grid">
+        <div class="fact"><strong>Orchestration shell</strong><span>The local GUI appears to be an orchestration shell around SDK/agent-server packages, inferred from package pins, README boundaries, and code that POSTs SDK request JSON to the sandbox agent-server.</span></div>
+        <div class="fact"><strong>OSS tenancy</strong><span>OSS appears single-user or weakly multi-tenant compared with SaaS. This is an inference, not a security verdict.</span></div>
+        <div class="fact"><strong>Thin runtime proxy</strong><span>The app-server appears intentionally thin around running-agent actions, inferred from send-message routing notes and frontend direct runtime URL helpers.</span></div>
+      </div>
+    </section>
+
+    <section aria-labelledby="not-audited">
+      <h2 id="not-audited">Areas Deliberately Not Audited</h2>
+      <div class="panel">
+        <ul>
+          <li>Full component-by-component frontend behavior and visual design.</li>
+          <li>Full provider implementation internals across GitHub, GitLab, Bitbucket, Jira, Linear, Slack, Azure DevOps, and Enterprise SSO.</li>
+          <li>Every Alembic migration; only V1 and tenant-related migrations were sampled.</li>
+          <li>Real Docker/runtime execution, dependency installation, browser workflows, and network calls.</li>
+          <li>Security review of token encryption, JWT details, provider token refresh, callback auth, or API key storage.</li>
+          <li>Performance/capacity analysis of polling, DB indexes, sandbox limits, and event storage.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section aria-labelledby="next-reads">
+      <h2 id="next-reads">Recommended Next Reads</h2>
+      <div class="panel">
+        <ul>
+          <li><code>external/OpenHands/openhands/app_server/app_conversation/live_status_app_conversation_service.py</code></li>
+          <li><code>external/OpenHands/openhands/app_server/app_conversation/app_conversation_router.py</code></li>
+          <li><code>external/OpenHands/openhands/app_server/config.py</code></li>
+          <li><code>external/OpenHands/openhands/app_server/sandbox/docker_sandbox_service.py</code></li>
+          <li><code>external/OpenHands/openhands/app_server/sandbox/remote_sandbox_service.py</code></li>
+          <li><code>external/OpenHands/openhands/app_server/event_callback/sql_event_callback_service.py</code></li>
+          <li><code>external/OpenHands/openhands/app_server/integrations/provider.py</code></li>
+          <li><code>external/OpenHands/openhands/app_server/mcp/mcp_router.py</code></li>
+          <li><code>external/OpenHands/frontend/src/api/conversation-service/v1-conversation-service.api.ts</code></li>
+          <li><code>external/OpenHands/frontend/src/hooks/query/use-task-polling.ts</code></li>
+          <li><code>external/OpenHands/enterprise/saas_server.py</code></li>
+          <li><code>external/OpenHands/enterprise/server/config.py</code></li>
+          <li><code>external/OpenHands/enterprise/server/auth/saas_user_auth.py</code></li>
+          <li><code>external/OpenHands/enterprise/server/utils/saas_app_conversation_info_injector.py</code></li>
+        </ul>
+      </div>
+    </section>
+  </main>
+
+  <footer>Source report: <a href="../agent/90-open-questions.md">../agent/90-open-questions.md</a></footer>
+</body>
+</html>

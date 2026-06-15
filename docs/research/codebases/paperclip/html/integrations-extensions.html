@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Paperclip Integrations And Extensions</title>
+  <style>
+    :root{color-scheme:light dark;--bg:#f6f7f9;--surface:#fff;--soft:#eef2f6;--text:#17202b;--muted:#607083;--line:#d7dee7;--line-strong:#aeb8c6;--accent:#12695c;--accent-soft:#e3f2ef;--shadow:0 1px 2px rgba(16,24,40,.08);--red:#a13333;--red-soft:#fce8e8;--amber:#8a5a00;--amber-soft:#fff4df;--green:#0f766e;--green-soft:#e6f5f2}@media(prefers-color-scheme:dark){:root{--bg:#101318;--surface:#181c23;--soft:#222833;--text:#e9edf3;--muted:#a4afbd;--line:#333b47;--line-strong:#465160;--accent:#79d0bd;--accent-soft:#16352f;--shadow:none;--red:#ff9d9d;--red-soft:#341c1f;--amber:#f3c26e;--amber-soft:#352514;--green:#6fd6c8;--green-soft:#102b28}}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px/1.62 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;letter-spacing:0}.wrap{width:min(1180px,calc(100% - 40px));margin:0 auto}header{background:var(--surface);border-bottom:1px solid var(--line)}.hero{padding:34px 0 24px}.back{display:inline-block;margin-bottom:14px;color:var(--accent);font-weight:650;text-decoration:none}.back:hover{text-decoration:underline;text-underline-offset:3px}.eyebrow{margin:0 0 8px;color:var(--muted);font-size:13px;font-weight:720;text-transform:uppercase}h1{margin:0;font-size:44px;line-height:1.08;letter-spacing:0}.subtitle{max-width:850px;margin:12px 0 0;color:var(--muted);font-size:17px}.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:22px}.kpi{min-height:104px;padding:16px;background:var(--soft);border:1px solid var(--line);border-radius:8px}.kpi strong{display:block;font-size:25px;line-height:1.15;font-variant-numeric:tabular-nums}.kpi span{display:block;margin-top:6px;color:var(--muted);font-size:13px}main{padding:30px 0 56px}section{margin:0 0 30px}.section-head{display:grid;grid-template-columns:64px 1fr;gap:14px;align-items:end;margin-bottom:14px}.section-no{color:var(--line-strong);font-size:30px;line-height:1;font-weight:780;font-variant-numeric:tabular-nums}h2{margin:0;font-size:25px;line-height:1.2;letter-spacing:0}h3{margin:18px 0 8px;font-size:17px}p{margin:0 0 12px}ul{margin:0;padding-left:20px}li{margin:6px 0}a{color:var(--accent);text-decoration-thickness:1px;text-underline-offset:3px}code{padding:1px 5px;border:1px solid var(--line);border-radius:5px;background:var(--soft);font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.92em}.panel{padding:20px;background:var(--surface);border:1px solid var(--line);border-radius:8px;box-shadow:var(--shadow)}.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}.diagram{display:block;width:100%;min-height:560px;background:var(--soft);border:1px solid var(--line);border-radius:8px}.diagram text{fill:var(--text);font:13px system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}.diagram .muted{fill:var(--muted);font-size:11px}.diagram .box{fill:var(--surface);stroke:var(--line-strong);rx:8}.diagram .core{fill:var(--accent-soft);stroke:var(--accent);rx:8}.diagram .arrow{stroke:var(--accent);stroke-width:2;fill:none;marker-end:url(#arrow)}table{width:100%;border-collapse:collapse;margin-top:8px}th,td{border-bottom:1px solid var(--line);padding:10px 8px;text-align:left;vertical-align:top}th{color:var(--muted);font-size:12px;text-transform:uppercase}.tag{display:inline-block;border-radius:999px;padding:2px 8px;font-size:12px;font-weight:750;white-space:nowrap}.tag.high{color:var(--red);background:var(--red-soft)}.tag.medium{color:var(--amber);background:var(--amber-soft)}.tag.low{color:var(--green);background:var(--green-soft)}footer{margin-top:30px;padding-top:18px;border-top:1px solid var(--line);color:var(--muted);font-size:13px}@media(max-width:760px){.wrap{width:min(100% - 22px,1180px)}.hero{padding-top:24px}h1{font-size:34px}.kpis,.grid{grid-template-columns:1fr}.section-head{grid-template-columns:44px 1fr}.diagram{min-height:720px}}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap hero">
+      <a class="back" href="index.html">Back to contents</a>
+      <p class="eyebrow">Paperclip architecture artifact 04</p>
+      <h1>Integrations And Extensions</h1>
+      <p class="subtitle">Paperclip exposes client APIs and extension hooks through distinct boundaries: REST, UI, CLI, MCP, adapters, plugin workers, environment runtimes, storage providers, secrets providers, and telemetry.</p>
+      <div class="kpis" aria-label="Integration facts">
+        <div class="kpi"><strong>REST</strong><span>Primary API surface under /api</span></div>
+        <div class="kpi"><strong>Adapters</strong><span>Concrete agent execution boundary</span></div>
+        <div class="kpi"><strong>Plugins</strong><span>Out-of-process JSON-RPC workers</span></div>
+        <div class="kpi"><strong>MCP</strong><span>Thin wrapper over REST, not DB logic</span></div>
+      </div>
+    </div>
+  </header>
+  <main class="wrap">
+    <section>
+      <div class="section-head"><div class="section-no">01</div><h2>Boundary Diagram</h2></div>
+      <div class="panel">
+        <svg class="diagram" viewBox="0 0 1180 590" role="img" aria-label="Paperclip integration and extension boundary diagram">
+          <defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="#12695c"></path></marker></defs>
+          <rect class="box" x="45" y="60" width="170" height="62"></rect><text x="130" y="86" text-anchor="middle">React UI</text><text x="130" y="106" text-anchor="middle" class="muted">browser client</text>
+          <rect class="box" x="45" y="170" width="170" height="62"></rect><text x="130" y="196" text-anchor="middle">CLI</text><text x="130" y="216" text-anchor="middle" class="muted">HTTP client</text>
+          <rect class="box" x="45" y="280" width="170" height="62"></rect><text x="130" y="306" text-anchor="middle">MCP Server</text><text x="130" y="326" text-anchor="middle" class="muted">REST wrapper</text>
+
+          <rect class="core" x="340" y="120" width="240" height="210"></rect><text x="460" y="152" text-anchor="middle">Paperclip Server API</text><text x="460" y="176" text-anchor="middle" class="muted">routes, auth, services</text><rect class="box" x="378" y="214" width="164" height="58"></rect><text x="460" y="248" text-anchor="middle">Heartbeat Service</text>
+
+          <rect class="box" x="720" y="40" width="190" height="64"></rect><text x="815" y="68" text-anchor="middle">Adapter Registry</text><text x="815" y="88" text-anchor="middle" class="muted">built-in + plugin adapters</text>
+          <rect class="box" x="720" y="148" width="190" height="64"></rect><text x="815" y="176" text-anchor="middle">Environment Runtime</text><text x="815" y="196" text-anchor="middle" class="muted">lease + target</text>
+          <rect class="box" x="720" y="256" width="190" height="64"></rect><text x="815" y="284" text-anchor="middle">Plugin Loader</text><text x="815" y="304" text-anchor="middle" class="muted">manifest, jobs, tools</text>
+          <rect class="box" x="720" y="364" width="190" height="64"></rect><text x="815" y="392" text-anchor="middle">Storage / Secrets</text><text x="815" y="412" text-anchor="middle" class="muted">provider boundaries</text>
+
+          <rect class="box" x="980" y="42" width="150" height="62"></rect><text x="1055" y="68" text-anchor="middle">Agent Runtime</text><text x="1055" y="88" text-anchor="middle" class="muted">Claude, Codex, etc.</text>
+          <rect class="box" x="980" y="256" width="150" height="62"></rect><text x="1055" y="282" text-anchor="middle">Plugin Worker</text><text x="1055" y="302" text-anchor="middle" class="muted">JSON-RPC stdio</text>
+          <rect class="box" x="980" y="364" width="150" height="62"></rect><text x="1055" y="390" text-anchor="middle">Provider</text><text x="1055" y="410" text-anchor="middle" class="muted">storage/secrets</text>
+
+          <path class="arrow" d="M215 91 H340"></path><path class="arrow" d="M215 201 H340"></path><path class="arrow" d="M215 311 H340"></path>
+          <path class="arrow" d="M580 178 H720"></path><path class="arrow" d="M580 230 H720"></path><path class="arrow" d="M580 282 H720"></path><path class="arrow" d="M580 318 C635 318 650 396 720 396"></path>
+          <path class="arrow" d="M910 72 H980"></path><path class="arrow" d="M910 288 H980"></path><path class="arrow" d="M910 396 H980"></path>
+          <text x="590" y="510" text-anchor="middle" class="muted">Clients call API. Adapters execute agents. Plugins run as isolated workers. Providers remain behind server-owned policy wrappers.</text>
+        </svg>
+      </div>
+    </section>
+    <section>
+      <div class="section-head"><div class="section-no">02</div><h2>Extension Surfaces</h2></div>
+      <div class="panel">
+        <table>
+          <thead><tr><th>Surface</th><th>Contract</th><th>Source anchor</th></tr></thead>
+          <tbody>
+            <tr><td>REST API</td><td>Broad route tree mounted under <code>/api</code> for companies, agents, issues, routines, environments, workspaces, goals, approvals, secrets, costs, plugins, adapters, and more.</td><td><code>server/src/app.ts:208-322</code></td></tr>
+            <tr><td>CLI</td><td>Command groups over an HTTP client with auth and run headers.</td><td><code>cli/src/index.ts:50-201</code>, <code>cli/src/client/http.ts:53-180</code></td></tr>
+            <tr><td>MCP</td><td>Documented as a thin REST wrapper with no direct DB or business logic.</td><td><code>packages/mcp-server/README.md:1-17</code></td></tr>
+            <tr><td>Adapters</td><td>Built-in and plugin-loaded execution runtimes invoked through normalized <code>adapter.execute()</code>.</td><td><code>server/src/adapters/registry.ts:1-617</code>, <code>heartbeat.ts:8962-9025</code></td></tr>
+            <tr><td>Plugins</td><td>Manifest-driven child processes with JSON-RPC stdio, jobs, tools, webhooks, migrations, and host handlers.</td><td><code>plugin-loader.ts:1-20</code>, <code>1785-1960</code>, <code>plugin-worker-manager.ts:1-19</code></td></tr>
+            <tr><td>Environment runtimes</td><td>Resolve lease, transport, workspace realization, and adapter execution target.</td><td><code>environment-run-orchestrator.ts:157-573</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+    <section>
+      <div class="section-head"><div class="section-no">03</div><h2>Security-Sensitive Edges</h2></div>
+      <div class="grid">
+        <div class="panel"><h3>Adapters</h3><p>Adapters receive execution context, workspace/transport details, log callbacks, spawn hooks, and optionally local agent JWTs. Treat new adapters as privileged execution code.</p></div>
+        <div class="panel"><h3>Plugins</h3><p>Plugins can add jobs, tools, webhooks, migrations, and workers. Manifest validation and capability-gated host handlers are critical.</p></div>
+        <div class="panel"><h3>Auth</h3><p>Local trusted board mode and authenticated Better Auth/API key/JWT paths have different threat models. Source: <code>server/src/middleware/auth.ts:22-280</code>.</p></div>
+        <div class="panel"><h3>Providers</h3><p>Storage and secrets providers must preserve company isolation, traversal protection, redaction, and runtime binding behavior.</p></div>
+      </div>
+    </section>
+    <footer>
+      Source basis: <code>../agent/04-integration-and-extension-points.md</code>, app routes, CLI, MCP, adapter registry, plugin loader, worker manager, auth middleware, storage, secrets, and environment runtime files.
+    </footer>
+  </main>
+</body>
+</html>
