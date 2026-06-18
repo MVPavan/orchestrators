@@ -1,0 +1,652 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Agent SDK Stack Around LiteLLM Proxy</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #f7f7f4;
+      --surface: #ffffff;
+      --surface-2: #f0f1ed;
+      --text: #1e2528;
+      --muted: #657178;
+      --border: #d9ded8;
+      --accent: #246b5d;
+      --accent-soft: #e1f0eb;
+      --green: #19764c;
+      --green-soft: #dff3e9;
+      --amber: #8a5b05;
+      --amber-soft: #fff0cd;
+      --red: #a13a32;
+      --red-soft: #fde1dd;
+      --code: #142225;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #111414;
+        --surface: #191d1e;
+        --surface-2: #202627;
+        --text: #eef2ef;
+        --muted: #a7b0ad;
+        --border: #333b3b;
+        --accent: #6fc3ae;
+        --accent-soft: #15342d;
+        --green: #7bdca8;
+        --green-soft: #153324;
+        --amber: #f0c26b;
+        --amber-soft: #392a0e;
+        --red: #ee8d82;
+        --red-soft: #3d1c19;
+        --code: #edf7f4;
+        --shadow: none;
+      }
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font: 15px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    main {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 40px 24px 64px;
+    }
+    header {
+      margin-bottom: 28px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 24px;
+    }
+    .eyebrow {
+      color: var(--accent);
+      font-weight: 700;
+      letter-spacing: 0;
+      text-transform: uppercase;
+      font-size: 12px;
+    }
+    h1 {
+      margin: 6px 0 8px;
+      font-size: clamp(30px, 4vw, 48px);
+      line-height: 1.08;
+      letter-spacing: 0;
+    }
+    .subtitle {
+      max-width: 900px;
+      margin: 0;
+      color: var(--muted);
+      font-size: 17px;
+    }
+    .kpis {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin: 24px 0 4px;
+    }
+    .kpi {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px;
+      box-shadow: var(--shadow);
+      min-height: 120px;
+    }
+    .kpi strong {
+      display: block;
+      color: var(--code);
+      font-size: 21px;
+      line-height: 1.2;
+      margin-bottom: 8px;
+    }
+    .kpi span {
+      display: block;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.4;
+    }
+    section { margin-top: 34px; }
+    .section-head {
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 8px;
+      margin-bottom: 16px;
+    }
+    .section-num {
+      color: var(--muted);
+      font-size: 26px;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+    }
+    h2 {
+      margin: 0;
+      font-size: 22px;
+      letter-spacing: 0;
+    }
+    h3 {
+      margin: 20px 0 8px;
+      font-size: 16px;
+      letter-spacing: 0;
+    }
+    p { margin: 0 0 12px; }
+    a { color: var(--accent); }
+    code {
+      color: var(--code);
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      padding: 1px 5px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.92em;
+    }
+    .callout {
+      background: var(--accent-soft);
+      border: 1px solid color-mix(in srgb, var(--accent) 35%, var(--border));
+      border-radius: 8px;
+      padding: 16px;
+      margin: 16px 0;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 12px 0 18px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    th, td {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+      text-align: left;
+    }
+    th {
+      background: var(--surface-2);
+      color: var(--text);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0;
+    }
+    tr:last-child td { border-bottom: 0; }
+    .tag {
+      display: inline-block;
+      border-radius: 999px;
+      padding: 2px 8px;
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .tag.high { background: var(--green-soft); color: var(--green); }
+    .tag.med { background: var(--amber-soft); color: var(--amber); }
+    .tag.risk { background: var(--red-soft); color: var(--red); }
+    ul {
+      margin: 8px 0 14px;
+      padding-left: 20px;
+    }
+    li { margin: 5px 0; }
+    .source-list {
+      columns: 2;
+      column-gap: 28px;
+      padding-left: 18px;
+    }
+    .source-list li {
+      break-inside: avoid;
+      margin-bottom: 8px;
+    }
+    .small {
+      color: var(--muted);
+      font-size: 13px;
+    }
+    footer {
+      margin-top: 42px;
+      padding-top: 18px;
+      border-top: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 13px;
+    }
+    @media (max-width: 720px) {
+      main { padding: 28px 16px 48px; }
+      .kpis, .grid { grid-template-columns: 1fr; }
+      .source-list { columns: 1; }
+      table { font-size: 13px; }
+      th, td { padding: 8px; }
+    }
+  </style>
+</head>
+<body>
+<main>
+  <header>
+    <div class="eyebrow">BD orch-0sc.3 | Deep research | Retrieved 2026-06-15</div>
+    <h1>Agent SDK stack around LiteLLM Proxy</h1>
+    <p class="subtitle">
+      Consolidated sub-agent research on OpenAI Agents SDK, Anthropic/Claude tooling, Pydantic AI, LangGraph, the langchain-ai/deepagents repository, and LiteLLM Proxy after the FastAPI and React/Vite decisions.
+    </p>
+    <div class="kpis">
+      <div class="kpi">
+        <strong>LiteLLM stays gateway</strong>
+        <span>Use it for model routing, keys, spend, fallback, and gateway logging, not agent state.</span>
+      </div>
+      <div class="kpi">
+        <strong>Pydantic AI default</strong>
+        <span>Use as the typed Python agent SDK layer inside FastAPI.</span>
+      </div>
+      <div class="kpi">
+        <strong>App model is central</strong>
+        <span><code>Run</code>, <code>Session</code>, <code>ToolCall</code>, <code>Artifact</code>, and <code>Approval</code> stay app-owned.</span>
+      </div>
+      <div class="kpi">
+        <strong>Sidecar SDK lanes</strong>
+        <span>Use OpenAI, Claude, LangGraph, or Deep Agents only where their native semantics matter.</span>
+      </div>
+    </div>
+  </header>
+
+  <section>
+    <div class="section-head"><span class="section-num">01</span><h2>Answer</h2></div>
+    <div class="callout">
+      <p><strong>Recommendation:</strong> make <strong>Pydantic AI</strong> the default in-process agent SDK layer behind FastAPI, talking to <strong>LiteLLM Proxy</strong> for model access. Do not make Pydantic AI the central product abstraction.</p>
+      <p><strong>Central product abstraction:</strong> own the orchestration domain in application code and Postgres: <code>Run</code>, <code>Session</code>, <code>Message</code>, <code>ToolCall</code>, <code>Approval</code>, <code>Artifact</code>, <code>Usage</code>, <code>TraceRef</code>, and <code>WorkflowState</code>. SDKs are execution adapters under that model.</p>
+    </div>
+    <p>
+      Use a thin custom LiteLLM path for one-shot/simple calls. Treat OpenAI Agents SDK as a credible conditional sidecar because it has official beta LiteLLM support, but require provider contract tests before making it central. Use Claude Agent SDK or Managed Agents as an adjacent Claude-native execution lane, not as a generic LiteLLM-backed client. Use LangGraph selectively after the worker/workflow decision if durable graph orchestration belongs inside the agent layer. Use Deep Agents as an optional LangChain worker harness for long-horizon research/code tasks, not as the default SDK.
+    </p>
+  </section>
+
+  <section>
+    <div class="section-head"><span class="section-num">02</span><h2>Context And Method</h2></div>
+    <p>
+      Research was split across sub-agents for LiteLLM Proxy, Pydantic AI, OpenAI Agents SDK, Anthropic/Claude tooling, LangGraph, Deep Agents, and a red-team composition pass. Two focused correction passes then inspected the actual <code>langchain-ai/deepagents</code> repository and OpenAI Agents SDK LiteLLM adapter docs/source.
+    </p>
+    <table>
+      <thead>
+        <tr><th>Fixed Decision</th><th>Implication For SDK Choice</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>FastAPI is the backend/API edge.</td>
+          <td>SDKs run behind FastAPI endpoints/workers; React never gets provider keys directly.</td>
+        </tr>
+        <tr>
+          <td>React + Vite is the default UI.</td>
+          <td>Expose app-owned SSE/WebSocket/event contracts, not raw SDK stream events.</td>
+        </tr>
+        <tr>
+          <td>LiteLLM Proxy is fixed.</td>
+          <td>Prefer SDKs that can use OpenAI-compatible gateway paths; provider-native lanes stay explicit sidecars.</td>
+        </tr>
+        <tr>
+          <td>Worker/workflow engine is not yet chosen.</td>
+          <td>Do not let an SDK preempt <code>orch-0sc.4</code> on durable queue/retry/resume semantics.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <div class="section-head"><span class="section-num">03</span><h2>Layered Architecture</h2></div>
+    <table>
+      <thead>
+        <tr><th>Layer</th><th>Owner</th><th>Decision</th><th>Notes</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Product state</td>
+          <td>Application + Postgres</td>
+          <td>Canonical source of truth.</td>
+          <td>Runs, sessions, messages, approvals, artifacts, costs, audit, workflow state.</td>
+        </tr>
+        <tr>
+          <td>Model access</td>
+          <td>LiteLLM Proxy</td>
+          <td>Central gateway.</td>
+          <td>Aliases, routing, keys, budgets, retries/fallbacks, logs. Not agent state.</td>
+        </tr>
+        <tr>
+          <td>Default agent SDK</td>
+          <td>Pydantic AI</td>
+          <td>Primary in-process Python agent layer.</td>
+          <td>Typed deps, structured outputs, tools/toolsets, deferred approvals, UI streams, LiteLLM provider.</td>
+        </tr>
+        <tr>
+          <td>Simple calls</td>
+          <td>Thin LiteLLM client</td>
+          <td>Use for one-shot or health/eval paths.</td>
+          <td>Only when tools, handoffs, durable sessions, and complex streaming are out of scope.</td>
+        </tr>
+        <tr>
+          <td>OpenAI-native lane</td>
+          <td>OpenAI Agents SDK</td>
+          <td>Sidecar adapter.</td>
+          <td>Use when OpenAI-native tracing, handoffs, guardrails, hosted/sandbox features matter.</td>
+        </tr>
+        <tr>
+          <td>Claude-native lane</td>
+          <td>Claude Messages / Agent SDK / Managed Agents</td>
+          <td>Adjacent runtime lane.</td>
+          <td>Agent SDK is a subprocess/session/sandbox runtime, not just an HTTP model client.</td>
+        </tr>
+        <tr>
+          <td>Durable graph runtime</td>
+          <td>LangGraph</td>
+          <td>Conditional after <code>orch-0sc.4</code>.</td>
+          <td>Use when custom durable graph orchestration, checkpointing, interrupts, or subgraphs belong inside the agent layer.</td>
+        </tr>
+        <tr>
+          <td>Optional worker harness</td>
+          <td>Deep Agents (<code>deepagents</code>)</td>
+          <td>Conditional worker lane, not the default SDK.</td>
+          <td>Standalone LangChain package built on LangChain/LangGraph; use for long-horizon workers needing planning, subagents, VFS/backends, context compression, memory/skills, HITL, and streaming.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <div class="section-head"><span class="section-num">04</span><h2>Decision Matrix</h2></div>
+    <table>
+      <thead>
+        <tr>
+          <th>Option</th>
+          <th>Best Fit</th>
+          <th>LiteLLM Fit</th>
+          <th>Sacrifices</th>
+          <th>Do Not Choose If</th>
+          <th>Verdict</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Pydantic AI</strong></td>
+          <td>Typed Python agent runs inside FastAPI: deps, tools, structured output, streams, evals, and durable execution integrations including Temporal and Prefect.</td>
+          <td>Strong: documented LiteLLM provider / OpenAI-compatible path.</td>
+          <td>No first-class product artifact lifecycle; product state remains yours. Temporal mode has stable-name, serialization, streaming, and activity-retry constraints.</td>
+          <td>You need SDK-owned workspace/sandbox artifacts as the core product behavior.</td>
+          <td><span class="tag high">Default SDK layer</span></td>
+        </tr>
+        <tr>
+          <td><strong>OpenAI Agents SDK</strong></td>
+          <td>OpenAI-native agent apps, tracing, guardrails, handoffs, hosted tools, sandbox/workspace tasks; credible multi-provider lane when the LiteLLM adapter fits.</td>
+          <td>Official but beta: optional <code>openai-agents[litellm]</code> support via <code>LitellmModel</code>/<code>LitellmProvider</code> using LiteLLM Python <code>acompletion</code>; separate OpenAI-compatible <code>base_url</code> path can target LiteLLM Proxy.</td>
+          <td>Provider feature parity is not guaranteed: tools, handoffs, structured outputs, usage, Responses-only features, and tracing/export behavior need target-provider tests. Temporal support exists primarily through Temporal Python's <code>temporalio.contrib.openai_agents</code> integration, not a prominent OpenAI docs page.</td>
+          <td>You need every run to preserve strict tool/schema/hosted-feature behavior across arbitrary LiteLLM aliases without contract tests.</td>
+          <td><span class="tag med">Conditional sidecar / spike candidate</span></td>
+        </tr>
+        <tr>
+          <td><strong>Claude Agent SDK / Managed Agents</strong></td>
+          <td>Claude-native code/file/bash/computer/tool workflows with explicit sandbox/session semantics.</td>
+          <td>Ordinary Messages calls can use LiteLLM; Agent SDK should be adjacent/native.</td>
+          <td>Subprocess/sandbox/session hosting, beta headers, retention caveats.</td>
+          <td>You want a generic OpenAI-compatible SDK wrapper.</td>
+          <td><span class="tag med">Adjacent lane</span></td>
+        </tr>
+        <tr>
+          <td><strong>LangGraph</strong></td>
+          <td>Durable state graphs, interrupts, checkpointing, human-in-loop, long-running agents.</td>
+          <td>Viable through LangChain model wrappers, but provider fields can leak.</td>
+          <td>Can become the workflow engine by accident.</td>
+          <td><code>orch-0sc.4</code> has not assigned durable orchestration responsibilities yet.</td>
+          <td><span class="tag med">Conditional</span></td>
+        </tr>
+        <tr>
+          <td><strong>Deep Agents (<code>deepagents</code>)</strong></td>
+          <td>LangChain/LangGraph worker harness for long-horizon tasks: planning/todos, subagents, VFS/backends, context compression, memory/skills, HITL, and streaming.</td>
+          <td>Indirect: works with LangChain chat models that support tool calling. LiteLLM use needs a LangChain/LiteLLM or OpenAI-compatible route plus contract tests.</td>
+          <td>Adopts LangChain/LangGraph runtime, middleware, and backend model; filesystem/shell safety is backend-level, and permissions do not cover custom/MCP tools or sandbox execution.</td>
+          <td>You only need typed FastAPI-local agent runs, strict app-owned artifacts/approvals, or LiteLLM-first neutrality.</td>
+          <td><span class="tag med">Optional worker harness</span></td>
+        </tr>
+        <tr>
+          <td><strong>Thin custom LiteLLM loop</strong></td>
+          <td>One-shot completions, eval probes, model health checks, routes without tools/handoffs.</td>
+          <td>Strong.</td>
+          <td>You rebuild agent loops, approvals, streaming, context, retries, and traces.</td>
+          <td>The workflow needs tools, human approval, handoffs, or structured execution.</td>
+          <td><span class="tag med">Fallback path</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <div class="section-head"><span class="section-num">05</span><h2>Key Findings</h2></div>
+    <div class="grid">
+      <div class="panel">
+        <h3>Converging Evidence</h3>
+        <ul>
+          <li>LiteLLM is a good gateway, but not a universal feature-parity layer. Tool calling, strict structured outputs, Responses features, and provider-specific metadata need contract tests.</li>
+          <li>Pydantic AI maps best to a Python/FastAPI/Pydantic backend: typed dependencies, structured outputs, tools/toolsets, deferred approvals, streaming, evals, LiteLLM/OpenAI-compatible support, and official durable execution integrations.</li>
+          <li>OpenAI Agents SDK officially supports LiteLLM through the optional <code>openai-agents[litellm]</code> extra, <code>LitellmModel</code>, <code>LitellmProvider</code>, and <code>litellm/...</code> model names.</li>
+          <li>Pydantic AI's Temporal integration wraps agents with <code>TemporalAgent</code> and offloads model, I/O tool, and MCP communication to Temporal activities. OpenAI Agents SDK also has a Temporal integration path through <code>temporalio.contrib.openai_agents</code>.</li>
+          <li>SDK session/message history is not a product database. Durable sessions, artifacts, audit, tenancy, costs, and approvals need app-owned storage.</li>
+          <li>LangGraph is a serious runtime for interrupts/checkpoints/stateful agents, but choosing it centrally would preempt the worker/workflow decision.</li>
+          <li>Deep Agents is a standalone <code>deepagents</code> package from LangChain, but not an independent runtime: it is an opinionated harness on LangChain <code>create_agent</code> and LangGraph, bundling planning, filesystem/backends, subagents, context compression, memory/skills, HITL, and streaming.</li>
+        </ul>
+      </div>
+      <div class="panel">
+        <h3>Important Gaps</h3>
+        <ul>
+          <li>Remaining OpenAI Agents SDK risk is not LiteLLM absence; it is beta/best-effort adapter status and provider-specific gaps in tools, structured outputs, usage, tracing export, and Responses-only features.</li>
+          <li>Pydantic AI tools can return multimodal objects, but no researched source established a full artifact lifecycle with ACLs, storage, retention, previews, and provenance.</li>
+          <li>Temporal integrations do not remove app-level responsibility for product state, streaming projection, activity idempotency, payload sizing, approval audit, and reconciliation.</li>
+          <li>LiteLLM JSON mode is documented; strict schema parity across providers was not established.</li>
+          <li>No primary source showed first-class Deep Agents support for LiteLLM Proxy. Treat LiteLLM compatibility as indirect through LangChain chat-model integration and verify tool calling, structured output, streaming, and provider metadata with contract tests.</li>
+          <li>Worker durability, retry/resume, queueing, scheduling, cancellation, stream replay, and fanout belong to <code>orch-0sc.4</code>.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head"><span class="section-num">06</span><h2>Failure Modes</h2></div>
+    <table>
+      <thead>
+        <tr><th>Risk</th><th>Severity</th><th>Mitigation</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>SDK internals become the product's durable session/artifact database.</td>
+          <td><span class="tag risk">High</span></td>
+          <td>Persist canonical product state in app-owned Postgres tables and map SDK messages/events at boundaries.</td>
+        </tr>
+        <tr>
+          <td>LiteLLM silently drops or translates provider-specific behavior.</td>
+          <td><span class="tag risk">High</span></td>
+          <td>Disable silent parameter dropping for critical runs and run model-alias contract tests for tools, streams, schemas, and fallbacks.</td>
+        </tr>
+        <tr>
+          <td>Duplicate retry/fallback layers inflate cost and obscure failures.</td>
+          <td><span class="tag med">Medium</span></td>
+          <td>Let LiteLLM own gateway retries/fallbacks; keep SDK retries scoped to tool-level recoverable errors.</td>
+        </tr>
+        <tr>
+          <td>OpenAI/Claude native sidecars split state and audit trails.</td>
+          <td><span class="tag med">Medium</span></td>
+          <td>Wrap every native lane behind the same <code>AgentRunService</code> run/event/artifact contract.</td>
+        </tr>
+        <tr>
+          <td>LangGraph or Deep Agents absorbs workflow engine responsibilities prematurely.</td>
+          <td><span class="tag med">Medium</span></td>
+          <td>Wait for <code>orch-0sc.4</code>; if used now, use only for a spike with explicit boundaries.</td>
+        </tr>
+        <tr>
+          <td>Sandbox/file/bash tools execute without enough isolation.</td>
+          <td><span class="tag risk">High</span></td>
+          <td>Require sandboxing, path allowlists, approval gates, audit logs, and artifact provenance before enabling destructive tools.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <div class="section-head"><span class="section-num">07</span><h2>Validation Plan</h2></div>
+    <p>
+      Before implementation locks in package versions, run the same LiteLLM model alias through candidate execution paths. This belongs in implementation or spike work, not in this research artifact.
+    </p>
+    <table>
+      <thead>
+        <tr><th>Test</th><th>Required Evidence</th><th>Why It Matters</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Non-streaming and streaming run</td>
+          <td>Same alias works through Pydantic AI and thin LiteLLM path.</td>
+          <td>Proves basic gateway contract.</td>
+        </tr>
+        <tr>
+          <td>Tool call round trip</td>
+          <td>Model emits tool call, app executes, model consumes result.</td>
+          <td>Agent SDK is useless without reliable tools.</td>
+        </tr>
+        <tr>
+          <td>Strict structured output</td>
+          <td>Pydantic model validates across chosen providers.</td>
+          <td>LiteLLM/provider parity is not guaranteed.</td>
+        </tr>
+        <tr>
+          <td>Fallback and budget exhaustion</td>
+          <td>Clear error/event emitted and no duplicate runaway retry.</td>
+          <td>Cost and reliability controls must be visible to UI/operators.</td>
+        </tr>
+        <tr>
+          <td>Correlation metadata</td>
+          <td>Run ID appears in FastAPI logs, LiteLLM logs, SDK traces, and UI stream.</td>
+          <td>Prevents observability fragmentation.</td>
+        </tr>
+        <tr>
+          <td>Human approval pause</td>
+          <td>Tool request persists, UI approves/rejects, run resumes idempotently.</td>
+          <td>Connects SDK behavior to product approvals.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <div class="section-head"><span class="section-num">08</span><h2>Open Questions</h2></div>
+    <table>
+      <thead>
+        <tr><th>Question</th><th>Owner</th><th>Suggested Default</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Which stream protocol should React consume: custom SSE, AG-UI, or Vercel AI Data Stream?</td>
+          <td>UI/API design</td>
+          <td>Start with app-owned SSE events; evaluate adapters after a spike.</td>
+        </tr>
+        <tr>
+          <td>Which workflow engine owns retry/resume/cancellation?</td>
+          <td><code>orch-0sc.4</code></td>
+          <td>Keep Pydantic AI runs bounded until that decision lands.</td>
+        </tr>
+        <tr>
+          <td>Will code/file/bash artifact execution be in v1?</td>
+          <td>Product scope</td>
+          <td>If yes, sidecar OpenAI/Claude/Deep Agents lanes need sandbox design.</td>
+        </tr>
+        <tr>
+          <td>Can target LiteLLM aliases preserve strict output/tool behavior?</td>
+          <td>SDK spike</td>
+          <td>Require contract tests before relying on cross-provider portability.</td>
+        </tr>
+        <tr>
+          <td>Can OpenAI Agents SDK preserve tools, handoffs, streaming usage, tracing, and strict outputs through the exact LiteLLM aliases?</td>
+          <td>SDK spike</td>
+          <td>Yes; official LiteLLM support exists, but target-provider behavior still needs contract tests.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <div class="section-head"><span class="section-num">09</span><h2>Sources</h2></div>
+    <p class="small">All web sources were gathered by sub-agents and retrieved on 2026-06-15 unless noted. Focused correction passes inspected the actual <code>langchain-ai/deepagents</code> repo, OpenAI Agents SDK LiteLLM adapter docs/source, and Temporal integration evidence for Pydantic AI and OpenAI Agents SDK.</p>
+    <ol class="source-list">
+      <li><a href="fastapi-core-framework.html">Prior FastAPI core framework decision</a></li>
+      <li><a href="ui-layer-fastapi-product.html">Prior React/Vite UI decision</a></li>
+      <li><a href="https://docs.litellm.ai/docs/simple_proxy">LiteLLM Proxy quickstart</a></li>
+      <li><a href="https://docs.litellm.ai/docs/supported_endpoints">LiteLLM supported endpoints</a></li>
+      <li><a href="https://docs.litellm.ai/docs/completion/input">LiteLLM input parameters</a></li>
+      <li><a href="https://docs.litellm.ai/docs/proxy/configs">LiteLLM config</a></li>
+      <li><a href="https://docs.litellm.ai/docs/routing">LiteLLM routing</a></li>
+      <li><a href="https://docs.litellm.ai/docs/proxy/reliability">LiteLLM reliability/fallbacks</a></li>
+      <li><a href="https://docs.litellm.ai/docs/proxy/virtual_keys">LiteLLM virtual keys</a></li>
+      <li><a href="https://docs.litellm.ai/docs/proxy/deploy">LiteLLM deployment</a></li>
+      <li><a href="https://docs.litellm.ai/docs/anthropic_unified/">LiteLLM Anthropic messages path</a></li>
+      <li><a href="https://code.claude.com/docs/en/llm-gateway">Claude Code LLM gateway</a></li>
+      <li><a href="https://pydantic.dev/docs/ai/overview/">Pydantic AI overview</a></li>
+      <li><a href="https://pydantic.dev/docs/ai/models/overview/">Pydantic AI models/providers</a></li>
+      <li><a href="https://pydantic.dev/docs/ai/models/openai/">Pydantic AI OpenAI/LiteLLM provider docs</a></li>
+      <li><a href="https://pydantic.dev/docs/ai/core-concepts/output/">Pydantic AI outputs and streaming</a></li>
+      <li><a href="https://pydantic.dev/docs/ai/core-concepts/dependencies/">Pydantic AI dependencies</a></li>
+      <li><a href="https://pydantic.dev/docs/ai/tools-toolsets/tools/">Pydantic AI tools</a></li>
+      <li><a href="https://pydantic.dev/docs/ai/tools-toolsets/deferred-tools/">Pydantic AI deferred tools</a></li>
+      <li><a href="https://pydantic.dev/docs/ai/core-concepts/message-history/">Pydantic AI message history</a></li>
+      <li><a href="https://pydantic.dev/docs/ai/integrations/durable_execution/overview/">Pydantic AI durable execution integrations</a></li>
+      <li><a href="https://pydantic.dev/docs/ai/integrations/durable_execution/temporal/">Pydantic AI Temporal integration</a></li>
+      <li><a href="https://pydantic.dev/docs/ai/integrations/durable_execution/prefect/">Pydantic AI Prefect integration</a></li>
+      <li><a href="https://pydantic.dev/docs/ai/api/pydantic-ai/durable_exec/">Pydantic AI durable execution API reference</a></li>
+      <li><a href="https://pydantic.dev/docs/ai/integrations/ui/overview/">Pydantic AI UI integrations</a></li>
+      <li><a href="https://pydantic.dev/docs/ai/project/version-policy/">Pydantic AI version policy</a></li>
+      <li><a href="https://openai.github.io/openai-agents-python/">OpenAI Agents SDK docs</a></li>
+      <li><a href="https://github.com/openai/openai-agents-python">OpenAI Agents SDK GitHub</a></li>
+      <li><a href="https://openai.github.io/openai-agents-python/models/">OpenAI Agents SDK models and third-party adapters</a></li>
+      <li><a href="https://openai.github.io/openai-agents-python/ref/extensions/models/litellm_model/">OpenAI Agents SDK LitellmModel API reference</a></li>
+      <li><a href="https://openai.github.io/openai-agents-python/ref/extensions/models/litellm_provider/">OpenAI Agents SDK LitellmProvider API reference</a></li>
+      <li><a href="https://github.com/openai/openai-agents-python/blob/main/src/agents/extensions/models/litellm_model.py">OpenAI Agents SDK LitellmModel source</a></li>
+      <li><a href="https://github.com/openai/openai-agents-python/blob/main/pyproject.toml">OpenAI Agents SDK optional dependencies</a></li>
+      <li><a href="https://raw.githubusercontent.com/openai/openai-agents-python/main/pyproject.toml">OpenAI Agents SDK pyproject metadata</a></li>
+      <li><a href="https://docs.temporal.io/develop/python/integrations">Temporal Python integrations</a></li>
+      <li><a href="https://github.com/temporalio/sdk-python/blob/main/temporalio/contrib/openai_agents/README.md">Temporal OpenAI Agents SDK integration README</a></li>
+      <li><a href="https://platform.openai.com/docs/guides/responses">OpenAI Responses API guide</a></li>
+      <li><a href="https://platform.openai.com/docs/guides/agents">OpenAI agents guide</a></li>
+      <li><a href="https://platform.claude.com/docs/en/build-with-claude/working-with-messages">Anthropic Messages API</a></li>
+      <li><a href="https://platform.claude.com/docs/en/agents-and-tools/tool-use/how-tool-use-works">Anthropic tool use</a></li>
+      <li><a href="https://code.claude.com/docs/en/agent-sdk/overview">Claude Agent SDK overview</a></li>
+      <li><a href="https://code.claude.com/docs/en/agent-sdk/hosting">Claude Agent SDK hosting</a></li>
+      <li><a href="https://platform.claude.com/docs/en/managed-agents/overview">Claude Managed Agents</a></li>
+      <li><a href="https://docs.langchain.com/oss/python/langgraph/overview">LangGraph overview</a></li>
+      <li><a href="https://docs.langchain.com/oss/python/langgraph/persistence">LangGraph persistence</a></li>
+      <li><a href="https://docs.langchain.com/oss/python/langgraph/interrupts">LangGraph interrupts</a></li>
+      <li><a href="https://docs.langchain.com/oss/python/langgraph/event-streaming">LangGraph event streaming</a></li>
+      <li><a href="https://github.com/langchain-ai/deepagents">langchain-ai/deepagents GitHub repository</a></li>
+      <li><a href="https://pypi.org/project/deepagents/">deepagents PyPI package</a></li>
+      <li><a href="https://github.com/langchain-ai/deepagents/blob/main/libs/deepagents/pyproject.toml">deepagents pyproject.toml</a></li>
+      <li><a href="https://raw.githubusercontent.com/langchain-ai/deepagents/main/libs/deepagents/deepagents/graph.py">deepagents graph.py source</a></li>
+      <li><a href="https://docs.langchain.com/oss/python/deepagents/overview">Deep Agents overview</a></li>
+      <li><a href="https://docs.langchain.com/oss/python/deepagents/tools">Deep Agents tools</a></li>
+      <li><a href="https://docs.langchain.com/oss/python/deepagents/backends">Deep Agents backends</a></li>
+      <li><a href="https://docs.langchain.com/oss/python/deepagents/context-engineering">Deep Agents context engineering</a></li>
+      <li><a href="https://docs.langchain.com/oss/python/deepagents/permissions">Deep Agents permissions</a></li>
+      <li><a href="https://docs.langchain.com/oss/python/deepagents/human-in-the-loop">Deep Agents human-in-the-loop</a></li>
+      <li><a href="https://docs.langchain.com/oss/python/deepagents/streaming">Deep Agents streaming</a></li>
+      <li><a href="https://docs.langchain.com/oss/python/integrations/chat/openai">LangChain ChatOpenAI</a></li>
+      <li><a href="https://docs.litellm.ai/docs/providers">LiteLLM supported providers</a></li>
+      <li><a href="https://docs.litellm.ai/docs/proxy/user_keys">LiteLLM Proxy OpenAI-compatible client examples</a></li>
+      <li><a href="https://docs.langchain.com/langsmith/observability">LangSmith observability</a></li>
+    </ol>
+  </section>
+
+  <footer>
+    Generated for BD issue orch-0sc.3 in /data/codes/orchestrators. This is a consolidated orchestrator report from sub-agent research slices, anchored on the prior FastAPI and React/Vite decisions. Corrected on 2026-06-16 after focused validation of Temporal integrations.
+  </footer>
+</main>
+</body>
+</html>

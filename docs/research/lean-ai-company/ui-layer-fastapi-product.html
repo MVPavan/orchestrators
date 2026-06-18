@@ -1,0 +1,620 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>UI Layer For FastAPI Assistant Product</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #f7f7f4;
+      --surface: #ffffff;
+      --surface-2: #f0f1ed;
+      --text: #1e2528;
+      --muted: #657178;
+      --border: #d9ded8;
+      --accent: #246b5d;
+      --accent-soft: #e1f0eb;
+      --green: #19764c;
+      --green-soft: #dff3e9;
+      --amber: #8a5b05;
+      --amber-soft: #fff0cd;
+      --red: #a13a32;
+      --red-soft: #fde1dd;
+      --code: #142225;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #111414;
+        --surface: #191d1e;
+        --surface-2: #202627;
+        --text: #eef2ef;
+        --muted: #a7b0ad;
+        --border: #333b3b;
+        --accent: #6fc3ae;
+        --accent-soft: #15342d;
+        --green: #7bdca8;
+        --green-soft: #153324;
+        --amber: #f0c26b;
+        --amber-soft: #392a0e;
+        --red: #ee8d82;
+        --red-soft: #3d1c19;
+        --code: #edf7f4;
+        --shadow: none;
+      }
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font: 15px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    main {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 40px 24px 64px;
+    }
+    header {
+      margin-bottom: 28px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 24px;
+    }
+    .eyebrow {
+      color: var(--accent);
+      font-weight: 700;
+      letter-spacing: 0;
+      text-transform: uppercase;
+      font-size: 12px;
+    }
+    h1 {
+      margin: 6px 0 8px;
+      font-size: clamp(30px, 4vw, 48px);
+      line-height: 1.08;
+      letter-spacing: 0;
+    }
+    .subtitle {
+      max-width: 880px;
+      margin: 0;
+      color: var(--muted);
+      font-size: 17px;
+    }
+    .kpis {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin: 24px 0 4px;
+    }
+    .kpi {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px;
+      box-shadow: var(--shadow);
+      min-height: 120px;
+    }
+    .kpi strong {
+      display: block;
+      color: var(--code);
+      font-size: 22px;
+      line-height: 1.2;
+      margin-bottom: 8px;
+    }
+    .kpi span {
+      display: block;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.4;
+    }
+    section { margin-top: 34px; }
+    .section-head {
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 8px;
+      margin-bottom: 16px;
+    }
+    .section-num {
+      color: var(--muted);
+      font-size: 26px;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+    }
+    h2 {
+      margin: 0;
+      font-size: 22px;
+      letter-spacing: 0;
+    }
+    h3 {
+      margin: 20px 0 8px;
+      font-size: 16px;
+      letter-spacing: 0;
+    }
+    p { margin: 0 0 12px; }
+    a { color: var(--accent); }
+    .callout {
+      background: var(--accent-soft);
+      border: 1px solid color-mix(in srgb, var(--accent) 35%, var(--border));
+      border-radius: 8px;
+      padding: 16px;
+      margin: 16px 0;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 12px 0 18px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    th, td {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+      text-align: left;
+    }
+    th {
+      background: var(--surface-2);
+      color: var(--text);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0;
+    }
+    tr:last-child td { border-bottom: 0; }
+    .tag {
+      display: inline-block;
+      border-radius: 999px;
+      padding: 2px 8px;
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .tag.high { background: var(--green-soft); color: var(--green); }
+    .tag.med { background: var(--amber-soft); color: var(--amber); }
+    .tag.risk { background: var(--red-soft); color: var(--red); }
+    ul {
+      margin: 8px 0 14px;
+      padding-left: 20px;
+    }
+    li { margin: 5px 0; }
+    .source-list {
+      columns: 2;
+      column-gap: 28px;
+      padding-left: 18px;
+    }
+    .source-list li {
+      break-inside: avoid;
+      margin-bottom: 8px;
+    }
+    .small {
+      color: var(--muted);
+      font-size: 13px;
+    }
+    footer {
+      margin-top: 42px;
+      padding-top: 18px;
+      border-top: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 13px;
+    }
+    @media (max-width: 720px) {
+      main { padding: 28px 16px 48px; }
+      .kpis, .grid { grid-template-columns: 1fr; }
+      .source-list { columns: 1; }
+      table { font-size: 13px; }
+      th, td { padding: 8px; }
+    }
+  </style>
+</head>
+<body>
+<main>
+  <header>
+    <div class="eyebrow">BD orch-0sc.2 | Deep research | Retrieved 2026-06-15</div>
+    <h1>UI layer for a FastAPI assistant product</h1>
+    <p class="subtitle">
+      Consolidated sub-agent research on the UI approach for a FastAPI-backed personal assistant and multi-agent control plane, after the prior decision to use FastAPI as the core API layer.
+    </p>
+    <div class="kpis">
+      <div class="kpi">
+        <strong>React + Vite</strong>
+        <span>Recommended default for a real assistant cockpit over FastAPI APIs.</span>
+      </div>
+      <div class="kpi">
+        <strong>HTMX fallback</strong>
+        <span>Best for a small internal MVP with forms, lists, and simple streams.</span>
+      </div>
+      <div class="kpi">
+        <strong>Skip Next.js</strong>
+        <span>Until SSR, public pages, or a deliberate Node BFF is a real requirement.</span>
+      </div>
+      <div class="kpi">
+        <strong>Prototype tools</strong>
+        <span>Streamlit, Gradio, NiceGUI, Panel, and Dash are bounded surfaces, not the product shell.</span>
+      </div>
+    </div>
+  </header>
+
+  <section>
+    <div class="section-head"><span class="section-num">01</span><h2>Answer</h2></div>
+    <div class="callout">
+      <p><strong>Recommendation:</strong> build the main product UI as a <strong>React + Vite + TypeScript SPA</strong> over FastAPI APIs, preferably same-origin behind the same reverse proxy or served as built static assets by the FastAPI deployment.</p>
+      <p><strong>Reason:</strong> the named workflows are not just CRUD: assistant chat, workflow timelines, approval queues, artifact review, code diffs, streaming run status, and future multi-agent observability need reusable client state, dense components, rich diff/artifact rendering, and a mature browser UI ecosystem.</p>
+    </div>
+    <p>
+      The previous research decision fixed FastAPI as the backend/API edge. Django is therefore not a live framework candidate here except as a reminder that server-rendered/admin-heavy products can be simpler in a Django-style stack. For this FastAPI path, Next.js should not be introduced unless the product explicitly needs SSR/public web, React Server Components, or a Node BFF.
+    </p>
+  </section>
+
+  <section>
+    <div class="section-head"><span class="section-num">02</span><h2>Scope And Method</h2></div>
+    <p>
+      Four sub-agents researched independent slices: FastAPI server-rendered HTMX, React/Vite/Next.js, Python-native UI builders, and red-team workflow fit. Sources favored official docs, release notes, package docs, and browser platform references. The prior FastAPI decision was treated as fixed context.
+    </p>
+    <table>
+      <thead>
+        <tr><th>Question</th><th>Boundary</th><th>Evidence Type</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>What is the default product UI?</td>
+          <td>FastAPI backend is fixed; compare UI layers only.</td>
+          <td>React, Vite, HTMX, FastAPI, Starlette, Next.js, component and diff-library docs.</td>
+        </tr>
+        <tr>
+          <td>Can server-rendered FastAPI stay lean?</td>
+          <td>Jinja/HTMX/Stimulus/Alpine and SSE/WebSocket integration.</td>
+          <td>FastAPI templates/static docs, Starlette templates/responses, HTMX extensions, MDN.</td>
+        </tr>
+        <tr>
+          <td>Are Python-native UI tools good enough?</td>
+          <td>Reflex, NiceGUI, Streamlit, Gradio, Panel, Dash.</td>
+          <td>Official architecture, auth, deployment, release, and integration docs.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <div class="section-head"><span class="section-num">03</span><h2>Recommended Stack</h2></div>
+    <table>
+      <thead>
+        <tr><th>Layer</th><th>Default</th><th>Why</th><th>Caveat</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>UI runtime</td>
+          <td>React + Vite + TypeScript</td>
+          <td>Rich component/state ecosystem while keeping FastAPI as the backend.</td>
+          <td><span class="tag med">Frontend discipline tax</span></td>
+        </tr>
+        <tr>
+          <td>Server state</td>
+          <td>TanStack Query</td>
+          <td>Fetching, caching, synchronizing, and updating FastAPI-owned server state.</td>
+          <td><span class="tag med">Avoid duplicated workflow truth</span></td>
+        </tr>
+        <tr>
+          <td>Routing</td>
+          <td>TanStack Router or React Router</td>
+          <td>Typed URL/search state helps queues, filters, artifact panes, and stable review links.</td>
+          <td><span class="tag med">Choose once</span></td>
+        </tr>
+        <tr>
+          <td>Components</td>
+          <td>shadcn/ui + Radix + Tailwind</td>
+          <td>Editable component ownership with accessible primitives and Vite integration.</td>
+          <td><span class="tag med">You own updates</span></td>
+        </tr>
+        <tr>
+          <td>API contract</td>
+          <td>Generated OpenAPI TypeScript client/types</td>
+          <td>FastAPI already exposes OpenAPI; generated clients reduce drift.</td>
+          <td><span class="tag risk">Must be pinned and checked</span></td>
+        </tr>
+        <tr>
+          <td>Streaming</td>
+          <td>SSE/EventSource first; WebSocket only when bidirectional live control is needed</td>
+          <td>Most run status and token/status streams are server-to-client.</td>
+          <td><span class="tag med">Reconnect and fanout design required</span></td>
+        </tr>
+        <tr>
+          <td>Diff/artifact review</td>
+          <td>CodeMirror MergeView or Monaco DiffEditor; react-diff-view/diff2html for static diffs</td>
+          <td>JS ecosystem is much stronger for code review, artifact panes, and editor-like behavior.</td>
+          <td><span class="tag med">Review semantics remain product work</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <div class="section-head"><span class="section-num">04</span><h2>Option Matrix</h2></div>
+    <table>
+      <thead>
+        <tr>
+          <th>Option</th>
+          <th>Best Fit</th>
+          <th>Sacrifices</th>
+          <th>Operating Cost</th>
+          <th>Do Not Choose If</th>
+          <th>Verdict</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>React + Vite SPA</strong></td>
+          <td>Assistant cockpit, timelines, approvals, artifacts, diffs, live status, future richer UI.</td>
+          <td>Node tooling, frontend tests, state discipline, generated-client workflow.</td>
+          <td>Medium.</td>
+          <td>The first UI is under 3-5 simple internal screens and frontend skill is weak.</td>
+          <td><span class="tag high">Default</span></td>
+        </tr>
+        <tr>
+          <td><strong>FastAPI templates + HTMX</strong></td>
+          <td>Lean internal MVP, approval forms, simple status lists, simple timelines.</td>
+          <td>Less client-side state, weaker rich diff/artifact UX, fragment sprawl risk.</td>
+          <td>Low-medium.</td>
+          <td>The product needs a persistent multi-pane cockpit or IDE-like review.</td>
+          <td><span class="tag med">Fallback</span></td>
+        </tr>
+        <tr>
+          <td><strong>Next.js</strong></td>
+          <td>Public/SEO pages, SSR, React Server Components, deliberate Node BFF.</td>
+          <td>Second app server, duplicate auth/session risk, deployment complexity.</td>
+          <td>Medium-high.</td>
+          <td>FastAPI should remain the only backend/control plane.</td>
+          <td><span class="tag med">Upgrade trigger</span></td>
+        </tr>
+        <tr>
+          <td><strong>Reflex</strong></td>
+          <td>Python-first team that accepts Reflex as the UI framework.</td>
+          <td>Lock-in, WebSocket/state scaling, harder direct React control.</td>
+          <td>Medium.</td>
+          <td>Rich artifact/diff UX or direct frontend ecosystem control matters.</td>
+          <td><span class="tag med">Conditional</span></td>
+        </tr>
+        <tr>
+          <td><strong>NiceGUI</strong></td>
+          <td>Internal operator console, small trusted deployment, simple controls.</td>
+          <td>Single-worker/state caveats, product-UI ceiling.</td>
+          <td>Low-medium.</td>
+          <td>Multi-user polished product UI is the goal.</td>
+          <td><span class="tag med">Internal only</span></td>
+        </tr>
+        <tr>
+          <td><strong>Streamlit / Gradio</strong></td>
+          <td>Model demos, quick internal tools, eval workbenches, bounded chat surfaces.</td>
+          <td>Navigation, auth, audit, diff review, and workflow state do not map cleanly.</td>
+          <td>Low for prototypes; high if stretched.</td>
+          <td>The UI is the durable product shell.</td>
+          <td><span class="tag risk">Prototype only</span></td>
+        </tr>
+        <tr>
+          <td><strong>Panel / Dash</strong></td>
+          <td>Specialist analytics dashboards and monitoring subviews.</td>
+          <td>Dashboard-first mental model, not assistant/workflow-first.</td>
+          <td>Medium.</td>
+          <td>The product is a general assistant cockpit.</td>
+          <td><span class="tag med">Embedded sub-app</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <div class="section-head"><span class="section-num">05</span><h2>Workflow Fit</h2></div>
+    <table>
+      <thead>
+        <tr><th>Workflow</th><th>React + Vite Fit</th><th>HTMX Fit</th><th>Python-Native Tool Fit</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Assistant chat</td>
+          <td>Strong: streaming buffers, stateful composer, attachments, interrupt controls.</td>
+          <td>Good for simple chat via SSE fragments; weaker for rich controls.</td>
+          <td>Strong for demos; weaker for product navigation/state.</td>
+        </tr>
+        <tr>
+          <td>Workflow timelines</td>
+          <td>Strong: filtering, virtualization, replay, detail panes.</td>
+          <td>Good for simple append-only timelines.</td>
+          <td>Mixed; dashboard tools can help but product shell suffers.</td>
+        </tr>
+        <tr>
+          <td>Approval queues</td>
+          <td>Strong: optimistic updates, keyboard review, bulk actions.</td>
+          <td>Strong for form-driven queues.</td>
+          <td>Acceptable for internal console only.</td>
+        </tr>
+        <tr>
+          <td>Artifact review</td>
+          <td>Strong: panes, previews, file trees, local filters.</td>
+          <td>Acceptable for text/HTML/metadata; weak for complex previews.</td>
+          <td>Mixed; Gradio/Streamlit good for specific demos, not broad artifact shell.</td>
+        </tr>
+        <tr>
+          <td>Code diffs</td>
+          <td>Strongest: CodeMirror, Monaco, react-diff-view, diff2html ecosystem.</td>
+          <td>Acceptable for static rendered diffs; weaker for review interactions.</td>
+          <td>Weak for code-review-grade UX.</td>
+        </tr>
+        <tr>
+          <td>Streaming status</td>
+          <td>Strong with SSE first, WebSocket when needed.</td>
+          <td>Strong with HTMX SSE extension for one-way updates.</td>
+          <td>Often WebSocket/session coupled; scaling needs proof.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <div class="section-head"><span class="section-num">06</span><h2>Architecture Guidance</h2></div>
+    <div class="grid">
+      <div class="panel">
+        <h3>Keep FastAPI authoritative</h3>
+        <ul>
+          <li>FastAPI owns auth/session enforcement, OpenAPI, workflow APIs, artifact metadata, approval actions, and stream endpoints.</li>
+          <li>Postgres/workers own durable state; the browser displays and edits through APIs.</li>
+          <li>Generate TypeScript client/types from `/openapi.json` and fail CI if generated artifacts drift once CI exists.</li>
+          <li>Prefer same-origin deployment early to avoid avoidable CORS and cookie complexity.</li>
+        </ul>
+      </div>
+      <div class="panel">
+        <h3>Transport defaults</h3>
+        <ul>
+          <li>SSE/EventSource for one-way run status, token/status streams, queue updates, and artifact progress.</li>
+          <li>WebSocket only for frequent bidirectional control, live terminal/editor behavior, collaborative controls, or run steering.</li>
+          <li>Design reconnect, `Last-Event-ID`/resume, cancellation cleanup, and multi-worker fanout before scaling beyond one web process.</li>
+          <li>Do not make frontend state the source of truth for workflow progress.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head"><span class="section-num">07</span><h2>Counterarguments And Risks</h2></div>
+    <p>
+      The strongest case against React + Vite is real: it adds Node tooling, frontend skill demands, generated client discipline, API state management, accessibility work, and frontend tests. If the first release is a single-operator cockpit with fewer than five simple screens, no real diff viewer, and no dense artifact review, HTMX will ship faster and stay closer to FastAPI.
+    </p>
+    <table>
+      <thead>
+        <tr><th>Risk</th><th>Severity</th><th>Mitigation</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>React overbuilds an internal-only MVP.</td>
+          <td><span class="tag med">Medium</span></td>
+          <td>Start with a thin route set, TanStack Query only for server state, and postpone complex global state.</td>
+        </tr>
+        <tr>
+          <td>Frontend duplicates workflow state and creates split truth.</td>
+          <td><span class="tag risk">High</span></td>
+          <td>Keep Postgres/workers authoritative; browser state is selection, filters, optimistic UI, and stream buffers only.</td>
+        </tr>
+        <tr>
+          <td>Next.js creeps into backend responsibilities.</td>
+          <td><span class="tag risk">High</span></td>
+          <td>Do not add Next.js unless SSR/public web or a Node BFF is explicitly approved.</td>
+        </tr>
+        <tr>
+          <td>SSE/WebSocket reconnect and fanout bugs lose status events.</td>
+          <td><span class="tag med">Medium</span></td>
+          <td>Use server-side event history, resume tokens, and broker/event-log fanout before multi-worker scale.</td>
+        </tr>
+        <tr>
+          <td>Prototype tools become accidental product shell.</td>
+          <td><span class="tag med">Medium</span></td>
+          <td>Mount Streamlit/Gradio/NiceGUI only as bounded internal sub-apps with clear retirement criteria.</td>
+        </tr>
+        <tr>
+          <td>Diff libraries solve rendering but not review semantics.</td>
+          <td><span class="tag med">Medium</span></td>
+          <td>Plan file tree, comments, permissions, patch application, large-diff handling, and audit trails as product features.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <div class="section-head"><span class="section-num">08</span><h2>Upgrade Triggers</h2></div>
+    <table>
+      <thead>
+        <tr><th>Trigger</th><th>Move</th><th>Reason</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Under five simple internal screens, mostly forms and lists.</td>
+          <td>Use HTMX fallback instead of React.</td>
+          <td>Lower build and state-management burden.</td>
+        </tr>
+        <tr>
+          <td>Persistent multi-pane cockpit, artifact preview, diff review, stream replay, graph views.</td>
+          <td>Use or keep React + Vite.</td>
+          <td>Client-side component/state ecosystem earns its cost.</td>
+        </tr>
+        <tr>
+          <td>SEO/public pages, SSR-first product, React Server Components as data boundary.</td>
+          <td>Revisit Next.js.</td>
+          <td>Next has real value only when those requirements are first-order.</td>
+        </tr>
+        <tr>
+          <td>Python-only demo, eval workbench, or model-specific internal tool.</td>
+          <td>Mount Gradio/Streamlit/NiceGUI as bounded sub-app.</td>
+          <td>Fast iteration without committing the product shell.</td>
+        </tr>
+        <tr>
+          <td>Live bidirectional run steering, terminal/editor collaboration, or frequent control messages.</td>
+          <td>Add WebSocket channel.</td>
+          <td>SSE is intentionally one-way.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <div class="section-head"><span class="section-num">09</span><h2>Sources</h2></div>
+    <p class="small">All sources below were gathered by sub-agents and retrieved on 2026-06-15 unless noted. Official/current docs were weighted above commentary.</p>
+    <ol class="source-list">
+      <li><a href="fastapi-core-framework.html">Prior FastAPI core framework decision</a></li>
+      <li><a href="https://fastapi.tiangolo.com/advanced/templates/">FastAPI templates</a></li>
+      <li><a href="https://fastapi.tiangolo.com/tutorial/static-files/">FastAPI static files</a></li>
+      <li><a href="https://fastapi.tiangolo.com/tutorial/server-sent-events/">FastAPI server-sent events</a></li>
+      <li><a href="https://fastapi.tiangolo.com/advanced/websockets/">FastAPI WebSockets</a></li>
+      <li><a href="https://fastapi.tiangolo.com/tutorial/cors/">FastAPI CORS</a></li>
+      <li><a href="https://www.starlette.io/templates/">Starlette templates</a></li>
+      <li><a href="https://www.starlette.io/responses/">Starlette responses</a></li>
+      <li><a href="https://htmx.org/docs/">HTMX documentation</a></li>
+      <li><a href="https://htmx.org/extensions/sse/">HTMX SSE extension</a></li>
+      <li><a href="https://htmx.org/extensions/ws/">HTMX WebSocket extension</a></li>
+      <li><a href="https://stimulus.hotwired.dev/handbook/introduction">Stimulus handbook</a></li>
+      <li><a href="https://alpinejs.dev/start-here">Alpine start guide</a></li>
+      <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/EventSource">MDN EventSource</a></li>
+      <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/WebSocket">MDN WebSocket</a></li>
+      <li><a href="https://react.dev/learn/creating-a-react-app">React creating an app</a></li>
+      <li><a href="https://vite.dev/guide/backend-integration.html">Vite backend integration</a></li>
+      <li><a href="https://vite.dev/config/server-options.html#server-proxy">Vite dev server proxy</a></li>
+      <li><a href="https://tanstack.com/query/latest/docs/framework/react/overview">TanStack Query overview</a></li>
+      <li><a href="https://tanstack.com/router/latest/docs/overview">TanStack Router overview</a></li>
+      <li><a href="https://nextjs.org/docs/app/guides/self-hosting">Next.js self-hosting</a></li>
+      <li><a href="https://nextjs.org/docs/app/guides/static-exports">Next.js static exports</a></li>
+      <li><a href="https://ui.shadcn.com/docs">shadcn/ui docs</a></li>
+      <li><a href="https://www.radix-ui.com/primitives/docs/overview/introduction">Radix primitives</a></li>
+      <li><a href="https://tailwindcss.com/docs/installation/using-vite">Tailwind with Vite</a></li>
+      <li><a href="https://microsoft.github.io/monaco-editor/typedoc/functions/editor.createDiffEditor.html">Monaco DiffEditor API</a></li>
+      <li><a href="https://codemirror.net/docs/ref/#merge">CodeMirror MergeView</a></li>
+      <li><a href="https://github.com/otakustay/react-diff-view">react-diff-view</a></li>
+      <li><a href="https://diff2html.xyz/">diff2html</a></li>
+      <li><a href="https://reflex.dev/docs/advanced-onboarding/how-reflex-works/">Reflex architecture</a></li>
+      <li><a href="https://reflex.dev/docs/authentication/authentication-overview/">Reflex auth overview</a></li>
+      <li><a href="https://github.com/zauberzeug/nicegui">NiceGUI repository</a></li>
+      <li><a href="https://docs.streamlit.io/develop/api-reference/chat">Streamlit chat elements</a></li>
+      <li><a href="https://docs.streamlit.io/develop/api-reference/write-magic/st.write_stream">Streamlit streaming</a></li>
+      <li><a href="https://www.gradio.app/docs/gradio/mount_gradio_app">Gradio FastAPI mounting</a></li>
+      <li><a href="https://panel.holoviz.org/how_to/integrations/FastAPI.html">Panel FastAPI integration</a></li>
+      <li><a href="https://github.com/plotly/dash/releases">Dash releases</a></li>
+    </ol>
+  </section>
+
+  <footer>
+    Generated for BD issue orch-0sc.2 in /data/codes/orchestrators. This is a consolidated orchestrator report from sub-agent research slices, anchored on the prior FastAPI decision.
+  </footer>
+</main>
+</body>
+</html>

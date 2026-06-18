@@ -1,0 +1,731 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Codex And Claude Code Adapter Architecture</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #f7f7f4;
+      --surface: #ffffff;
+      --surface-2: #f0f1ed;
+      --text: #1f2328;
+      --muted: #667085;
+      --border: #d8ddd2;
+      --accent: #2563eb;
+      --accent-soft: #dbeafe;
+      --green: #166534;
+      --green-soft: #dcfce7;
+      --amber: #92400e;
+      --amber-soft: #fef3c7;
+      --red: #991b1b;
+      --red-soft: #fee2e2;
+      --code: #111827;
+      --shadow: 0 1px 2px rgba(16, 24, 40, 0.06);
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0f1115;
+        --surface: #171a21;
+        --surface-2: #20242d;
+        --text: #eef2f7;
+        --muted: #a8b3c4;
+        --border: #313746;
+        --accent: #7aa2ff;
+        --accent-soft: #1d2b50;
+        --green: #86efac;
+        --green-soft: #16351f;
+        --amber: #fbbf24;
+        --amber-soft: #3d2b0b;
+        --red: #fca5a5;
+        --red-soft: #401b1b;
+        --code: #e5e7eb;
+        --shadow: none;
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.58;
+    }
+    main {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 40px 20px 64px;
+    }
+    header { margin-bottom: 36px; }
+    .eyebrow {
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+    h1 {
+      margin: 0;
+      font-size: clamp(32px, 5vw, 52px);
+      line-height: 1.06;
+      letter-spacing: 0;
+    }
+    .subtitle {
+      max-width: 900px;
+      margin: 16px 0 0;
+      color: var(--muted);
+      font-size: 18px;
+    }
+    .kpis {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 28px;
+    }
+    .kpi, .panel, .callout {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+    }
+    .kpi {
+      padding: 16px;
+      min-height: 128px;
+    }
+    .kpi strong {
+      display: block;
+      font-size: 21px;
+      line-height: 1.18;
+      margin-bottom: 8px;
+    }
+    .kpi span, .small {
+      color: var(--muted);
+      font-size: 13px;
+    }
+    section { margin-top: 44px; }
+    .section-head {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 18px;
+    }
+    .section-num {
+      color: var(--muted);
+      font-size: 22px;
+      font-weight: 800;
+      font-variant-numeric: tabular-nums;
+    }
+    h2 {
+      margin: 0;
+      font-size: 24px;
+      letter-spacing: 0;
+    }
+    h3 {
+      margin: 0 0 10px;
+      font-size: 17px;
+    }
+    p { margin: 0 0 14px; }
+    .callout {
+      padding: 18px;
+      border-left: 4px solid var(--accent);
+      margin-bottom: 16px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+    }
+    .panel { padding: 18px; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+    th, td {
+      padding: 11px 12px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+      text-align: left;
+    }
+    th {
+      background: var(--surface-2);
+      font-size: 13px;
+      color: var(--muted);
+      font-weight: 800;
+    }
+    tr:last-child td { border-bottom: 0; }
+    code {
+      color: var(--code);
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      padding: 1px 5px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 0.92em;
+    }
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 999px;
+      padding: 2px 9px;
+      font-size: 12px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+    .high { color: var(--green); background: var(--green-soft); }
+    .med { color: var(--amber); background: var(--amber-soft); }
+    .risk { color: var(--red); background: var(--red-soft); }
+    ul, ol {
+      margin: 0;
+      padding-left: 20px;
+    }
+    li { margin: 7px 0; }
+    .diagram {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px;
+      overflow-x: auto;
+      box-shadow: var(--shadow);
+    }
+    svg {
+      min-width: 880px;
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+    .box {
+      fill: var(--surface-2);
+      stroke: var(--border);
+      stroke-width: 1.2;
+    }
+    .box-accent {
+      fill: var(--accent-soft);
+      stroke: var(--accent);
+      stroke-width: 1.4;
+    }
+    .arrow {
+      stroke: var(--muted);
+      stroke-width: 1.7;
+      fill: none;
+      marker-end: url(#arrow);
+    }
+    .dash { stroke-dasharray: 5 5; }
+    .svg-title {
+      fill: var(--text);
+      font-size: 14px;
+      font-weight: 800;
+    }
+    .svg-note {
+      fill: var(--muted);
+      font-size: 12px;
+    }
+    a { color: var(--accent); }
+    footer {
+      margin-top: 42px;
+      padding-top: 18px;
+      border-top: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 13px;
+    }
+    @media (max-width: 860px) {
+      .kpis, .grid { grid-template-columns: 1fr; }
+      main { padding: 28px 14px 48px; }
+      th, td { padding: 9px; }
+    }
+  </style>
+</head>
+<body>
+<main>
+  <header>
+    <div class="eyebrow">BD orch-0sc.5 | Deep research | Retrieved 2026-06-17</div>
+    <h1>Codex and Claude Code adapter architecture</h1>
+    <p class="subtitle">
+      Consolidated sub-agent research on building a first coding department around Codex and Claude Code, after the FastAPI, React/Vite, Pydantic AI, LiteLLM, Temporal, and app-owned Postgres decisions.
+    </p>
+    <div class="kpis">
+      <div class="kpi">
+        <strong>CLI first</strong>
+        <span>Use Codex and Claude Code as external runtime adapters, not embedded product state.</span>
+      </div>
+      <div class="kpi">
+        <strong>One writer</strong>
+        <span>One isolated worktree per implementation attempt; critics stay read-only.</span>
+      </div>
+      <div class="kpi">
+        <strong>Git is truth</strong>
+        <span>Capture authoritative diffs, changed files, untracked files, and test logs outside model prose.</span>
+      </div>
+      <div class="kpi">
+        <strong>App owns safety</strong>
+        <span>Approvals, secrets, artifacts, audit, cancellation, and merge decisions stay app-owned.</span>
+      </div>
+    </div>
+  </header>
+
+  <section>
+    <div class="section-head"><span class="section-num">01</span><h2>Answer</h2></div>
+    <div class="callout">
+      <p><strong>Recommendation:</strong> build a <strong>CodingRunWorkflow</strong> in Temporal with app-owned Postgres records, per-run git worktrees, and two initial runtime adapters: <code>CodexLocalExecAdapter</code> and <code>ClaudeCodeAdapter</code>.</p>
+      <p><strong>Default substrate:</strong> subscription-compatible subprocess adapters over stable CLI surfaces. Use Codex <code>exec</code>/<code>exec resume</code>/<code>exec review</code> for Codex. Use Claude Code CLI <code>claude -p</code> as the Claude default when subscription login is a hard requirement; use Claude Agent SDK only when API-key billing is acceptable or Anthropic-approved subscription-product auth is available.</p>
+    </div>
+    <p>
+      The adapter boundary should not be "send prompt, parse final text." It must cover task handoff, workspace lease, role policy, runtime invocation, streaming event capture, approval bridging, independent verification, patch provenance, artifact retention, and cancellation cleanup.
+    </p>
+    <p>
+      Do not make the Claude Code Codex plugin, raw Codex app-server, interactive slash commands, API-only SDK paths, or a shared desktop CLI login the core product substrate. Keep those as convenience or later integration paths. The v1 system should be boring: Temporal orchestrates, Postgres records, git worktrees isolate, subscription-compatible CLI runtimes execute, and Git/test artifacts decide.
+    </p>
+  </section>
+
+  <section>
+    <div class="section-head"><span class="section-num">02</span><h2>Context And Method</h2></div>
+    <p>
+      Research was split across four sub-agents: current Codex surfaces, current Claude Code surfaces, workspace/safety/artifact architecture, and red-team synthesis. Source weighting favored official Codex, Claude Code, Git, and Docker docs plus verified local CLI help. Prior repo decisions were treated as constraints.
+    </p>
+    <table>
+      <thead>
+        <tr><th>Prior Decision</th><th>Adapter Consequence</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Temporal is the durable workflow engine.</td>
+          <td>CLI invocations are activities/attempts under <code>CodingRunWorkflow</code>; local CLI session state is not durable product state.</td>
+        </tr>
+        <tr>
+          <td>Postgres owns product/audit state.</td>
+          <td>Runs, approvals, workspaces, invocations, diffs, patches, tests, artifacts, and secret grants are app records.</td>
+        </tr>
+        <tr>
+          <td>React + Vite is the cockpit.</td>
+          <td>UI consumes normalized run events, patch review, approval requests, artifact previews, and verification results.</td>
+        </tr>
+        <tr>
+          <td>Pydantic AI is default in-process SDK.</td>
+          <td>Pydantic AI can coordinate or classify, but Codex and Claude Code remain external execution lanes for code work.</td>
+        </tr>
+        <tr>
+          <td>Subscription-first when practical.</td>
+          <td>Prefer local Codex CLI and Claude Code CLI subscription-OAuth surfaces before API-only SDK implementations, while preserving clean adapter exits.</td>
+        </tr>
+      </tbody>
+    </table>
+    <h3>Subscription-login cross-check</h3>
+    <table>
+      <thead>
+        <tr><th>Adapter Surface</th><th>Subscription Fit</th><th>Decision Impact</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Codex <code>exec</code>, <code>exec resume</code>, <code>exec review</code></td>
+          <td><span class="tag high">Yes</span> Uses saved CLI auth by default. Codex supports ChatGPT subscription login for the CLI, and trusted Business/Enterprise automation can use Codex access tokens via <code>CODEX_ACCESS_TOKEN</code>.</td>
+          <td>Keep as the primary Codex adapter. API keys are optional for CI-style automation, not the default product assumption.</td>
+        </tr>
+        <tr>
+          <td>Codex SDK / app-server</td>
+          <td><span class="tag med">Conditional</span> The SDK controls local Codex/app-server, so it can fit a subscription-authenticated local runtime, but it is a later/beta integration path.</td>
+          <td>Use only after CLI JSONL is insufficient, and verify the chosen SDK deployment uses the same ChatGPT-managed identity boundary.</td>
+        </tr>
+        <tr>
+          <td>Claude Code CLI <code>claude -p</code></td>
+          <td><span class="tag high">Yes</span> Claude Code supports Claude Pro, Max, Team, and Enterprise subscription OAuth credentials from login, plus <code>CLAUDE_CODE_OAUTH_TOKEN</code> generated by <code>claude setup-token</code> for scripts. Do not use <code>--bare</code> when relying on subscription auth because bare mode disables OAuth/keychain reads.</td>
+          <td>Promote to primary Claude adapter for subscription-first v1. Add app-owned approvals and artifact capture around the CLI process.</td>
+        </tr>
+        <tr>
+          <td>Claude Agent SDK</td>
+          <td><span class="tag risk">Not default</span> Official SDK onboarding uses <code>ANTHROPIC_API_KEY</code> and warns that third-party developers should not offer claude.ai login or rate limits in products without prior approval.</td>
+          <td>Demote from primary substrate. Use only when API-key billing is acceptable, the product is approved for subscription auth, or a future Anthropic doc explicitly supports the required subscription path.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <div class="section-head"><span class="section-num">03</span><h2>Architecture</h2></div>
+    <div class="diagram" role="img" aria-label="Coding run adapter architecture">
+      <svg viewBox="0 0 1040 390" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+            <path d="M0,0 L0,6 L9,3 z" fill="currentColor"></path>
+          </marker>
+        </defs>
+        <rect class="box" x="30" y="42" width="150" height="76" rx="8"></rect>
+        <text class="svg-title" x="54" y="74">React UI</text>
+        <text class="svg-note" x="54" y="96">review, approve, inspect</text>
+
+        <rect class="box-accent" x="240" y="34" width="170" height="92" rx="8"></rect>
+        <text class="svg-title" x="266" y="68">FastAPI</text>
+        <text class="svg-note" x="266" y="90">task packet</text>
+        <text class="svg-note" x="266" y="106">approval API</text>
+
+        <rect class="box-accent" x="480" y="34" width="190" height="92" rx="8"></rect>
+        <text class="svg-title" x="505" y="68">Temporal</text>
+        <text class="svg-note" x="505" y="90">CodingRunWorkflow</text>
+        <text class="svg-note" x="505" y="106">attempts and retries</text>
+
+        <rect class="box-accent" x="745" y="34" width="250" height="92" rx="8"></rect>
+        <text class="svg-title" x="772" y="68">WorkspaceManager</text>
+        <text class="svg-note" x="772" y="90">git worktree / temp clone</text>
+        <text class="svg-note" x="772" y="106">writer lock, cleanup</text>
+
+        <rect class="box" x="745" y="178" width="118" height="78" rx="8"></rect>
+        <text class="svg-title" x="769" y="210">Codex</text>
+        <text class="svg-note" x="769" y="232">exec JSONL</text>
+
+        <rect class="box" x="877" y="178" width="118" height="78" rx="8"></rect>
+        <text class="svg-title" x="899" y="210">Claude</text>
+        <text class="svg-note" x="899" y="232">SDK / -p</text>
+
+        <rect class="box-accent" x="240" y="276" width="210" height="78" rx="8"></rect>
+        <text class="svg-title" x="266" y="308">App Postgres</text>
+        <text class="svg-note" x="266" y="330">runs, approvals, tests</text>
+
+        <rect class="box" x="515" y="276" width="210" height="78" rx="8"></rect>
+        <text class="svg-title" x="540" y="308">Artifact Store</text>
+        <text class="svg-note" x="540" y="330">streams, patches, logs</text>
+
+        <rect class="box" x="785" y="276" width="170" height="78" rx="8"></rect>
+        <text class="svg-title" x="814" y="308">Verifier</text>
+        <text class="svg-note" x="814" y="330">git diff + tests</text>
+
+        <path class="arrow" d="M180 80 H240"></path>
+        <path class="arrow" d="M410 80 H480"></path>
+        <path class="arrow" d="M670 80 H745"></path>
+        <path class="arrow" d="M870 126 V178"></path>
+        <path class="arrow" d="M804 256 V276"></path>
+        <path class="arrow" d="M936 256 V276"></path>
+        <path class="arrow" d="M785 315 H725"></path>
+        <path class="arrow" d="M515 315 H450"></path>
+        <path class="arrow dash" d="M345 276 V126"></path>
+        <path class="arrow dash" d="M620 276 C620 235 590 170 575 126"></path>
+      </svg>
+    </div>
+    <p class="small">
+      Dashed arrows show app-owned state projection. Runtime-native sessions are metadata, not the product source of truth.
+    </p>
+  </section>
+
+  <section>
+    <div class="section-head"><span class="section-num">04</span><h2>Runtime Matrix</h2></div>
+    <table>
+      <thead>
+        <tr>
+          <th>Runtime Surface</th>
+          <th>Best Fit</th>
+          <th>Capture Path</th>
+          <th>Use In V1</th>
+          <th>Do Not Use If</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Codex <code>exec</code></strong></td>
+          <td>Scriptable local implementation, review, and continuation in repo worktrees.</td>
+          <td><code>--json</code> JSONL, saved ChatGPT CLI auth or Codex access token, final response, exit status, git diff, tests.</td>
+          <td><span class="tag high">Primary Codex adapter</span></td>
+          <td>You need mid-turn steering beyond CLI/resume, or a cloud branch task.</td>
+        </tr>
+        <tr>
+          <td><strong>Codex <code>exec review</code> / <code>review</code></strong></td>
+          <td>Read-only critic and final patch review.</td>
+          <td>JSONL where available, review text, cited files verified by supervisor.</td>
+          <td><span class="tag high">Critic path</span></td>
+          <td>The runtime needs to edit files.</td>
+        </tr>
+        <tr>
+          <td><strong>Codex Cloud</strong></td>
+          <td>Offloaded GitHub branch tasks after cloud environment setup.</td>
+          <td>Cloud status/diff/apply plus app-side branch metadata.</td>
+          <td><span class="tag med">Later offload</span></td>
+          <td>You need tight local Temporal loop or local artifact ownership.</td>
+        </tr>
+        <tr>
+          <td><strong>Codex SDK / MCP</strong></td>
+          <td>Programmatic controller or cross-agent bridge when subprocess JSONL is insufficient.</td>
+          <td>SDK/MCP events plus same git/test artifact capture; subscription-auth boundary must be reverified per deployment.</td>
+          <td><span class="tag med">Escalation path</span></td>
+          <td>CLI subprocesses already satisfy v1 requirements.</td>
+        </tr>
+        <tr>
+          <td><strong>Codex app-server</strong></td>
+          <td>Deep client integration where no SDK/MCP/CLI contract is enough.</td>
+          <td>JSON-RPC events plus strict version pinning.</td>
+          <td><span class="tag risk">Avoid as substrate</span></td>
+          <td>You need a stable v1 backend contract.</td>
+        </tr>
+        <tr>
+          <td><strong>Claude Agent SDK</strong></td>
+          <td>Programmatic Claude Code runs needing approvals, streaming, structured outputs, tool gating, and sessions, when API-key billing or approved subscription auth is acceptable.</td>
+          <td>SDK stream events, approval callbacks, structured output, git/test artifacts.</td>
+          <td><span class="tag med">Conditional Claude escalation path</span></td>
+          <td>Subscription login is non-negotiable and the SDK path has not been explicitly approved for that product use.</td>
+        </tr>
+        <tr>
+          <td><strong>Claude <code>-p</code></strong></td>
+          <td>Subscription-first headless implementation or review jobs.</td>
+          <td><code>json</code> or <code>stream-json</code>, saved subscription OAuth or <code>CLAUDE_CODE_OAUTH_TOKEN</code>, stdout/stderr, exit status, git/test artifacts.</td>
+          <td><span class="tag high">Primary Claude adapter for v1</span></td>
+          <td>You need durable approval callbacks or fine-grained session control; do not add <code>--bare</code> if subscription auth is required.</td>
+        </tr>
+        <tr>
+          <td><strong>Claude GitHub Action</strong></td>
+          <td>PR automation in GitHub workflows.</td>
+          <td>GitHub logs, comments, branch/PR artifacts.</td>
+          <td><span class="tag med">CI sidecar</span></td>
+          <td>You need app-owned local run lifecycle.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <div class="section-head"><span class="section-num">05</span><h2>Workflow Contract</h2></div>
+    <table>
+      <thead>
+        <tr><th>Stage</th><th>Owner</th><th>Required Artifacts</th><th>Safety Rule</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Task packet</td>
+          <td>FastAPI + Postgres</td>
+          <td>Objective, repo/ref, allowed paths, non-goals, role, verification command, budget.</td>
+          <td>Immutable after run start; revisions create new attempts.</td>
+        </tr>
+        <tr>
+          <td>Workspace lease</td>
+          <td>WorkspaceManager</td>
+          <td>Base SHA, worktree path/container ID, dirty-state snapshot, writer lock.</td>
+          <td>No two writer runtimes share one workspace.</td>
+        </tr>
+        <tr>
+          <td>Spec review</td>
+          <td>Codex or Claude critic</td>
+          <td>Read-only stream, final critique, cited-file verification notes.</td>
+          <td>No edits; no shared context between independent critics.</td>
+        </tr>
+        <tr>
+          <td>Implementation</td>
+          <td>Exactly one writer runtime</td>
+          <td>Runtime stream, stdout/stderr, command events, changed-file manifest.</td>
+          <td>Workspace-write only inside leased workspace; approval for network/secrets/destructive actions.</td>
+        </tr>
+        <tr>
+          <td>Verification</td>
+          <td>Supervisor activity</td>
+          <td>Declared test command, exit code, logs, parsed counts where available.</td>
+          <td>Trust supervisor-run tests, not model prose.</td>
+        </tr>
+        <tr>
+          <td>Patch capture</td>
+          <td>Git collector</td>
+          <td><code>git diff --binary --full-index</code>, diff stat, untracked artifacts, diff hash.</td>
+          <td>Git is authoritative patch provenance.</td>
+        </tr>
+        <tr>
+          <td>Critic review</td>
+          <td>Other runtime, read-only</td>
+          <td>Patch review, risks, missing tests, accept/reject recommendation.</td>
+          <td>Critic cannot edit the implementer workspace.</td>
+        </tr>
+        <tr>
+          <td>Apply or discard</td>
+          <td>Human/app policy</td>
+          <td>Approval decision, applied patch hash, merge/branch result, cleanup status.</td>
+          <td>No commit, push, dependency install, or secret grant without explicit policy/approval.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <div class="section-head"><span class="section-num">06</span><h2>Data Model</h2></div>
+    <div class="grid">
+      <div class="panel">
+        <h3>Core Records</h3>
+        <ul>
+          <li><code>coding_run</code>: adapter, role, repo, base ref/SHA, branch, workspace, isolation mode, status, parent run.</li>
+          <li><code>task_packet</code>: objective, non-goals, allowed paths, runtime role, verification command, max budget.</li>
+          <li><code>workspace_lease</code>: before/after heads, dirty snapshot, changed files, submodule status, cleanup policy.</li>
+          <li><code>runtime_invocation</code>: argv, cwd, CLI/SDK version, model/profile, permission/sandbox mode, env allowlist hash.</li>
+          <li><code>invocation_event</code>: normalized JSONL/stream-json/stdout/stderr chunks, tool events, command events, redaction state.</li>
+        </ul>
+      </div>
+      <div class="panel">
+        <h3>Evidence Records</h3>
+        <ul>
+          <li><code>patch_provenance</code>: base SHA, diff hash, changed files, untracked capture, prompt hash, attempt ID.</li>
+          <li><code>test_run</code>: command, cwd, env profile, exit code, duration, stdout/stderr artifact, parsed counts.</li>
+          <li><code>approval_request</code>: requested capability, reason, risk class, scope, reviewer, decision, expiry.</li>
+          <li><code>secret_grant</code>: alias, purpose, injection mode, start/end, redaction rule; never store values.</li>
+          <li><code>artifact</code>: kind, path/blob key, SHA-256, size, MIME, redaction status, retention policy.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head"><span class="section-num">07</span><h2>Failure Modes</h2></div>
+    <table>
+      <thead>
+        <tr><th>Risk</th><th>Severity</th><th>Mitigation</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Plugin internals or interactive slash commands become the product contract.</td>
+          <td><span class="tag risk">High</span></td>
+          <td>Use documented subscription-compatible CLI surfaces for adapters. Keep Claude Code Codex plugin and TUI flows as human convenience paths.</td>
+        </tr>
+        <tr>
+          <td>API-key-only SDK path silently becomes the default and violates the subscription-first constraint.</td>
+          <td><span class="tag risk">High</span></td>
+          <td>Gate every adapter with an auth-mode field. Default Codex to ChatGPT-managed CLI auth and Claude to subscription OAuth CLI auth; require explicit approval for API-key fallback. For Claude, reject <code>--bare</code> when <code>auth_mode=subscription_oauth</code>.</td>
+        </tr>
+        <tr>
+          <td>Two writer agents mutate the same checkout.</td>
+          <td><span class="tag risk">High</span></td>
+          <td>Use one writer lock per workspace. Critics read captured patches or read-only worktrees.</td>
+        </tr>
+        <tr>
+          <td>Stdout-only parsing hides partial failures, commands, approvals, or tests.</td>
+          <td><span class="tag risk">High</span></td>
+          <td>Capture native structured streams plus raw stdout/stderr, process exit code, git diff, command logs, and supervisor tests.</td>
+        </tr>
+        <tr>
+          <td>Secrets leak through prompts, env dumps, shell traces, diffs, or logs.</td>
+          <td><span class="tag risk">High</span></td>
+          <td>Use no full host env, scoped secret aliases only, redaction before persistence, path denies, and explicit approval for secret grants.</td>
+        </tr>
+        <tr>
+          <td>CLI permissions are treated as a full sandbox.</td>
+          <td><span class="tag risk">High</span></td>
+          <td>Combine worktrees with permission modes, hooks, minimal env, and container isolation for privileged/untrusted/networked runs.</td>
+        </tr>
+        <tr>
+          <td>Cancellation leaves a dirty workspace that is retried or merged later.</td>
+          <td><span class="tag med">Medium</span></td>
+          <td>After cancellation, capture partial artifacts, mark workspace quarantined, and retry in a fresh workspace.</td>
+        </tr>
+        <tr>
+          <td>Fake debate shares context and produces anchoring instead of independent critique.</td>
+          <td><span class="tag med">Medium</span></td>
+          <td>Run independent reviewers from the same immutable task packet; reveal prior opinions only after verdict capture.</td>
+        </tr>
+        <tr>
+          <td>Central server multiplexes one desktop CLI login across users or tenants.</td>
+          <td><span class="tag risk">High</span></td>
+          <td>Use per-user local runners or dedicated scoped service credentials. Do not store raw CLI auth tokens in product DB.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <div class="section-head"><span class="section-num">08</span><h2>Upgrade Triggers</h2></div>
+    <table>
+      <thead>
+        <tr><th>Need</th><th>Upgrade Path</th><th>Why Not First</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Mid-turn steering, richer persistent thread state, or lower-level event control for Codex.</td>
+          <td>Codex SDK first; raw app-server only if SDK/MCP cannot expose the required feature.</td>
+          <td>CLI JSONL is enough for v1 and app-server is an experimental/deep-integration surface.</td>
+        </tr>
+        <tr>
+          <td>Programmatic Claude approvals and user input with durable resume.</td>
+          <td>Claude Agent SDK only when API-key billing is acceptable, Anthropic-approved subscription auth exists, or future official docs explicitly support this product path.</td>
+          <td>Current SDK docs are API-key oriented for product builders; subscription-first v1 should wrap <code>claude -p</code> instead.</td>
+        </tr>
+        <tr>
+          <td>Untrusted code, broad network access, dependency installs, or bypass permissions.</td>
+          <td>Container/VM runner with restricted mounts, non-root user, network controls, and no Docker socket.</td>
+          <td>Git worktrees are isolation for diffs, not a security boundary.</td>
+        </tr>
+        <tr>
+          <td>Remote branch/PR work or parallel offload.</td>
+          <td>Codex Cloud or Claude GitHub Action as sidecar adapters.</td>
+          <td>They split artifact ownership and require environment/GitHub policy setup.</td>
+        </tr>
+        <tr>
+          <td>Multiple repos or team/tenant execution.</td>
+          <td>Runner fleet with per-user or per-service credentials, workspace quotas, and artifact retention policy.</td>
+          <td>Do not start by sharing one local CLI auth across all runs.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <div class="section-head"><span class="section-num">09</span><h2>Sources</h2></div>
+    <p class="small">Sources were gathered by sub-agents and retrieved on 2026-06-17 unless noted. Local command help was used as current-environment evidence, not as a universal vendor guarantee.</p>
+    <ol>
+      <li><a href="../codex-usage-options.md">Prior Codex usage research note</a></li>
+      <li><a href="agent-sdk-stack-litellm.html">Prior agent SDK decision</a></li>
+      <li><a href="worker-workflow-engine.html">Prior worker/workflow engine decision</a></li>
+      <li><a href="ui-layer-fastapi-product.html">Prior React/Vite UI decision</a></li>
+      <li><a href="https://developers.openai.com/codex">OpenAI Codex overview</a></li>
+      <li><a href="https://developers.openai.com/codex/noninteractive">Codex noninteractive mode</a></li>
+      <li><a href="https://developers.openai.com/codex/cli/reference">Codex CLI reference</a></li>
+      <li><a href="https://developers.openai.com/codex/config-reference">Codex config reference</a></li>
+      <li><a href="https://developers.openai.com/codex/permissions">Codex permissions</a></li>
+      <li><a href="https://developers.openai.com/codex/concepts/sandboxing">Codex sandboxing</a></li>
+      <li><a href="https://developers.openai.com/codex/guides/agents-md">Codex AGENTS.md guidance</a></li>
+      <li><a href="https://developers.openai.com/codex/hooks">Codex hooks</a></li>
+      <li><a href="https://developers.openai.com/codex/skills">Codex skills</a></li>
+      <li><a href="https://developers.openai.com/codex/plugins">Codex plugins</a></li>
+      <li><a href="https://developers.openai.com/codex/mcp">Codex MCP</a></li>
+      <li><a href="https://developers.openai.com/codex/sdk">Codex SDK</a></li>
+      <li><a href="https://developers.openai.com/codex/app-server">Codex app-server</a></li>
+      <li><a href="https://developers.openai.com/codex/cloud/environments">Codex cloud environments</a></li>
+      <li><a href="https://developers.openai.com/codex/cloud/internet-access">Codex cloud internet access</a></li>
+      <li><a href="https://developers.openai.com/codex/auth">Codex auth</a></li>
+      <li><a href="https://developers.openai.com/codex/enterprise/access-tokens">Codex access tokens</a></li>
+      <li><a href="https://developers.openai.com/codex/app/worktrees">Codex app worktrees</a></li>
+      <li><a href="https://developers.openai.com/codex/app/browser">Codex app browser</a></li>
+      <li><a href="https://developers.openai.com/codex/app/computer-use">Codex Computer Use</a></li>
+      <li><a href="https://developers.openai.com/codex/feature-maturity">Codex feature maturity</a></li>
+      <li><a href="https://code.claude.com/docs/en/overview">Claude Code overview</a></li>
+      <li><a href="https://code.claude.com/docs/en/iam">Claude Code authentication</a></li>
+      <li><a href="https://code.claude.com/docs/en/cli-reference">Claude Code CLI reference</a></li>
+      <li><a href="https://code.claude.com/docs/en/headless">Claude Code headless mode</a></li>
+      <li><a href="https://code.claude.com/docs/en/agent-sdk/overview">Claude Agent SDK overview</a></li>
+      <li><a href="https://code.claude.com/docs/en/agent-sdk/python">Claude Agent SDK Python</a></li>
+      <li><a href="https://code.claude.com/docs/en/agent-sdk/hosting">Claude Agent SDK hosting</a></li>
+      <li><a href="https://code.claude.com/docs/en/agent-sdk/user-input">Claude Agent SDK user input</a></li>
+      <li><a href="https://code.claude.com/docs/en/agent-sdk/structured-outputs">Claude Agent SDK structured outputs</a></li>
+      <li><a href="https://code.claude.com/docs/en/settings">Claude Code settings</a></li>
+      <li><a href="https://code.claude.com/docs/en/commands">Claude Code commands</a></li>
+      <li><a href="https://code.claude.com/docs/en/sub-agents">Claude Code subagents</a></li>
+      <li><a href="https://code.claude.com/docs/en/worktrees">Claude Code worktrees</a></li>
+      <li><a href="https://code.claude.com/docs/en/hooks">Claude Code hooks</a></li>
+      <li><a href="https://code.claude.com/docs/en/mcp">Claude Code MCP</a></li>
+      <li><a href="https://code.claude.com/docs/en/permissions">Claude Code permissions</a></li>
+      <li><a href="https://code.claude.com/docs/en/permission-modes">Claude Code permission modes</a></li>
+      <li><a href="https://code.claude.com/docs/en/sandboxing">Claude Code sandboxing</a></li>
+      <li><a href="https://code.claude.com/docs/en/sandbox-environments">Claude Code sandbox environments</a></li>
+      <li><a href="https://code.claude.com/docs/en/security">Claude Code security</a></li>
+      <li><a href="https://code.claude.com/docs/en/data-usage">Claude Code data usage</a></li>
+      <li><a href="https://code.claude.com/docs/en/github-actions">Claude Code GitHub Actions</a></li>
+      <li><a href="https://git-scm.com/docs/git-worktree">Git worktree docs</a></li>
+      <li><a href="https://docs.docker.com/reference/cli/docker/container/run/">Docker run reference</a></li>
+      <li><a href="https://docs.docker.com/engine/network/drivers/none/">Docker none network driver</a></li>
+      <li><a href="https://docs.docker.com/engine/security/">Docker engine security</a></li>
+      <li><a href="https://docs.docker.com/engine/security/seccomp/">Docker seccomp security profiles</a></li>
+      <li><a href="https://docs.docker.com/compose/how-tos/use-secrets/">Docker Compose secrets</a></li>
+      <li><a href="https://docs.docker.com/reference/compose-file/services/">Docker Compose service reference</a></li>
+    </ol>
+  </section>
+
+  <footer>
+    Generated for BD issue orch-0sc.5 in /data/codes/orchestrators. Subscription-auth correction added on 2026-06-17. This is a consolidated orchestrator report from sub-agent research slices and local project context.
+  </footer>
+</main>
+</body>
+</html>

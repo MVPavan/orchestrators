@@ -1,0 +1,674 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Worker Queue And Workflow Engine Decision</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #f7f7f4;
+      --surface: #ffffff;
+      --surface-2: #f0f1ed;
+      --text: #1f2328;
+      --muted: #667085;
+      --border: #d8ddd2;
+      --accent: #2563eb;
+      --accent-soft: #dbeafe;
+      --green: #166534;
+      --green-soft: #dcfce7;
+      --amber: #92400e;
+      --amber-soft: #fef3c7;
+      --red: #991b1b;
+      --red-soft: #fee2e2;
+      --code: #111827;
+      --shadow: 0 1px 2px rgba(16, 24, 40, 0.06);
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0f1115;
+        --surface: #171a21;
+        --surface-2: #20242d;
+        --text: #eef2f7;
+        --muted: #a8b3c4;
+        --border: #313746;
+        --accent: #7aa2ff;
+        --accent-soft: #1d2b50;
+        --green: #86efac;
+        --green-soft: #16351f;
+        --amber: #fbbf24;
+        --amber-soft: #3d2b0b;
+        --red: #fca5a5;
+        --red-soft: #401b1b;
+        --code: #e5e7eb;
+        --shadow: none;
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.58;
+    }
+    main {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 40px 20px 64px;
+    }
+    header {
+      margin-bottom: 36px;
+    }
+    .eyebrow {
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+    h1 {
+      margin: 0;
+      font-size: clamp(32px, 5vw, 52px);
+      line-height: 1.06;
+      letter-spacing: 0;
+    }
+    .subtitle {
+      max-width: 860px;
+      margin: 16px 0 0;
+      color: var(--muted);
+      font-size: 18px;
+    }
+    .kpis {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 28px;
+    }
+    .kpi, .panel, .callout {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+    }
+    .kpi {
+      padding: 16px;
+      min-height: 128px;
+    }
+    .kpi strong {
+      display: block;
+      font-size: 22px;
+      line-height: 1.15;
+      margin-bottom: 8px;
+    }
+    .kpi span, .small {
+      color: var(--muted);
+      font-size: 13px;
+    }
+    section {
+      margin-top: 44px;
+    }
+    .section-head {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 18px;
+    }
+    .section-num {
+      color: var(--muted);
+      font-size: 22px;
+      font-weight: 800;
+      font-variant-numeric: tabular-nums;
+    }
+    h2 {
+      margin: 0;
+      font-size: 24px;
+      letter-spacing: 0;
+    }
+    h3 {
+      margin: 0 0 10px;
+      font-size: 17px;
+    }
+    p {
+      margin: 0 0 14px;
+    }
+    .callout {
+      padding: 18px;
+      border-left: 4px solid var(--accent);
+      margin-bottom: 16px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+    }
+    .panel {
+      padding: 18px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+    th, td {
+      padding: 11px 12px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+      text-align: left;
+    }
+    th {
+      background: var(--surface-2);
+      font-size: 13px;
+      color: var(--muted);
+      font-weight: 800;
+    }
+    tr:last-child td { border-bottom: 0; }
+    code {
+      color: var(--code);
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      padding: 1px 5px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 0.92em;
+    }
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 999px;
+      padding: 2px 9px;
+      font-size: 12px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+    .high { color: var(--green); background: var(--green-soft); }
+    .med { color: var(--amber); background: var(--amber-soft); }
+    .risk { color: var(--red); background: var(--red-soft); }
+    ul, ol {
+      margin: 0;
+      padding-left: 20px;
+    }
+    li { margin: 7px 0; }
+    .diagram {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px;
+      overflow-x: auto;
+      box-shadow: var(--shadow);
+    }
+    svg {
+      min-width: 840px;
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+    .box {
+      fill: var(--surface-2);
+      stroke: var(--border);
+      stroke-width: 1.2;
+    }
+    .box-accent {
+      fill: var(--accent-soft);
+      stroke: var(--accent);
+      stroke-width: 1.4;
+    }
+    .arrow {
+      stroke: var(--muted);
+      stroke-width: 1.7;
+      fill: none;
+      marker-end: url(#arrow);
+    }
+    .dash {
+      stroke-dasharray: 5 5;
+    }
+    .svg-title {
+      fill: var(--text);
+      font-size: 14px;
+      font-weight: 800;
+    }
+    .svg-note {
+      fill: var(--muted);
+      font-size: 12px;
+    }
+    a { color: var(--accent); }
+    footer {
+      margin-top: 42px;
+      padding-top: 18px;
+      border-top: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 13px;
+    }
+    @media (max-width: 860px) {
+      .kpis, .grid { grid-template-columns: 1fr; }
+      main { padding: 28px 14px 48px; }
+      th, td { padding: 9px; }
+    }
+  </style>
+</head>
+<body>
+<main>
+  <header>
+    <div class="eyebrow">BD orch-0sc.4 | Deep research | Retrieved 2026-06-15 | Corrected 2026-06-16</div>
+    <h1>Worker queue and workflow engine architecture</h1>
+    <p class="subtitle">
+      Consolidated sub-agent research on Temporal, Prefect, Postgres plus Procrastinate, Redis-backed queues, and custom Postgres workflow state for the FastAPI/Pydantic AI/LiteLLM assistant system.
+    </p>
+    <div class="kpis">
+      <div class="kpi">
+        <strong>Choose Temporal</strong>
+        <span>Use it as the durable execution engine for human-gated agent runs.</span>
+      </div>
+      <div class="kpi">
+        <strong>Postgres stays truth</strong>
+        <span><code>Run</code>, approvals, artifacts, audit, and UI events remain app-owned.</span>
+      </div>
+      <div class="kpi">
+        <strong>Prefect is sidecar</strong>
+        <span>Credible for AI/data/ops workflows, not the core product workflow engine.</span>
+      </div>
+      <div class="kpi">
+        <strong>No Redis state</strong>
+        <span>Use Redis only for cache/pubsub/rate-limit style work unless explicitly hardened.</span>
+      </div>
+    </div>
+  </header>
+
+  <section>
+    <div class="section-head"><span class="section-num">01</span><h2>Answer</h2></div>
+    <div class="callout">
+      <p><strong>Recommendation:</strong> choose <strong>Temporal</strong> as the durable workflow engine for core agent-run orchestration, with <strong>app-owned Postgres</strong> as the product and audit source of truth.</p>
+      <p><strong>Do not choose</strong> Prefect, Redis-backed queues, or custom Postgres queue logic as the primary workflow engine. Do not pair Temporal and Prefect for the same v1 agent-run lifecycle.</p>
+    </div>
+    <p>
+      The deciding factor is not queue throughput. This product needs restart-safe multi-step runs, approval pauses, cancellation, retries, fan-out/fan-in, and resumability across deploys or process loss. Temporal is built for those durable execution mechanics. Postgres should still own the business model: runs, sessions, approvals, artifacts, event log, costs, audit, and UI-visible state.
+    </p>
+    <p>
+      The small custom layer should be an adapter and mirror, not a workflow engine: <code>Run.workflow_id</code> maps to a Temporal workflow, <code>ToolCall.activity_ref</code> maps to activities, <code>Approval</code> rows drive Temporal signals or updates, and artifacts remain claim-check references in local storage.
+    </p>
+    <p>
+      Correction pass: Pydantic AI and OpenAI Agents SDK both have Temporal integration paths. That strengthens the Temporal choice rather than replacing it. Prefect can orchestrate AI workflows through Pydantic AI <code>PrefectAgent</code>, deployments, workers, events, and human input, but it remains a better sidecar for scheduled/evaluation/data/ops agent jobs than the default engine for user-facing durable agent runs.
+    </p>
+  </section>
+
+  <section>
+    <div class="section-head"><span class="section-num">02</span><h2>Scope And Method</h2></div>
+    <p>
+      Research was split across sub-agents covering Temporal, Prefect, lightweight queues and custom state, and a red-team composition pass. A focused correction pass then validated Pydantic AI Temporal, OpenAI Agents SDK Temporal, and Prefect AI/agent orchestration claims. Source weighting favored official docs, current package docs, and implementation guidance. Practitioner posts were used only for operational reality and are labelled as weaker than primary docs.
+    </p>
+    <table>
+      <thead>
+        <tr><th>Fixed Decision</th><th>Constraint For This Choice</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>FastAPI is the backend/API edge.</td>
+          <td>FastAPI starts workflows, sends approvals/cancellations, exposes state and streams; it does not run durable workflows itself.</td>
+        </tr>
+        <tr>
+          <td>React + Vite is the UI.</td>
+          <td>The browser consumes app-owned status/event APIs, not raw Temporal, Prefect, SDK, or queue internals.</td>
+        </tr>
+        <tr>
+          <td>Pydantic AI is the default agent SDK.</td>
+          <td>Use <code>TemporalAgent.run()</code> inside workflows; its integration offloads model, I/O tool, and MCP communication to activities.</td>
+        </tr>
+        <tr>
+          <td>OpenAI Agents SDK is a conditional sidecar.</td>
+          <td>Temporal's Python SDK exposes <code>temporalio.contrib.openai_agents</code>; use it if that lane is adopted, not a custom wrapper first.</td>
+        </tr>
+        <tr>
+          <td>LiteLLM Proxy is the model gateway.</td>
+          <td>Gateway retries/fallbacks stay model-layer concerns; workflow retries must wrap idempotent activities.</td>
+        </tr>
+        <tr>
+          <td>App-owned domain model is central.</td>
+          <td>Workflow engine state is execution state. Product truth and audit remain in Postgres.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <div class="section-head"><span class="section-num">03</span><h2>Recommended Architecture</h2></div>
+    <div class="diagram" role="img" aria-label="Recommended workflow architecture">
+      <svg viewBox="0 0 980 360" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+            <path d="M0,0 L0,6 L9,3 z" fill="currentColor"></path>
+          </marker>
+        </defs>
+        <rect class="box" x="30" y="36" width="160" height="72" rx="8"></rect>
+        <text class="svg-title" x="52" y="67">React + Vite</text>
+        <text class="svg-note" x="52" y="88">approval queue</text>
+        <text class="svg-note" x="52" y="104">run timeline</text>
+
+        <rect class="box-accent" x="270" y="30" width="180" height="86" rx="8"></rect>
+        <text class="svg-title" x="295" y="64">FastAPI</text>
+        <text class="svg-note" x="295" y="86">start / signal / cancel</text>
+        <text class="svg-note" x="295" y="102">SSE and REST API</text>
+
+        <rect class="box-accent" x="535" y="30" width="190" height="86" rx="8"></rect>
+        <text class="svg-title" x="560" y="64">Temporal Service</text>
+        <text class="svg-note" x="560" y="86">workflow state</text>
+        <text class="svg-note" x="560" y="102">timers / retries / signals</text>
+
+        <rect class="box" x="795" y="36" width="155" height="72" rx="8"></rect>
+        <text class="svg-title" x="820" y="67">Workers</text>
+        <text class="svg-note" x="820" y="88">workflows</text>
+        <text class="svg-note" x="820" y="104">activities</text>
+
+        <rect class="box-accent" x="270" y="210" width="180" height="86" rx="8"></rect>
+        <text class="svg-title" x="296" y="244">App Postgres</text>
+        <text class="svg-note" x="296" y="266">Run / Approval / Artifact</text>
+        <text class="svg-note" x="296" y="282">event log / audit</text>
+
+        <rect class="box" x="535" y="210" width="190" height="86" rx="8"></rect>
+        <text class="svg-title" x="560" y="244">Pydantic AI</text>
+        <text class="svg-note" x="560" y="266">typed agent calls</text>
+        <text class="svg-note" x="560" y="282">tool execution</text>
+
+        <rect class="box" x="795" y="210" width="155" height="86" rx="8"></rect>
+        <text class="svg-title" x="820" y="244">LiteLLM + tools</text>
+        <text class="svg-note" x="820" y="266">model gateway</text>
+        <text class="svg-note" x="820" y="282">external side effects</text>
+
+        <path class="arrow" d="M190 72 H270"></path>
+        <path class="arrow" d="M450 72 H535"></path>
+        <path class="arrow" d="M725 72 H795"></path>
+        <path class="arrow" d="M872 108 V210"></path>
+        <path class="arrow" d="M795 253 H725"></path>
+        <path class="arrow" d="M535 253 H450"></path>
+        <path class="arrow dash" d="M360 116 V210"></path>
+        <path class="arrow dash" d="M270 253 C185 253 180 110 270 92"></path>
+      </svg>
+    </div>
+    <p class="small">
+      Solid arrows show execution flow. Dashed arrows show app-owned state and UI event projection. Large prompts, model results, files, and artifacts should be stored outside Temporal event history and passed by reference.
+    </p>
+  </section>
+
+  <section>
+    <div class="section-head"><span class="section-num">04</span><h2>Decision Matrix</h2></div>
+    <table>
+      <thead>
+        <tr>
+          <th>Option</th>
+          <th>Best Fit</th>
+          <th>What It Owns</th>
+          <th>Sacrifices</th>
+          <th>Do Not Choose If</th>
+          <th>Verdict</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Temporal</strong></td>
+          <td>Long-running, human-gated, retryable, crash-resumable agent runs with external side effects.</td>
+          <td>Durable execution, timers, retries, workflow message passing, cancellation, task queues.</td>
+          <td>New service, deterministic workflow rules, activity idempotency, versioning, replay discipline, SDK integration constraints.</td>
+          <td>You only need short fire-and-forget jobs and want a single Postgres-only deployment.</td>
+          <td><span class="tag high">Choose for core runs</span></td>
+        </tr>
+        <tr>
+          <td><strong>Postgres + Procrastinate</strong></td>
+          <td>Lean local background jobs where app Postgres consistency and transactional enqueue matter most.</td>
+          <td>Queued job execution, retries, locks, scheduling, cancellation/abort, worker heartbeats.</td>
+          <td>Not a workflow engine; approvals, fan-in, recovery semantics, UI timeline, and run graph stay custom.</td>
+          <td>The core product needs durable waits, multi-step resume, and complex agent-run orchestration from day one.</td>
+          <td><span class="tag med">Fallback if Temporal deferred</span></td>
+        </tr>
+        <tr>
+          <td><strong>Custom Postgres workflow state</strong></td>
+          <td>Product truth: run status, approvals, artifacts, audit events, UI stream history, child-run relationships.</td>
+          <td>Business state and audit model only.</td>
+          <td>If extended into queue mechanics, you own leases, retries, stalled recovery, timers, and idempotency.</td>
+          <td>You are tempted to build a general durable execution engine.</td>
+          <td><span class="tag high">Keep, but bounded</span></td>
+        </tr>
+        <tr>
+          <td><strong>Redis-backed queues</strong></td>
+          <td>High-throughput background jobs, ephemeral work, mature Celery ecosystem, cache-adjacent tasks.</td>
+          <td>Brokered job delivery and worker distribution.</td>
+          <td>Extra critical state system, broker/result-backend decisions, app DB enqueue consistency problem.</td>
+          <td>Workflow progress, approvals, or irreplaceable tool state would live only in Redis.</td>
+          <td><span class="tag risk">Avoid for critical state</span></td>
+        </tr>
+        <tr>
+          <td><strong>Prefect</strong></td>
+          <td>Scheduled AI/data/ops workflows, evaluations, backfills, recurring maintenance, analyst agents, visible run history.</td>
+          <td>Retryable and observable Python flows/tasks, deployments, work pools, human input, events, automations, Pydantic AI <code>PrefectAgent</code>.</td>
+          <td>Not Temporal-style event-history replay; streaming/cancellation/reconciliation still need care for product-grade agent runs.</td>
+          <td>You need the primary engine for long-lived agent business transactions.</td>
+          <td><span class="tag med">Later sidecar only</span></td>
+        </tr>
+        <tr>
+          <td><strong>Temporal + Prefect</strong></td>
+          <td>Only when separate teams or domains need both durable business workflows and data/ops orchestration.</td>
+          <td>Two orchestration systems with different state models.</td>
+          <td>Duplicate retries, schedules, workers, UIs, failure handling, and operator burden.</td>
+          <td>You cannot clearly name the one owner for retry, cancellation, approval, and audit per process.</td>
+          <td><span class="tag risk">Do not use in v1</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <div class="section-head"><span class="section-num">05</span><h2>Key Findings</h2></div>
+    <div class="grid">
+      <div class="panel">
+        <h3>Converging Evidence</h3>
+        <ul>
+          <li>Temporal workflows are durable, replayed from event history, and designed for long-running processes that can sleep without consuming worker compute.</li>
+          <li>Temporal signals, queries, and updates map cleanly to human approval and live status interactions, but the app <code>Approval</code> table should remain the audit authority.</li>
+          <li>Pydantic AI has an official Temporal durable-execution integration via <code>TemporalAgent</code>, <code>PydanticAIPlugin</code>, and related helpers. It wraps an agent for deterministic workflows and offloads model, I/O tool, and MCP communication to activities.</li>
+          <li>OpenAI Agents SDK also has an official Temporal path, primarily documented in Temporal's Python SDK as <code>temporalio.contrib.openai_agents</code>; OpenAI package metadata exposes a <code>temporal</code> extra.</li>
+          <li>Procrastinate is the strongest lightweight queue because it is Postgres-backed and can enqueue within an externally managed app DB transaction.</li>
+          <li>Prefect is credible for AI-assisted scheduled/data/ops workflows through Pydantic AI <code>PrefectAgent</code>, deployments, workers, events, automations, and human input. This is useful durable AI task execution, but not the same architectural primitive as Temporal's replayed workflow execution.</li>
+          <li>Redis queues are useful for job distribution, but Redis should not be the only record for critical workflow state unless it is deliberately operated as a durable HA database.</li>
+        </ul>
+      </div>
+      <div class="panel">
+        <h3>Important Boundaries</h3>
+        <ul>
+          <li>Temporal owns execution mechanics, not the product database.</li>
+          <li>Workflow code must stay deterministic; use supported SDK integrations such as Pydantic AI <code>TemporalAgent</code> or OpenAI Agents SDK <code>OpenAIAgentsPlugin</code> rather than plain provider clients inside workflows.</li>
+          <li>Every activity that writes Postgres, artifacts, or external tools must be idempotent against <code>run_id</code>, <code>step_id</code>, or a stable operation key.</li>
+          <li>Large prompts, transcripts, artifacts, and model outputs should not be stored directly in Temporal event history.</li>
+          <li>LangGraph and Deep Agents may manage agent reasoning state, but they should not become the infrastructure workflow engine.</li>
+          <li>"Prefect agents" is ambiguous in current Prefect 3 terminology. Legacy Prefect agents became workers; AI agents appear through Pydantic AI <code>PrefectAgent</code>, Prefect MCP, examples, or separate PrefectHQ projects such as Marvin.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head"><span class="section-num">06</span><h2>Failure Modes</h2></div>
+    <table>
+      <thead>
+        <tr><th>Risk</th><th>Severity</th><th>Mitigation</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>State authority splits between Postgres, Temporal, queue rows, and UI cache.</td>
+          <td><span class="tag risk">High</span></td>
+          <td>Define Postgres as product/audit truth and Temporal as execution truth. Project workflow events into app tables with explicit reconciliation.</td>
+        </tr>
+        <tr>
+          <td>Non-deterministic workflow code breaks replay.</td>
+          <td><span class="tag risk">High</span></td>
+          <td>Keep workflow functions deterministic. Use Pydantic AI <code>TemporalAgent</code> or OpenAI Agents SDK <code>OpenAIAgentsPlugin</code> so model/tool/MCP I/O is activity-backed.</td>
+        </tr>
+        <tr>
+          <td>Activity retries duplicate external side effects.</td>
+          <td><span class="tag risk">High</span></td>
+          <td>Use operation keys, idempotent writes, unique constraints, and explicit compensation where a tool/API cannot be idempotent.</td>
+        </tr>
+        <tr>
+          <td>Temporal event history grows with prompts, tokens, or artifacts.</td>
+          <td><span class="tag med">Medium</span></td>
+          <td>Use claim-check references to app Postgres/local artifact storage. Continue-as-new for long histories.</td>
+        </tr>
+        <tr>
+          <td>Temporal self-hosting becomes the main operations burden.</td>
+          <td><span class="tag med">Medium</span></td>
+          <td>Start with local dev server or Compose. For production, prefer Temporal Cloud unless self-hosting has an owner, backup plan, metrics, and upgrade path.</td>
+        </tr>
+        <tr>
+          <td>Temporal + Prefect creates duplicate workflow owners.</td>
+          <td><span class="tag med">Medium</span></td>
+          <td>Do not make Prefect and Temporal own the same process. Add Prefect only for separate scheduled/eval/data/ops agent jobs with a clear boundary.</td>
+        </tr>
+        <tr>
+          <td>SDK integration limitations are hidden until implementation.</td>
+          <td><span class="tag med">Medium</span></td>
+          <td>Spike Pydantic AI <code>TemporalAgent</code> first, then OpenAI Agents SDK Temporal only for a real sidecar need. Check streaming, context, sandbox, and unsupported tool/session features explicitly.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <div class="section-head"><span class="section-num">07</span><h2>Implementation Decision Points</h2></div>
+    <table>
+      <thead>
+        <tr><th>Question</th><th>Decision</th><th>First Spike</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>What is the unit of orchestration?</td>
+          <td>One Temporal workflow per app <code>Run</code>; child workflows for durable sub-agent or department-level work.</td>
+          <td>Create a minimal <code>RunWorkflow</code> with one model activity, one approval wait, cancellation, and event projection.</td>
+        </tr>
+        <tr>
+          <td>Where does human approval live?</td>
+          <td>App Postgres <code>Approval</code> row is authoritative. Temporal waits for a signal/update keyed to that row.</td>
+          <td>FastAPI approval endpoint writes the row, then sends the Temporal message. Reconcile on retry.</td>
+        </tr>
+        <tr>
+          <td>Where do Pydantic AI and LiteLLM run?</td>
+          <td>Use <code>TemporalAgent.run()</code> from workflow code; the integration offloads model requests, I/O tools, and MCP communication to activities.</td>
+          <td>Run one named <code>TemporalAgent</code> through LiteLLM Proxy, with stable tool IDs, explicit activity retry policy, and an idempotent <code>ToolCall</code> write.</td>
+        </tr>
+        <tr>
+          <td>What about OpenAI Agents SDK?</td>
+          <td>Use Temporal's <code>temporalio.contrib.openai_agents</code> integration only for a deliberate OpenAI-native sidecar lane.</td>
+          <td>Spike one workflow using <code>OpenAIAgentsPlugin</code>, one model call activity, one <code>activity_as_tool</code>, and tracing/context propagation.</td>
+        </tr>
+        <tr>
+          <td>What about Prefect AI agents?</td>
+          <td>Keep Prefect as a sidecar candidate for scheduled AI/data/ops workflows, evaluations, maintenance, and analyst jobs.</td>
+          <td>Do not add it to the v1 core run path. Later spike Pydantic AI <code>PrefectAgent</code> for recurring eval/report jobs.</td>
+        </tr>
+        <tr>
+          <td>What if Temporal is too heavy for the first prototype?</td>
+          <td>Use Postgres + Procrastinate only as an explicit deferral path, with migration triggers documented.</td>
+          <td>Same app tables and service interface; swap execution adapter later without changing UI/API contracts.</td>
+        </tr>
+        <tr>
+          <td>What are the migration triggers?</td>
+          <td>Temporal is mandatory once runs routinely wait on humans, span hours/days, require retry across deploys, need fan-out/fan-in, or custom state-machine code starts growing.</td>
+          <td>Track these in implementation planning rather than discovering them after custom orchestration exists.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <div class="section-head"><span class="section-num">08</span><h2>Sources</h2></div>
+    <p class="small">All web sources were gathered by sub-agents and retrieved on 2026-06-15 unless noted. The correction pass was incorporated on 2026-06-16. Prior local decision artifacts were read from <code>docs/research/lean-ai-company/</code>.</p>
+    <ol>
+      <li><a href="fastapi-core-framework.html">Prior FastAPI core framework decision</a></li>
+      <li><a href="ui-layer-fastapi-product.html">Prior React/Vite UI decision</a></li>
+      <li><a href="agent-sdk-stack-litellm.html">Prior agent SDK and LiteLLM decision</a></li>
+      <li><a href="https://docs.temporal.io/">Temporal documentation</a></li>
+      <li><a href="https://docs.temporal.io/temporal-service">Temporal Service</a></li>
+      <li><a href="https://docs.temporal.io/workflows">Temporal Workflows</a></li>
+      <li><a href="https://docs.temporal.io/activities">Temporal Activities</a></li>
+      <li><a href="https://docs.temporal.io/workers">Temporal Workers</a></li>
+      <li><a href="https://docs.temporal.io/encyclopedia/workflow-message-passing">Temporal workflow message passing</a></li>
+      <li><a href="https://docs.temporal.io/encyclopedia/retry-policies">Temporal retry policies</a></li>
+      <li><a href="https://docs.temporal.io/develop/python">Temporal Python SDK docs</a></li>
+      <li><a href="https://docs.temporal.io/develop/python/workflows/basics">Temporal Python workflow basics</a></li>
+      <li><a href="https://docs.temporal.io/develop/safe-deployments">Temporal safe deployments</a></li>
+      <li><a href="https://docs.temporal.io/patching">Temporal patching</a></li>
+      <li><a href="https://docs.temporal.io/worker-versioning">Temporal worker versioning</a></li>
+      <li><a href="https://docs.temporal.io/self-hosted-guide">Temporal self-hosted guide</a></li>
+      <li><a href="https://docs.temporal.io/self-hosted-guide/production-checklist">Temporal self-hosted production checklist</a></li>
+      <li><a href="https://docs.temporal.io/cloud/pricing">Temporal Cloud pricing</a></li>
+      <li><a href="https://github.com/temporalio/sdk-python">Temporal Python SDK repository</a></li>
+      <li><a href="https://docs.temporal.io/develop/python/integrations">Temporal Python integrations</a></li>
+      <li><a href="https://github.com/temporalio/sdk-python/blob/main/temporalio/contrib/openai_agents/README.md">Temporal OpenAI Agents SDK integration README</a></li>
+      <li><a href="https://pydantic.dev/docs/ai/integrations/durable_execution/temporal/">Pydantic AI Temporal integration</a></li>
+      <li><a href="https://pydantic.dev/docs/ai/integrations/durable_execution/overview/">Pydantic AI durable execution overview</a></li>
+      <li><a href="https://pydantic.dev/docs/ai/api/pydantic-ai/durable_exec/">Pydantic AI durable execution API reference</a></li>
+      <li><a href="https://pydantic.dev/docs/ai/core-concepts/agent/">Pydantic AI agents</a></li>
+      <li><a href="https://pydantic.dev/docs/ai/graph/graph/">Pydantic AI graph docs</a></li>
+      <li><a href="https://pydantic.dev/docs/ai/guides/multi-agent-applications/">Pydantic AI multi-agent applications</a></li>
+      <li><a href="https://raw.githubusercontent.com/openai/openai-agents-python/main/pyproject.toml">OpenAI Agents SDK pyproject metadata</a></li>
+      <li><a href="https://pypi.org/pypi/openai-agents/0.17.5/json">OpenAI Agents SDK PyPI metadata</a></li>
+      <li><a href="https://procrastinate.readthedocs.io/en/stable/">Procrastinate documentation</a></li>
+      <li><a href="https://procrastinate.readthedocs.io/en/stable/howto/production/external_connection.html">Procrastinate external connection</a></li>
+      <li><a href="https://procrastinate.readthedocs.io/en/stable/howto/advanced/cancellation.html">Procrastinate cancellation</a></li>
+      <li><a href="https://procrastinate.readthedocs.io/en/stable/howto/advanced/retry.html">Procrastinate retries</a></li>
+      <li><a href="https://procrastinate.readthedocs.io/en/stable/howto/advanced/locks.html">Procrastinate locks</a></li>
+      <li><a href="https://procrastinate.readthedocs.io/en/stable/howto/advanced/cron.html">Procrastinate cron tasks</a></li>
+      <li><a href="https://procrastinate.readthedocs.io/en/stable/howto/production/retry_stalled_jobs.html">Procrastinate stalled jobs</a></li>
+      <li><a href="https://www.postgresql.org/docs/current/sql-select.html">PostgreSQL SELECT and SKIP LOCKED</a></li>
+      <li><a href="https://www.postgresql.org/docs/current/sql-listen.html">PostgreSQL LISTEN</a></li>
+      <li><a href="https://www.postgresql.org/docs/current/sql-notify.html">PostgreSQL NOTIFY</a></li>
+      <li><a href="https://docs.celeryq.dev/en/stable/getting-started/introduction.html">Celery introduction</a></li>
+      <li><a href="https://docs.celeryq.dev/en/stable/userguide/tasks.html">Celery tasks</a></li>
+      <li><a href="https://docs.celeryq.dev/en/stable/userguide/canvas.html">Celery canvas</a></li>
+      <li><a href="https://docs.celeryq.dev/en/stable/userguide/periodic-tasks.html">Celery periodic tasks</a></li>
+      <li><a href="https://docs.celeryq.dev/en/stable/userguide/workers.html">Celery workers</a></li>
+      <li><a href="https://docs.celeryq.dev/en/stable/userguide/monitoring.html">Celery monitoring</a></li>
+      <li><a href="https://docs.celeryq.dev/en/stable/getting-started/backends-and-brokers/redis.html">Celery Redis backend and broker docs</a></li>
+      <li><a href="https://python-rq.org/docs/">RQ docs</a></li>
+      <li><a href="https://arq-docs.helpmanual.io/">ARQ docs</a></li>
+      <li><a href="https://dramatiq.io/">Dramatiq docs</a></li>
+      <li><a href="https://redis.io/docs/latest/operate/oss_and_stack/management/persistence/">Redis persistence docs</a></li>
+      <li><a href="https://docs.prefect.io/v3/get-started">Prefect 3 docs</a></li>
+      <li><a href="https://docs.prefect.io/v3/concepts/flows">Prefect flows</a></li>
+      <li><a href="https://docs.prefect.io/v3/concepts/tasks">Prefect tasks</a></li>
+      <li><a href="https://docs.prefect.io/v3/concepts/deployments">Prefect deployments</a></li>
+      <li><a href="https://docs.prefect.io/v3/concepts/work-pools">Prefect work pools</a></li>
+      <li><a href="https://docs.prefect.io/v3/concepts/workers">Prefect workers</a></li>
+      <li><a href="https://docs.prefect.io/v3/concepts/schedules">Prefect schedules</a></li>
+      <li><a href="https://docs.prefect.io/v3/advanced/results">Prefect results</a></li>
+      <li><a href="https://docs.prefect.io/v3/advanced/transactions">Prefect transactions</a></li>
+      <li><a href="https://docs.prefect.io/v3/advanced/interactive">Prefect interactive workflows</a></li>
+      <li><a href="https://docs.prefect.io/v3/advanced/cancel-workflows">Prefect cancellation</a></li>
+      <li><a href="https://docs.prefect.io/v3/advanced/self-hosted">Prefect self-hosted docs</a></li>
+      <li><a href="https://docs.prefect.io/v3/how-to-guides/migrate/upgrade-agents-to-workers">Prefect upgrade agents to workers</a></li>
+      <li><a href="https://docs.prefect.io/v3/how-to-guides/ai">Prefect AI guide</a></li>
+      <li><a href="https://docs.prefect.io/v3/how-to-guides/ai/use-prefect-mcp-server">Prefect MCP server guide</a></li>
+      <li><a href="https://docs.prefect.io/v3/how-to-guides/ai/flow-run-log-summaries">Prefect AI log summaries</a></li>
+      <li><a href="https://docs.prefect.io/v3/examples/ai-data-analyst-with-pydantic-ai">Prefect AI data analyst with Pydantic AI example</a></li>
+      <li><a href="https://docs.prefect.io/v3/examples/ai-database-cleanup-with-approval">Prefect AI database cleanup with approval example</a></li>
+      <li><a href="https://pydantic.dev/docs/ai/integrations/durable_execution/prefect/">Pydantic AI Prefect integration</a></li>
+      <li><a href="https://github.com/prefect-archive/ControlFlow">Archived Prefect ControlFlow repository</a></li>
+      <li><a href="https://github.com/PrefectHQ/marvin">PrefectHQ Marvin repository</a></li>
+      <li><a href="https://docs.langchain.com/oss/python/langgraph/persistence">LangGraph persistence</a></li>
+      <li><a href="https://docs.langchain.com/oss/python/langgraph/interrupts">LangGraph interrupts</a></li>
+      <li><a href="https://docs.langchain.com/oss/python/langgraph/fault-tolerance">LangGraph fault tolerance</a></li>
+      <li><a href="https://brandur.org/postgres-queues">Brandur Leach: Postgres queues and MVCC practitioner writeup</a></li>
+      <li><a href="https://temporal.io/blog/how-groundcover-built-a-durable-alert-dispatch-system-with-temporal">Temporal/groundcover practitioner writeup</a></li>
+      <li><a href="https://temporal.io/blog/how-coverwatch-uses-temporal-to-orchestrate-ai-powered-insurance-workflows">Temporal/Coverwatch practitioner writeup</a></li>
+    </ol>
+  </section>
+
+  <footer>
+    Generated for BD issue orch-0sc.4 in /data/codes/orchestrators. This is a consolidated orchestrator report from sub-agent research slices, anchored on the prior FastAPI, React/Vite, Pydantic AI, and LiteLLM decisions. Corrected on 2026-06-16 after focused validation of Pydantic AI Temporal, OpenAI Agents SDK Temporal, and Prefect AI/agent orchestration.
+  </footer>
+</main>
+</body>
+</html>

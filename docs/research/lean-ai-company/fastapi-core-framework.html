@@ -1,0 +1,585 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FastAPI Core Framework Decision</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #f7f7f4;
+      --surface: #ffffff;
+      --surface-2: #f0f1ed;
+      --text: #1e2528;
+      --muted: #657178;
+      --border: #d9ded8;
+      --accent: #246b5d;
+      --accent-soft: #e1f0eb;
+      --green: #19764c;
+      --green-soft: #dff3e9;
+      --amber: #8a5b05;
+      --amber-soft: #fff0cd;
+      --red: #a13a32;
+      --red-soft: #fde1dd;
+      --code: #142225;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #111414;
+        --surface: #191d1e;
+        --surface-2: #202627;
+        --text: #eef2ef;
+        --muted: #a7b0ad;
+        --border: #333b3b;
+        --accent: #6fc3ae;
+        --accent-soft: #15342d;
+        --green: #7bdca8;
+        --green-soft: #153324;
+        --amber: #f0c26b;
+        --amber-soft: #392a0e;
+        --red: #ee8d82;
+        --red-soft: #3d1c19;
+        --code: #edf7f4;
+        --shadow: none;
+      }
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font: 15px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    main {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 40px 24px 64px;
+    }
+    header {
+      margin-bottom: 28px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 24px;
+    }
+    .eyebrow {
+      color: var(--accent);
+      font-weight: 700;
+      letter-spacing: 0;
+      text-transform: uppercase;
+      font-size: 12px;
+    }
+    h1 {
+      margin: 6px 0 8px;
+      font-size: clamp(30px, 4vw, 48px);
+      line-height: 1.08;
+      letter-spacing: 0;
+    }
+    .subtitle {
+      max-width: 860px;
+      margin: 0;
+      color: var(--muted);
+      font-size: 17px;
+    }
+    .kpis {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin: 24px 0 4px;
+    }
+    .kpi {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px;
+      box-shadow: var(--shadow);
+      min-height: 118px;
+    }
+    .kpi strong {
+      display: block;
+      color: var(--code);
+      font-size: 22px;
+      line-height: 1.2;
+      margin-bottom: 8px;
+    }
+    .kpi span {
+      display: block;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.4;
+    }
+    section {
+      margin-top: 34px;
+    }
+    .section-head {
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 8px;
+      margin-bottom: 16px;
+    }
+    .section-num {
+      color: var(--muted);
+      font-size: 26px;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+    }
+    h2 {
+      margin: 0;
+      font-size: 22px;
+      letter-spacing: 0;
+    }
+    h3 {
+      margin: 20px 0 8px;
+      font-size: 16px;
+      letter-spacing: 0;
+    }
+    p { margin: 0 0 12px; }
+    a { color: var(--accent); }
+    .callout {
+      background: var(--accent-soft);
+      border: 1px solid color-mix(in srgb, var(--accent) 35%, var(--border));
+      border-radius: 8px;
+      padding: 16px;
+      margin: 16px 0;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 12px 0 18px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    th, td {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+      text-align: left;
+    }
+    th {
+      background: var(--surface-2);
+      color: var(--text);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0;
+    }
+    tr:last-child td { border-bottom: 0; }
+    .tag {
+      display: inline-block;
+      border-radius: 999px;
+      padding: 2px 8px;
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .tag.high { background: var(--green-soft); color: var(--green); }
+    .tag.med { background: var(--amber-soft); color: var(--amber); }
+    .tag.risk { background: var(--red-soft); color: var(--red); }
+    ul {
+      margin: 8px 0 14px;
+      padding-left: 20px;
+    }
+    li { margin: 5px 0; }
+    .source-list {
+      columns: 2;
+      column-gap: 28px;
+      padding-left: 18px;
+    }
+    .source-list li {
+      break-inside: avoid;
+      margin-bottom: 8px;
+    }
+    .small {
+      color: var(--muted);
+      font-size: 13px;
+    }
+    footer {
+      margin-top: 42px;
+      padding-top: 18px;
+      border-top: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 13px;
+    }
+    @media (max-width: 720px) {
+      main { padding: 28px 16px 48px; }
+      .kpis, .grid { grid-template-columns: 1fr; }
+      .source-list { columns: 1; }
+      table { font-size: 13px; }
+      th, td { padding: 8px; }
+    }
+  </style>
+</head>
+<body>
+<main>
+  <header>
+    <div class="eyebrow">BD orch-0sc.1 | Deep research | Retrieved 2026-06-15</div>
+    <h1>FastAPI as the core web app framework</h1>
+    <p class="subtitle">
+      Consolidated sub-agent research on whether a personal-assistant-led multi-agent company system can be built cleanly on FastAPI without Django, and what library set is needed to cover Django-like gaps.
+    </p>
+    <div class="kpis">
+      <div class="kpi">
+        <strong>Choose FastAPI</strong>
+        <span>As the HTTP/API and realtime-status edge, not as the durable workflow engine.</span>
+      </div>
+      <div class="kpi">
+        <strong>Medium-high</strong>
+        <span>Confidence, assuming external auth or a deliberately scoped auth module.</span>
+      </div>
+      <div class="kpi">
+        <strong>Auth/security</strong>
+        <span>The main gap versus Django, ahead of ORM or request routing.</span>
+      </div>
+      <div class="kpi">
+        <strong>No blocker</strong>
+        <span>But the missing batteries must be treated as architecture decisions, not defaults.</span>
+      </div>
+    </div>
+  </header>
+
+  <section>
+    <div class="section-head"><span class="section-num">01</span><h2>Answer</h2></div>
+    <div class="callout">
+      <p><strong>Recommendation:</strong> use FastAPI as the core web/API framework for the first version if the product is an API-first control plane with chat ingress, workflow/status APIs, approval endpoints, artifact metadata, LiteLLM integration, and SSE/WebSocket status streams.</p>
+      <p><strong>Do not treat this as a vote for FastAPI as the whole application platform.</strong> FastAPI should own HTTP, typed contracts, OpenAPI, dependency wiring, streaming endpoints, and ASGI lifecycle. Postgres, workers/workflows, auth/session policy, admin/internal inspection, migrations, and observability need explicit components.</p>
+    </div>
+    <p>
+      Django becomes the better default if the first release is mostly a browser-facing relational control plane: staff/admin CRUD, server-rendered forms, local users, groups, permissions, CSRF-protected cookie sessions, and a model-admin workflow. A hybrid Django-plus-FastAPI shape is possible, but it should be avoided initially unless the boundary is clean enough to justify two web frameworks.
+    </p>
+  </section>
+
+  <section>
+    <div class="section-head"><span class="section-num">02</span><h2>Scope And Method</h2></div>
+    <p>
+      Research was split across four sub-agents: core FastAPI versus Django framework suitability, Django-like gap-filler libraries, operational fit for the assistant/orchestration workload, and a red-team case for Django. Source weighting favored official/current docs, release notes, project docs, and package metadata. Practitioner surveys were used only as ecosystem context.
+    </p>
+    <table>
+      <thead>
+        <tr><th>Question</th><th>Boundary</th><th>Evidence Type</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Can FastAPI replace Django as the core web framework?</td>
+          <td>Web/API layer only; later BD items own UI and workers.</td>
+          <td>FastAPI, Starlette, Pydantic, Django, ASGI, Uvicorn docs.</td>
+        </tr>
+        <tr>
+          <td>What Django-like capabilities are missing?</td>
+          <td>Auth, admin, sessions, migrations, settings, forms, security defaults.</td>
+          <td>Official package docs plus PyPI release/maturity signals.</td>
+        </tr>
+        <tr>
+          <td>What would make the decision wrong?</td>
+          <td>Only conditions relevant to this product shape.</td>
+          <td>Django official docs and explicit red-team reasoning.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <div class="section-head"><span class="section-num">03</span><h2>Key Findings</h2></div>
+    <div class="grid">
+      <div class="panel">
+        <h3>Facts</h3>
+        <ul>
+          <li>FastAPI is API-first: Python type hints, Pydantic validation, Starlette ASGI foundation, OpenAPI/JSON Schema, dependency injection, WebSockets, StreamingResponse, SSE documentation, lifespan hooks, middleware, and TestClient support.</li>
+          <li>Django bundles a coherent application stack: auth, groups/permissions, sessions, CSRF, forms, ORM, migrations, admin, tests, management commands, and security guidance.</li>
+          <li>FastAPI security helpers wire schemes and OpenAPI semantics; they do not create a complete product auth/account/session system.</li>
+          <li>FastAPI BackgroundTasks and Starlette background tasks are after-response hooks, not durable workflow infrastructure.</li>
+          <li>SQLAlchemy plus Alembic is mature enough for the persistence layer, but Alembic autogenerate still requires migration review.</li>
+          <li>Django 5.2 is an LTS release with support listed through April 2028; FastAPI remains in 0.x and official docs tell users to pin versions for production.</li>
+        </ul>
+      </div>
+      <div class="panel">
+        <h3>Inferences</h3>
+        <ul>
+          <li>FastAPI fits a control-plane API better than Django when the UI is custom, auth can be delegated or narrowed, and streaming/status endpoints matter.</li>
+          <li>The main FastAPI cost is integration discipline around auth, sessions, CSRF, admin, and operational defaults.</li>
+          <li>Django's strongest value is reducing the number of choices in boring, security-sensitive, database-backed product surfaces.</li>
+          <li>Request-router performance is not the key decision variable for an agent orchestration product; LLM calls, queue latency, Postgres, artifact IO, and worker scheduling will dominate.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head"><span class="section-num">04</span><h2>Decision Matrix</h2></div>
+    <table>
+      <thead>
+        <tr>
+          <th>Option</th>
+          <th>Best Fit</th>
+          <th>Sacrifices</th>
+          <th>Operating Cost</th>
+          <th>Do Not Choose If</th>
+          <th>Confidence</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>FastAPI core</strong></td>
+          <td>API-first assistant control plane, typed contracts, OpenAPI, streaming, external services, worker boundaries.</td>
+          <td>No bundled auth/admin/forms/session/ORM/security-default suite.</td>
+          <td>Medium: more composition, but each piece is explicit.</td>
+          <td>The first release is primarily staff CRUD, browser sessions, forms, and model admin.</td>
+          <td><span class="tag high">Medium-high</span></td>
+        </tr>
+        <tr>
+          <td><strong>Django core</strong></td>
+          <td>Long-lived relational web app with built-in admin, auth, sessions, CSRF, forms, ORM, migrations.</td>
+          <td>Less natural fit for API-first async streaming and lightweight service boundaries.</td>
+          <td>Low-medium: fewer components, more framework convention.</td>
+          <td>The product center is custom APIs, SSE/WebSockets, and external agent/tool services.</td>
+          <td><span class="tag med">Medium</span></td>
+        </tr>
+        <tr>
+          <td><strong>Django + FastAPI</strong></td>
+          <td>Django owns durable control plane; FastAPI owns isolated async/streaming agent APIs.</td>
+          <td>Two frameworks, duplicated auth/context/testing/deploy concerns.</td>
+          <td>High unless the boundary is very clean.</td>
+          <td>The same workflows need to span both frameworks tightly.</td>
+          <td><span class="tag med">Low-medium</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <div class="section-head"><span class="section-num">05</span><h2>Minimal FastAPI Stack</h2></div>
+    <p>
+      The recommended FastAPI stack is intentionally small. It should be a pinned, documented baseline rather than a grab bag of plugins.
+    </p>
+    <table>
+      <thead>
+        <tr><th>Need</th><th>Recommended Component</th><th>Reason</th><th>Risk</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Web/API layer</td>
+          <td>FastAPI + Starlette + Uvicorn</td>
+          <td>Typed APIs, OpenAPI, ASGI, SSE/WebSocket support, testability.</td>
+          <td><span class="tag med">Pin versions</span></td>
+        </tr>
+        <tr>
+          <td>Data model and migrations</td>
+          <td>SQLAlchemy 2.x + asyncpg + Alembic</td>
+          <td>Mature Postgres persistence and migration tooling.</td>
+          <td><span class="tag med">Review migrations</span></td>
+        </tr>
+        <tr>
+          <td>Settings</td>
+          <td>pydantic-settings</td>
+          <td>Matches FastAPI/Pydantic type system and environment-driven config.</td>
+          <td><span class="tag high">Low</span></td>
+        </tr>
+        <tr>
+          <td>External identity</td>
+          <td>Authlib + first-party user/role mapping</td>
+          <td>Best path if OIDC/OAuth is acceptable; avoids local password lifecycle early.</td>
+          <td><span class="tag med">Policy work remains</span></td>
+        </tr>
+        <tr>
+          <td>Local account flows</td>
+          <td>FastAPI Users only behind an internal auth boundary</td>
+          <td>Useful for registration/login/reset/verify, but project docs say maintenance mode.</td>
+          <td><span class="tag risk">Migration risk</span></td>
+        </tr>
+        <tr>
+          <td>Internal admin</td>
+          <td>SQLAdmin, behind strong auth</td>
+          <td>Narrow SQLAlchemy-aligned CRUD/inspection surface.</td>
+          <td><span class="tag med">Beta maturity</span></td>
+        </tr>
+        <tr>
+          <td>Sessions</td>
+          <td>Server-side/session strategy tied to auth; Starlette SessionMiddleware only for low-sensitivity state</td>
+          <td>Starlette signed-cookie sessions are readable by clients and not server-revocable by themselves.</td>
+          <td><span class="tag risk">CSRF/session bugs</span></td>
+        </tr>
+        <tr>
+          <td>Background work</td>
+          <td>None in this decision; defer durable work to the worker/workflow BD item</td>
+          <td>FastAPI BackgroundTasks are not a durable job system.</td>
+          <td><span class="tag risk">Do not overuse</span></td>
+        </tr>
+      </tbody>
+    </table>
+    <p>
+      Explicit exclusions for now: <strong>fastapi-sessions</strong> because the latest reported PyPI release is stale, <strong>SQLModel as the architecture anchor</strong> because SQLAlchemy is the mature substrate, <strong>standalone WTForms</strong> unless the UI decision later requires custom server-rendered forms, and <strong>publicly exposed admin packages</strong> because admin surfaces should stay behind strong internal auth.
+    </p>
+  </section>
+
+  <section>
+    <div class="section-head"><span class="section-num">06</span><h2>Failure Modes</h2></div>
+    <table>
+      <thead>
+        <tr><th>Risk</th><th>Severity</th><th>Mitigation</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Assuming FastAPI security helpers equal product-grade auth.</td>
+          <td><span class="tag risk">High</span></td>
+          <td>Choose external OIDC/Authlib or isolate FastAPI Users behind a boundary; define roles, sessions, CSRF, and revocation explicitly.</td>
+        </tr>
+        <tr>
+          <td>Using in-process BackgroundTasks for durable agent workflows.</td>
+          <td><span class="tag risk">High</span></td>
+          <td>Use only for non-critical after-response cleanup; BD orch-0sc.4 must select durable worker/workflow infrastructure.</td>
+        </tr>
+        <tr>
+          <td>In-memory stream managers break with multiple Uvicorn workers.</td>
+          <td><span class="tag med">Medium</span></td>
+          <td>Keep single-process early or back streams with Postgres events, Redis/pubsub, or a broker before replication.</td>
+        </tr>
+        <tr>
+          <td>Cookie-backed browser mutations without CSRF protection.</td>
+          <td><span class="tag risk">High</span></td>
+          <td>Add explicit CSRF strategy if using cookie auth for mutating browser requests.</td>
+        </tr>
+        <tr>
+          <td>Admin package maturity and accidental production data mutation.</td>
+          <td><span class="tag med">Medium</span></td>
+          <td>Treat admin as internal inspection/repair, protect with strong auth, and avoid using it as primary product workflow.</td>
+        </tr>
+        <tr>
+          <td>FastAPI/Starlette streaming behavior shifts across fast-moving versions.</td>
+          <td><span class="tag med">Medium</span></td>
+          <td>Pin versions and add integration tests for SSE, WebSockets, lifespan, cancellation, and auth on streams.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <div class="section-head"><span class="section-num">07</span><h2>Counterargument</h2></div>
+    <p>
+      The strongest case against FastAPI is not that it lacks routing, validation, or async support. It is that a solo or small-team, long-lived assistant product may spend most of its risk budget on account management, internal inspection, approvals, staff workflows, relational data repair, sessions, CSRF, permissions, and schema evolution. Django solves much of that in one coherent stack and has an LTS path.
+    </p>
+    <p>
+      The strongest FastAPI rebuttal is that this system is not a conventional CRUD/admin product if the architecture direction stays as stated: Python, FastAPI, Postgres, LiteLLM Proxy, local artifacts, Docker Compose, agent/tool services, streaming status, and later workers. In that shape, Django's bundled UI/admin stack is valuable but not central enough to justify making the API/control-plane layer less natural.
+    </p>
+    <table>
+      <thead>
+        <tr><th>Decision Flip</th><th>Meaning</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Flip to Django</td>
+          <td>First release needs local users, staff CRUD, groups/permissions, CSRF forms, Django-admin-like operations, and low-maintenance browser session security more than API streaming ergonomics.</td>
+        </tr>
+        <tr>
+          <td>Stay with FastAPI</td>
+          <td>External auth is acceptable, APIs dominate, UI is custom, streaming status is central, and the team commits to a pinned library baseline plus security tests.</td>
+        </tr>
+        <tr>
+          <td>Consider hybrid</td>
+          <td>Django and FastAPI can own separate products or services with a clean boundary. Avoid this if they would share the same auth/session/workflow surface.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <div class="section-head"><span class="section-num">08</span><h2>Decision Points And Open Questions</h2></div>
+    <table>
+      <thead>
+        <tr><th>Open Question</th><th>Why It Matters</th><th>Suggested Default</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Is external OIDC acceptable for the first deployment?</td>
+          <td>Determines whether Authlib is enough or local password lifecycle is needed.</td>
+          <td>Prefer external OIDC if available.</td>
+        </tr>
+        <tr>
+          <td>Will the UI use cookie-backed browser sessions?</td>
+          <td>Cookie auth makes CSRF and server-side session revocation first-order requirements.</td>
+          <td>Assume yes for browser UI and design CSRF now.</td>
+        </tr>
+        <tr>
+          <td>Is admin CRUD allowed to mutate production data?</td>
+          <td>Changes risk posture for SQLAdmin or any internal inspection tool.</td>
+          <td>Start inspection-first; curated repair tools later.</td>
+        </tr>
+        <tr>
+          <td>Which worker/workflow engine wins orch-0sc.4?</td>
+          <td>FastAPI should not carry durable orchestration semantics.</td>
+          <td>Keep FastAPI thin until that decision lands.</td>
+        </tr>
+        <tr>
+          <td>Which UI layer wins orch-0sc.2?</td>
+          <td>Server-rendered forms versus SPA affects session/CSRF/admin choices.</td>
+          <td>Defer final form/admin choices until UI research is reviewed.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <div class="section-head"><span class="section-num">09</span><h2>Sources</h2></div>
+    <p class="small">All sources below were gathered by sub-agents and retrieved on 2026-06-15. Primary/current docs were weighted above package pages and practitioner surveys.</p>
+    <ol class="source-list">
+      <li><a href="https://fastapi.tiangolo.com/">FastAPI documentation</a></li>
+      <li><a href="https://fastapi.tiangolo.com/release-notes/">FastAPI release notes</a></li>
+      <li><a href="https://fastapi.tiangolo.com/deployment/versions/">FastAPI versions guidance</a></li>
+      <li><a href="https://fastapi.tiangolo.com/tutorial/security/">FastAPI security tutorial</a></li>
+      <li><a href="https://fastapi.tiangolo.com/tutorial/security/first-steps/">FastAPI security first steps</a></li>
+      <li><a href="https://fastapi.tiangolo.com/advanced/websockets/">FastAPI WebSockets</a></li>
+      <li><a href="https://fastapi.tiangolo.com/tutorial/server-sent-events/">FastAPI server-sent events</a></li>
+      <li><a href="https://fastapi.tiangolo.com/advanced/custom-response/">FastAPI custom and streaming responses</a></li>
+      <li><a href="https://fastapi.tiangolo.com/tutorial/background-tasks/">FastAPI background tasks</a></li>
+      <li><a href="https://fastapi.tiangolo.com/advanced/events/">FastAPI lifespan events</a></li>
+      <li><a href="https://fastapi.tiangolo.com/tutorial/sql-databases/">FastAPI SQL databases</a></li>
+      <li><a href="https://fastapi.tiangolo.com/advanced/settings/">FastAPI settings</a></li>
+      <li><a href="https://www.starlette.io/">Starlette documentation</a></li>
+      <li><a href="https://www.starlette.io/middleware/">Starlette middleware</a></li>
+      <li><a href="https://starlette.dev/background/">Starlette background tasks</a></li>
+      <li><a href="https://starlette.dev/lifespan/">Starlette lifespan</a></li>
+      <li><a href="https://asgi.readthedocs.io/en/latest/specs/www.html">ASGI HTTP and WebSocket spec</a></li>
+      <li><a href="https://asgi.readthedocs.io/en/latest/specs/lifespan.html">ASGI lifespan spec</a></li>
+      <li><a href="https://www.uvicorn.org/">Uvicorn documentation</a></li>
+      <li><a href="https://pydantic.dev/docs/validation/latest/concepts/pydantic_settings/">Pydantic settings documentation</a></li>
+      <li><a href="https://docs.djangoproject.com/en/6.0/topics/auth/">Django auth</a></li>
+      <li><a href="https://docs.djangoproject.com/en/6.0/ref/contrib/admin/">Django admin</a></li>
+      <li><a href="https://docs.djangoproject.com/en/6.0/topics/http/sessions/">Django sessions</a></li>
+      <li><a href="https://docs.djangoproject.com/en/6.0/howto/csrf/">Django CSRF</a></li>
+      <li><a href="https://docs.djangoproject.com/en/6.0/topics/forms/">Django forms</a></li>
+      <li><a href="https://docs.djangoproject.com/en/6.0/topics/migrations/">Django migrations</a></li>
+      <li><a href="https://docs.djangoproject.com/en/6.0/topics/async/">Django async support</a></li>
+      <li><a href="https://docs.djangoproject.com/en/6.0/topics/security/">Django security</a></li>
+      <li><a href="https://www.djangoproject.com/download/#supported-versions">Django supported versions</a></li>
+      <li><a href="https://docs.sqlalchemy.org/en/20/intro.html">SQLAlchemy 2.0 overview</a></li>
+      <li><a href="https://alembic.sqlalchemy.org/en/latest/tutorial.html">Alembic tutorial</a></li>
+      <li><a href="https://alembic.sqlalchemy.org/en/latest/autogenerate.html">Alembic autogenerate</a></li>
+      <li><a href="https://fastapi-users.github.io/fastapi-users/latest/">FastAPI Users documentation</a></li>
+      <li><a href="https://docs.authlib.org/en/latest/">Authlib documentation</a></li>
+      <li><a href="https://aminalaee.github.io/sqladmin/">SQLAdmin documentation</a></li>
+      <li><a href="https://jowilf.github.io/starlette-admin/">Starlette Admin documentation</a></li>
+      <li><a href="https://opentelemetry-python-contrib.readthedocs.io/en/latest/instrumentation/fastapi/fastapi.html">OpenTelemetry FastAPI instrumentation</a></li>
+      <li><a href="https://lp.jetbrains.com/python-developers-survey-2024/">PSF/JetBrains Python Developers Survey 2024</a></li>
+      <li><a href="https://survey.stackoverflow.co/2025/technology">Stack Overflow Developer Survey 2025</a></li>
+    </ol>
+  </section>
+
+  <footer>
+    Generated for BD issue orch-0sc.1 in /data/codes/orchestrators. This is a consolidated orchestrator report from sub-agent research slices, not a standalone implementation plan.
+  </footer>
+</main>
+</body>
+</html>
