@@ -1,0 +1,758 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Agent Role And Department Specification Model</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #f5f6f7;
+      --surface: #ffffff;
+      --surface-2: #eef1f3;
+      --text: #1f2328;
+      --muted: #66707a;
+      --line: #d7dde3;
+      --accent: #1f766e;
+      --accent-soft: #e2f1ef;
+      --risk: #a23424;
+      --risk-soft: #f6dfdc;
+      --med: #765514;
+      --med-soft: #f1e6c9;
+      --high: #23643b;
+      --high-soft: #dff0e6;
+      --code: #eef1f3;
+      --shadow: 0 1px 2px rgba(31, 35, 40, 0.08);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #111417;
+        --surface: #191d21;
+        --surface-2: #22282e;
+        --text: #eceff2;
+        --muted: #a7b0b8;
+        --line: #333b44;
+        --accent: #72c7bb;
+        --accent-soft: #143732;
+        --risk: #ef8b7f;
+        --risk-soft: #391d1a;
+        --med: #e0c56f;
+        --med-soft: #332b16;
+        --high: #93d8a8;
+        --high-soft: #173421;
+        --code: #22282e;
+        --shadow: none;
+      }
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.6;
+    }
+    main {
+      max-width: 1140px;
+      margin: 0 auto;
+      padding: 44px 20px 64px;
+    }
+    header { margin-bottom: 34px; }
+    .eyebrow {
+      color: var(--accent);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0;
+      text-transform: uppercase;
+    }
+    h1 {
+      margin: 8px 0 12px;
+      font-size: clamp(32px, 5vw, 56px);
+      line-height: 1.05;
+      letter-spacing: 0;
+    }
+    h2 {
+      margin: 0;
+      font-size: 24px;
+      letter-spacing: 0;
+    }
+    h3 {
+      margin: 22px 0 10px;
+      font-size: 17px;
+      letter-spacing: 0;
+    }
+    p { margin: 10px 0; }
+    a { color: var(--accent); }
+    code {
+      background: var(--code);
+      border: 1px solid var(--line);
+      border-radius: 5px;
+      padding: 1px 5px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.92em;
+    }
+    pre {
+      overflow-x: auto;
+      background: var(--code);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 14px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 13px;
+      line-height: 1.55;
+    }
+    .subtitle {
+      max-width: 880px;
+      color: var(--muted);
+      font-size: 18px;
+    }
+    .kpis {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-top: 22px;
+    }
+    .kpi {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 16px;
+      box-shadow: var(--shadow);
+    }
+    .kpi strong {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 18px;
+    }
+    .kpi span {
+      display: block;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+    section {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 24px;
+      margin: 18px 0;
+      box-shadow: var(--shadow);
+    }
+    .section-head {
+      display: flex;
+      gap: 14px;
+      align-items: center;
+      padding-bottom: 12px;
+      margin-bottom: 14px;
+      border-bottom: 1px solid var(--line);
+    }
+    .section-num {
+      color: var(--muted);
+      font-size: 28px;
+      font-weight: 800;
+      line-height: 1;
+      font-variant-numeric: tabular-nums;
+    }
+    .callout {
+      border-left: 4px solid var(--accent);
+      background: var(--accent-soft);
+      border-radius: 0 8px 8px 0;
+      padding: 14px 16px;
+      margin: 12px 0 16px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 14px 0;
+      font-size: 14px;
+    }
+    th, td {
+      border: 1px solid var(--line);
+      padding: 10px 11px;
+      text-align: left;
+      vertical-align: top;
+    }
+    th {
+      background: var(--surface-2);
+      font-weight: 700;
+    }
+    .tag {
+      display: inline-block;
+      border-radius: 999px;
+      padding: 2px 8px;
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .tag.high { color: var(--high); background: var(--high-soft); }
+    .tag.med { color: var(--med); background: var(--med-soft); }
+    .tag.risk { color: var(--risk); background: var(--risk-soft); }
+    .diagram {
+      overflow-x: auto;
+      background: var(--surface-2);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 12px;
+      margin: 16px 0;
+    }
+    svg {
+      min-width: 900px;
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+    .box { fill: var(--surface); stroke: var(--line); stroke-width: 1.5; }
+    .box-accent { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 1.5; }
+    .svg-title { fill: var(--text); font-size: 16px; font-weight: 700; }
+    .svg-note { fill: var(--muted); font-size: 12px; }
+    .arrow { fill: none; stroke: var(--accent); stroke-width: 2; marker-end: url(#arrow); }
+    .dash { stroke-dasharray: 6 5; }
+    ul { padding-left: 22px; }
+    li { margin: 6px 0; }
+    .small {
+      color: var(--muted);
+      font-size: 13px;
+    }
+    footer {
+      color: var(--muted);
+      font-size: 13px;
+      margin-top: 28px;
+      padding-top: 18px;
+      border-top: 1px solid var(--line);
+    }
+    @media (max-width: 860px) {
+      .kpis { grid-template-columns: 1fr 1fr; }
+      section { padding: 18px; }
+    }
+    @media (max-width: 620px) {
+      main { padding: 28px 14px 48px; }
+      .kpis { grid-template-columns: 1fr; }
+      th, td { padding: 9px; }
+    }
+  </style>
+</head>
+<body>
+<main>
+  <header>
+    <div class="eyebrow">BD orch-0sc.7 | Deep research | Retrieved 2026-06-17</div>
+    <h1>Agent role and department specification model</h1>
+    <p class="subtitle">
+      Consolidated sub-agent research on representing departments, roles, workflows, prompts, model policy, tool grants, approvals, context scopes, and auditability for the FastAPI, Postgres, Temporal, Pydantic AI, LiteLLM, and app-owned tool-registry architecture.
+    </p>
+    <div class="kpis">
+      <div class="kpi">
+        <strong>Postgres specs</strong>
+        <span>Canonical role, department, workflow, prompt, model, tool, context, and approval versions.</span>
+      </div>
+      <div class="kpi">
+        <strong>Code primitives</strong>
+        <span>Temporal workflows, agent factories, validators, tools, adapters, and policy evaluator stay in code.</span>
+      </div>
+      <div class="kpi">
+        <strong>Run snapshots</strong>
+        <span>Every run pins immutable versions and hashes. No long run binds to latest config.</span>
+      </div>
+      <div class="kpi">
+        <strong>No policy engine yet</strong>
+        <span>Use typed app policy tables in v1. Defer OPA, Cedar, and OpenFGA until scale demands them.</span>
+      </div>
+    </div>
+  </header>
+
+  <section>
+    <div class="section-head"><span class="section-num">01</span><h2>Answer</h2></div>
+    <div class="callout">
+      <p><strong>Recommendation:</strong> build an app-owned <strong>Spec Registry</strong> in Postgres with immutable, publishable versions for departments, roles, workflows, prompts, model policy, tool grants, context scopes, approval policy, and adapter policy. Generate Pydantic AI agents/toolsets and Temporal run inputs from a per-run snapshot of those versions.</p>
+      <p><strong>Do not</strong> make Pydantic AI <code>AgentSpec</code>, DeepAgents subagent configs, CrewAI crews, AutoGen teams, OpenAI Agents SDK agents, or mutable JSON blobs the source of truth. Treat them as adapter/import/export shapes.</p>
+    </div>
+    <p>
+      The clean split is: <strong>policy semantics and execution mechanics in code, policy parameters and approved versions in Postgres</strong>. The database may store prompt text, ordered instruction blocks, model aliases from an allowlist, tool IDs and versions from the internal registry, context scope IDs, approval thresholds, cost ceilings, and lifecycle status. It must not store executable Python, import paths, shell snippets, SQL fragments, arbitrary predicates, provider credentials, or admin-authored mini-programs.
+    </p>
+    <p>
+      A department is not just a group chat. A role is not just a prompt. A workflow is not just a list of agents. These are separate, versioned contracts: departments define membership and coordination style; roles define authority and behavior; workflows define Temporal execution structure, checkpoints, handoff edges, and termination rules.
+    </p>
+  </section>
+
+  <section>
+    <div class="section-head"><span class="section-num">02</span><h2>Scope And Method</h2></div>
+    <p>
+      Research was delegated to four sub-agents: Pydantic AI and selected SDK mechanics, Temporal workflow/versioning, multi-agent framework role patterns, and policy/governance. The orchestrator spot-checked primary docs for the most decision-sensitive claims and treated prior local decisions as fixed constraints.
+    </p>
+    <table>
+      <thead>
+        <tr><th>Fixed Decision</th><th>Constraint For This Model</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>FastAPI and Postgres own product state.</td>
+          <td>Specs, approvals, audit events, run snapshots, and UI-visible state are app tables and APIs.</td>
+        </tr>
+        <tr>
+          <td>Pydantic AI is the default in-process SDK.</td>
+          <td>Generate Pydantic AI agents from app snapshots; do not store SDK object graphs as product truth.</td>
+        </tr>
+        <tr>
+          <td>Temporal owns durable workflow execution.</td>
+          <td>Workflow code stays deterministic and stable. External I/O, DB reads, model calls, and tool calls happen in activities or SDK-managed activity paths.</td>
+        </tr>
+        <tr>
+          <td>App-owned Capability Registry owns tools.</td>
+          <td>Role specs reference tool IDs, versions, grants, and approval policy; they do not self-authorize tools.</td>
+        </tr>
+        <tr>
+          <td>Subscription-first adapters where practical.</td>
+          <td>Adapter policy must include <code>auth_mode</code>. Codex and Claude Code CLI lanes stay controlled coding-run tools, not generic shell access.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <div class="section-head"><span class="section-num">03</span><h2>Recommended Architecture</h2></div>
+    <div class="diagram">
+      <svg viewBox="0 0 980 450" role="img" aria-label="Spec registry architecture">
+        <defs>
+          <marker id="arrow" markerWidth="10" markerHeight="10" refX="7" refY="3" orient="auto" markerUnits="strokeWidth">
+            <path d="M0,0 L0,6 L8,3 z" fill="var(--accent)"></path>
+          </marker>
+        </defs>
+
+        <rect class="box-accent" x="34" y="42" width="200" height="76" rx="8"></rect>
+        <text class="svg-title" x="54" y="74">React Cockpit</text>
+        <text class="svg-note" x="54" y="98">draft, approve, inspect</text>
+
+        <rect class="box-accent" x="296" y="42" width="210" height="76" rx="8"></rect>
+        <text class="svg-title" x="318" y="74">FastAPI Control Plane</text>
+        <text class="svg-note" x="318" y="98">validation, publish, run start</text>
+
+        <rect class="box-accent" x="570" y="42" width="220" height="76" rx="8"></rect>
+        <text class="svg-title" x="592" y="74">Postgres Spec Registry</text>
+        <text class="svg-note" x="592" y="98">immutable versions and audit</text>
+
+        <rect class="box" x="84" y="178" width="185" height="70" rx="8"></rect>
+        <text class="svg-title" x="104" y="208">DepartmentSpec</text>
+        <text class="svg-note" x="104" y="231">roles, pattern, scopes</text>
+
+        <rect class="box" x="308" y="178" width="185" height="70" rx="8"></rect>
+        <text class="svg-title" x="328" y="208">RoleSpec</text>
+        <text class="svg-note" x="328" y="231">instructions, model, tools</text>
+
+        <rect class="box" x="532" y="178" width="185" height="70" rx="8"></rect>
+        <text class="svg-title" x="552" y="208">WorkflowSpec</text>
+        <text class="svg-note" x="552" y="231">Temporal type, edges</text>
+
+        <rect class="box" x="754" y="178" width="160" height="70" rx="8"></rect>
+        <text class="svg-title" x="774" y="208">Policies</text>
+        <text class="svg-note" x="774" y="231">tool, model, context</text>
+
+        <rect class="box-accent" x="92" y="328" width="210" height="76" rx="8"></rect>
+        <text class="svg-title" x="114" y="360">AgentRunSnapshot</text>
+        <text class="svg-note" x="114" y="384">version IDs, hashes, grants</text>
+
+        <rect class="box-accent" x="382" y="328" width="210" height="76" rx="8"></rect>
+        <text class="svg-title" x="404" y="360">Temporal Workflow</text>
+        <text class="svg-note" x="404" y="384">stable code primitives</text>
+
+        <rect class="box-accent" x="672" y="328" width="210" height="76" rx="8"></rect>
+        <text class="svg-title" x="694" y="360">SDK/Tool Adapters</text>
+        <text class="svg-note" x="694" y="384">Pydantic AI, CLI, MCP</text>
+
+        <path class="arrow" d="M234 80 H296"></path>
+        <path class="arrow" d="M506 80 H570"></path>
+        <path class="arrow" d="M680 118 V164"></path>
+        <path class="arrow" d="M680 248 C680 286 254 286 200 328"></path>
+        <path class="arrow" d="M302 366 H382"></path>
+        <path class="arrow" d="M592 366 H672"></path>
+        <path class="arrow dash" d="M487 328 C500 286 624 286 624 248"></path>
+        <path class="arrow dash" d="M777 328 C790 286 834 286 834 248"></path>
+      </svg>
+    </div>
+    <p class="small">
+      Solid arrows show publish and run-start flow. Dashed arrows show runtime enforcement: Temporal and adapters consume pinned snapshots and call back into app-owned policy, tool, approval, and audit services.
+    </p>
+    <table>
+      <thead>
+        <tr><th>Layer</th><th>App-Owned Data</th><th>Code-Owned Behavior</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Department</td>
+          <td><code>department_spec_version</code>, role membership, coordination pattern, shared scopes, escalation policy.</td>
+          <td>Department router, run planner, UI validation, lifecycle transitions.</td>
+        </tr>
+        <tr>
+          <td>Role</td>
+          <td><code>role_spec_version</code>, router description, ordered instructions, model/tool/context/approval refs, output contract key.</td>
+          <td>Pydantic AI agent factory, output validators, dependency builders, guardrail hooks.</td>
+        </tr>
+        <tr>
+          <td>Workflow</td>
+          <td><code>workflow_spec_version</code>, role bindings, task graph, handoff edges, checkpoint rules, termination rules.</td>
+          <td>Temporal workflow classes, activity definitions, update/signal/query handlers, worker versioning.</td>
+        </tr>
+        <tr>
+          <td>Policy</td>
+          <td>Model profiles, tool grants, context scopes, approval policies, adapter auth mode, cost/time limits.</td>
+          <td>Small deterministic policy evaluator, secret lease checks, sandbox enforcement, registry contract tests.</td>
+        </tr>
+        <tr>
+          <td>Run</td>
+          <td><code>agent_run</code>, <code>agent_run_snapshot</code>, pinned version IDs, hashes, current Temporal Run ID, audit events.</td>
+          <td>Run start orchestration, snapshot rendering, idempotent activity writes, reconciliation.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <div class="section-head"><span class="section-num">04</span><h2>Minimum Spec Contract</h2></div>
+    <table>
+      <thead>
+        <tr><th>Contract</th><th>Fields To Store</th><th>Rules</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>department_spec_version</code></td>
+          <td><code>department_key</code>, version, status, purpose, owner, allowed roles, coordination pattern, default context boundaries, escalation route, content hash.</td>
+          <td>Department config selects from allowed coordination patterns such as router, supervisor, sequential workflow, parallel review, or coding-run lane. It does not define executable orchestration code.</td>
+        </tr>
+        <tr>
+          <td><code>role_spec_version</code></td>
+          <td><code>role_key</code>, department, version, status, purpose, <code>description_for_router</code>, instruction block refs, model policy ref, tool grant set ref, context scope ref, output contract key, approval policy ref.</td>
+          <td>Role is authority plus behavior. It must include tool, context, model, output, approval, and audit policy, not only prompt text.</td>
+        </tr>
+        <tr>
+          <td><code>instruction_block_version</code></td>
+          <td>kind, content, variable schema, source, reviewer, hash, rendered prompt retention policy.</td>
+          <td>Use ordered blocks for base, role, workflow, safety, and task instructions. Do not rely on provider-specific system-prompt semantics.</td>
+        </tr>
+        <tr>
+          <td><code>model_policy_version</code></td>
+          <td>LiteLLM alias, allowed aliases, model settings, max tokens, budget, fallback policy, structured-output/tool-call contract-test status.</td>
+          <td>Fallbacks are allowed only when contract tests prove equivalent behavior for tools and output contracts.</td>
+        </tr>
+        <tr>
+          <td><code>tool_grant_set_version</code></td>
+          <td>Capability registry snapshot ID, tool IDs and versions, side-effect class, secret grant alias, sandbox/network policy, approval requirement.</td>
+          <td>References the app-owned Capability Registry. No raw MCP catalog, generic shell, broad filesystem, or broad SQL access by default.</td>
+        </tr>
+        <tr>
+          <td><code>context_scope_version</code></td>
+          <td>tenant/resource scopes, memory/RAG scopes, artifact classes, redaction policy, allowed deps fields, untrusted-content labeling policy.</td>
+          <td>Context is fetched through scoped app APIs or activities. SDK memory/session helpers are not system-of-record memory.</td>
+        </tr>
+        <tr>
+          <td><code>workflow_spec_version</code></td>
+          <td>Temporal workflow type, task queue, input schema, role bindings, handoff edges, approval checkpoints, termination rules, minimum worker deployment/build.</td>
+          <td>Workflow specs bind product intent to code-owned Temporal primitives. Code changes use Temporal worker versioning or patching, not DB mutation.</td>
+        </tr>
+        <tr>
+          <td><code>adapter_policy_version</code></td>
+          <td>adapter type, <code>auth_mode</code>, permission profile, environment allowlist hash, workspace isolation, CLI flags profile, subscription/API-key gate.</td>
+          <td>Codex and Claude Code subscription-compatible CLI adapters are explicit coding tools. Role specs never store OAuth tokens, keys, or host env.</td>
+        </tr>
+      </tbody>
+    </table>
+    <h3>Run Snapshot</h3>
+    <pre><code>{
+  "run_id": "app-run-...",
+  "department_spec_version": "research:v3",
+  "role_spec_versions": ["researcher:v5", "reviewer:v2"],
+  "workflow_spec_version": "deep_research_temporal:v2",
+  "model_policy_versions": ["researcher_model:v4"],
+  "tool_registry_snapshot": "tools:2026-06-17T09:00Z",
+  "context_scope_versions": ["project_docs:v2", "web_research:v1"],
+  "approval_policy_versions": ["external_write_gate:v1"],
+  "rendered_prompt_hashes": ["sha256:..."],
+  "snapshot_hash": "sha256:..."
+}</code></pre>
+    <p class="small">
+      Store the full snapshot in Postgres and pass compact IDs/hashes to Temporal. Large prompts, transcripts, model outputs, and artifacts should be claim-check references, not event-history payloads.
+    </p>
+  </section>
+
+  <section>
+    <div class="section-head"><span class="section-num">05</span><h2>Framework Lessons</h2></div>
+    <table>
+      <thead>
+        <tr><th>Source Pattern</th><th>Adopt</th><th>Avoid</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Pydantic AI <code>AgentSpec</code></td>
+          <td>Use as import/export shape for model, instructions, capabilities, settings, deps schema, output schema, retries, and metadata.</td>
+          <td>Do not make it canonical. Its <code>output_schema</code> is an instruction to the model, not hard runtime validation of properties/required fields.</td>
+        </tr>
+        <tr>
+          <td>Pydantic AI agents/toolsets/deferred tools</td>
+          <td>Generate agents from snapshots; map deferred tool requests and approval wrappers to app-owned approvals.</td>
+          <td>Do not let SDK message history replace app-owned run/session/tool/audit tables.</td>
+        </tr>
+        <tr>
+          <td>Temporal durable workflows</td>
+          <td>Use stable workflows, activities for I/O, Updates for accepted/rejected approval semantics, Queries for status, and Worker Versioning for code changes.</td>
+          <td>Do not branch workflow replay on live DB latest config. Do not store PII/secrets in workflow IDs or search attributes.</td>
+        </tr>
+        <tr>
+          <td>DeepAgents, LangGraph, CrewAI, AutoGen</td>
+          <td>Borrow vocabulary: subagents, supervisor/router patterns, handoff edges, scoped memory, teams, tasks, flows, termination rules.</td>
+          <td>Do not adopt any of them as the central product authority for roles, departments, memory, or permissions in v1.</td>
+        </tr>
+        <tr>
+          <td>OpenAI Agents SDK</td>
+          <td>Borrow handoff shape: target, description, optional input schema, history policy, hooks, and enablement.</td>
+          <td>Do not make provider-native handoffs bypass app policy, tool grants, or run snapshots.</td>
+        </tr>
+        <tr>
+          <td>OPA, Cedar, OpenFGA</td>
+          <td>Keep as upgrade options for cross-service policy, formal auth policy review, and relationship-heavy access control.</td>
+          <td>Do not add a general policy engine before v1 has enough services, tenants, or delegated administration to justify it.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <div class="section-head"><span class="section-num">06</span><h2>Lifecycle And Gates</h2></div>
+    <table>
+      <thead>
+        <tr><th>Stage</th><th>What Happens</th><th>Gate</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Draft</td>
+          <td>Create or edit a new version row. Existing active versions remain immutable.</td>
+          <td>Schema validation, references exist, no unsafe executable fields.</td>
+        </tr>
+        <tr>
+          <td>Validate</td>
+          <td>Resolve model aliases, tool registry refs, context scopes, prompt variables, output contract keys, workflow bindings, and adapter auth mode.</td>
+          <td>Contract tests for selected model/tool/output path; policy evaluator dry run; permission expansion diff.</td>
+        </tr>
+        <tr>
+          <td>Approve</td>
+          <td>Human or privileged role approves the exact content hash and expansion diff.</td>
+          <td>Approval binds actor, spec type, version, hash, timestamp, reason, and scope.</td>
+        </tr>
+        <tr>
+          <td>Activate</td>
+          <td>Version becomes selectable for new runs. Existing runs stay pinned to their snapshot.</td>
+          <td>No automatic migration of long-running Temporal executions.</td>
+        </tr>
+        <tr>
+          <td>Run</td>
+          <td>FastAPI resolves exact versions, writes <code>agent_run_snapshot</code>, starts Temporal with non-PII workflow ID, and records Temporal Run ID chain.</td>
+          <td>Idempotency key and unique constraints prevent duplicate starts/effects.</td>
+        </tr>
+        <tr>
+          <td>Deprecate</td>
+          <td>Stop using a version for new runs while preserving it for replay, audit, and active runs.</td>
+          <td>Replacement exists or explicit exception recorded.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <div class="section-head"><span class="section-num">07</span><h2>Decision Matrix</h2></div>
+    <table>
+      <thead>
+        <tr><th>Option</th><th>Best Fit</th><th>Sacrifice</th><th>Verdict</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Hardcoded Python roles only</strong></td>
+          <td>Earliest prototype with two or three roles and no admin editing.</td>
+          <td>No durable product configuration, weak audit of prompt/tool changes, slower iteration.</td>
+          <td><span class="tag med">Accept only for spike</span></td>
+        </tr>
+        <tr>
+          <td><strong>Mutable DB JSON agent configs</strong></td>
+          <td>Fast UI editing with minimal schema work.</td>
+          <td>Authority drift, replay drift, unsafe mini-language pressure, hard audits.</td>
+          <td><span class="tag risk">Reject</span></td>
+        </tr>
+        <tr>
+          <td><strong>Versioned app specs + code factories</strong></td>
+          <td>Lean v1 that needs flexible roles without giving the database arbitrary execution power.</td>
+          <td>Requires explicit schema, publish workflow, and validation discipline.</td>
+          <td><span class="tag high">Choose</span></td>
+        </tr>
+        <tr>
+          <td><strong>Pydantic AI AgentSpec as canonical DB</strong></td>
+          <td>Portable import/export and editable agent config files.</td>
+          <td>SDK-shaped authority, capability allowlist risk, output-schema validation caveat.</td>
+          <td><span class="tag med">Adapter format only</span></td>
+        </tr>
+        <tr>
+          <td><strong>External multi-agent framework owns roles</strong></td>
+          <td>Teams/crews/swarms where the framework is the whole product.</td>
+          <td>Weak fit with app-owned audit, Temporal snapshots, subscription-first coding adapters, and internal tool registry.</td>
+          <td><span class="tag risk">Reject for v1</span></td>
+        </tr>
+        <tr>
+          <td><strong>OPA/Cedar/OpenFGA in core v1</strong></td>
+          <td>Large cross-service policy, formal auth policy, or relationship-heavy sharing.</td>
+          <td>More operational surface before authorization complexity exists.</td>
+          <td><span class="tag med">Defer</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <div class="section-head"><span class="section-num">08</span><h2>Failure Modes</h2></div>
+    <table>
+      <thead>
+        <tr><th>Risk</th><th>Severity</th><th>Mitigation</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Database-configurable behavior becomes arbitrary code through imports, Python snippets, shell, SQL, HTTP, templates, or free-form predicates.</td>
+          <td><span class="tag risk">High</span></td>
+          <td>Allow only typed references to code-owned primitives. Any future expression language is treated as code: reviewed, tested, versioned, and deployed.</td>
+        </tr>
+        <tr>
+          <td>Prompt or tool changes silently expand role authority.</td>
+          <td><span class="tag risk">High</span></td>
+          <td>Version prompt, model, tool, context, approval, and adapter policy together through snapshot hashes and expansion diffs.</td>
+        </tr>
+        <tr>
+          <td>Temporal workflow replays with different live config.</td>
+          <td><span class="tag risk">High</span></td>
+          <td>Resolve exact config once and pin it in <code>agent_run_snapshot</code>. Workflow code uses IDs/hashes and activities, not live latest rows.</td>
+        </tr>
+        <tr>
+          <td>Approval replay or scope leak.</td>
+          <td><span class="tag risk">High</span></td>
+          <td>Approval rows bind actor, role, policy version, tool ID/version, args hash, scope, expiry, and run ID. Changed args invalidate approval.</td>
+        </tr>
+        <tr>
+          <td>Model alias fallback changes structured output or tool calling semantics.</td>
+          <td><span class="tag med">Medium</span></td>
+          <td>Require LiteLLM alias contract tests before fallback is allowed for a role/output/tool path.</td>
+        </tr>
+        <tr>
+          <td>Audit logs leak prompts, secrets, or user data, or become useless after over-redaction.</td>
+          <td><span class="tag med">Medium</span></td>
+          <td>Redact payloads, store hashes and correlation IDs, separate secret grant IDs from secret values, and preserve artifact refs.</td>
+        </tr>
+        <tr>
+          <td>Manual DB edits bypass draft/validate/approve lifecycle.</td>
+          <td><span class="tag med">Medium</span></td>
+          <td>Use append-only version rows, status transitions through app code, DB constraints, and admin audit events.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <div class="section-head"><span class="section-num">09</span><h2>Implementation Decisions</h2></div>
+    <table>
+      <thead>
+        <tr><th>Question</th><th>Decision</th><th>First Spike</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>What is the first editable unit?</td>
+          <td><code>role_spec_version</code> with ordered instruction blocks, model policy, context scope, tool grant set, output contract key, and approval policy.</td>
+          <td>Create one research role and one reviewer role; generate Pydantic AI agents from a snapshot.</td>
+        </tr>
+        <tr>
+          <td>How are departments represented?</td>
+          <td>Department specs define role membership, coordination pattern, shared scopes, and workflow template refs.</td>
+          <td>Create a coding department with planner, implementer, reviewer, and CLI coding-run tool grants.</td>
+        </tr>
+        <tr>
+          <td>How are handoffs represented?</td>
+          <td>Explicit edges with source role, target role, description, payload schema, history filter, approval policy, and resume behavior.</td>
+          <td>Spike planner-to-implementer and implementer-to-reviewer handoffs with private context by default.</td>
+        </tr>
+        <tr>
+          <td>Where do approvals live?</td>
+          <td>App <code>approval_checkpoint</code> rows are authoritative. Temporal Updates are used when the caller needs accepted/rejected/completed semantics.</td>
+          <td>Pause a tool grant expansion and approve it through FastAPI, then resume the workflow.</td>
+        </tr>
+        <tr>
+          <td>When should OPA/Cedar/OpenFGA be added?</td>
+          <td>Not in v1. Add OPA for cross-service policy, Cedar for formal auth policy review, OpenFGA for relationship-heavy resource sharing.</td>
+          <td>Keep a tiny app evaluator with typed inputs and tests; log every decision for possible future migration.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <div class="section-head"><span class="section-num">10</span><h2>Sources</h2></div>
+    <p class="small">Sources were gathered by sub-agents and spot-checked by the orchestrator. Retrieved 2026-06-17 unless noted.</p>
+    <ol>
+      <li><a href="fastapi-core-framework.html">Prior FastAPI core framework decision</a></li>
+      <li><a href="ui-layer-fastapi-product.html">Prior React/Vite UI decision</a></li>
+      <li><a href="agent-sdk-stack-litellm.html">Prior agent SDK stack decision</a></li>
+      <li><a href="worker-workflow-engine.html">Prior worker/workflow engine decision</a></li>
+      <li><a href="tool-registry-sdk-integration.html">Prior tool registry decision</a></li>
+      <li><a href="codex-claude-code-adapters.html">Prior Codex and Claude Code adapter decision</a></li>
+      <li><a href="https://pydantic.dev/docs/ai/core-concepts/agent/">Pydantic AI agents</a></li>
+      <li><a href="https://pydantic.dev/docs/ai/core-concepts/agent-spec/">Pydantic AI agent specs</a></li>
+      <li><a href="https://pydantic.dev/docs/ai/core-concepts/dependencies/">Pydantic AI dependencies</a></li>
+      <li><a href="https://pydantic.dev/docs/ai/core-concepts/output/">Pydantic AI output</a></li>
+      <li><a href="https://pydantic.dev/docs/ai/core-concepts/message-history/">Pydantic AI message history</a></li>
+      <li><a href="https://pydantic.dev/docs/ai/core-concepts/capabilities/">Pydantic AI capabilities</a></li>
+      <li><a href="https://pydantic.dev/docs/ai/tools-toolsets/tools/">Pydantic AI function tools</a></li>
+      <li><a href="https://pydantic.dev/docs/ai/tools-toolsets/toolsets/">Pydantic AI toolsets</a></li>
+      <li><a href="https://pydantic.dev/docs/ai/tools-toolsets/deferred-tools/">Pydantic AI deferred tools</a></li>
+      <li><a href="https://pydantic.dev/docs/ai/integrations/durable_execution/temporal/">Pydantic AI Temporal integration</a></li>
+      <li><a href="https://docs.temporal.io/workflow-definition">Temporal workflow definition and determinism</a></li>
+      <li><a href="https://docs.temporal.io/workflow-execution">Temporal workflow execution</a></li>
+      <li><a href="https://docs.temporal.io/workflow-execution/limits">Temporal workflow execution limits</a></li>
+      <li><a href="https://docs.temporal.io/workflow-execution/workflowid-runid">Temporal Workflow ID and Run ID</a></li>
+      <li><a href="https://docs.temporal.io/develop/python/message-passing">Temporal Python message passing</a></li>
+      <li><a href="https://docs.temporal.io/production-deployment/worker-deployments/worker-versioning">Temporal Worker Versioning</a></li>
+      <li><a href="https://docs.temporal.io/workflow-execution/continue-as-new">Temporal Continue-As-New</a></li>
+      <li><a href="https://docs.temporal.io/activity-definition">Temporal activity definition</a></li>
+      <li><a href="https://docs.temporal.io/search-attribute">Temporal Search Attributes</a></li>
+      <li><a href="https://www.postgresql.org/docs/current/ddl-constraints.html">PostgreSQL constraints</a></li>
+      <li><a href="https://www.postgresql.org/docs/current/sql-insert.html">PostgreSQL INSERT and ON CONFLICT</a></li>
+      <li><a href="https://github.com/langchain-ai/deepagents">LangChain DeepAgents repository</a></li>
+      <li><a href="https://docs.langchain.com/oss/python/deepagents/overview">DeepAgents overview</a></li>
+      <li><a href="https://docs.langchain.com/oss/python/deepagents/subagents">DeepAgents subagents</a></li>
+      <li><a href="https://docs.langchain.com/oss/python/deepagents/context-engineering">DeepAgents context engineering</a></li>
+      <li><a href="https://docs.langchain.com/oss/python/deepagents/memory">DeepAgents memory</a></li>
+      <li><a href="https://docs.langchain.com/oss/python/deepagents/permissions">DeepAgents permissions</a></li>
+      <li><a href="https://docs.langchain.com/oss/python/langchain/multi-agent">LangChain multi-agent docs</a></li>
+      <li><a href="https://github.com/langchain-ai/langgraph-supervisor-py">LangGraph supervisor repository</a></li>
+      <li><a href="https://github.com/langchain-ai/langgraph-swarm-py">LangGraph swarm repository</a></li>
+      <li><a href="https://docs.crewai.com/en/concepts/agents">CrewAI agents</a></li>
+      <li><a href="https://docs.crewai.com/en/concepts/tasks">CrewAI tasks</a></li>
+      <li><a href="https://docs.crewai.com/en/concepts/crews">CrewAI crews</a></li>
+      <li><a href="https://docs.crewai.com/en/concepts/flows">CrewAI flows</a></li>
+      <li><a href="https://microsoft.github.io/autogen/stable/user-guide/agentchat-user-guide/tutorial/agents.html">AutoGen agents</a></li>
+      <li><a href="https://microsoft.github.io/autogen/stable/user-guide/agentchat-user-guide/tutorial/teams.html">AutoGen teams</a></li>
+      <li><a href="https://microsoft.github.io/autogen/stable/user-guide/agentchat-user-guide/swarm.html">AutoGen swarm</a></li>
+      <li><a href="https://openai.github.io/openai-agents-python/agents/">OpenAI Agents SDK agents</a></li>
+      <li><a href="https://openai.github.io/openai-agents-python/handoffs/">OpenAI Agents SDK handoffs</a></li>
+      <li><a href="https://openai.github.io/openai-agents-python/tools/">OpenAI Agents SDK tools</a></li>
+      <li><a href="https://openai.github.io/openai-agents-python/sessions/">OpenAI Agents SDK sessions</a></li>
+      <li><a href="https://www.openpolicyagent.org/docs/policy-language">OPA policy language</a></li>
+      <li><a href="https://www.openpolicyagent.org/docs/rest-api">OPA REST API</a></li>
+      <li><a href="https://www.openpolicyagent.org/docs/management-decision-logs">OPA decision logs</a></li>
+      <li><a href="https://docs.cedarpolicy.com/">Cedar policy docs</a></li>
+      <li><a href="https://docs.cedarpolicy.com/schema/schema.html">Cedar schema docs</a></li>
+      <li><a href="https://openfga.dev/docs/concepts">OpenFGA concepts</a></li>
+      <li><a href="https://openfga.dev/docs/getting-started/immutable-models">OpenFGA immutable models</a></li>
+      <li><a href="https://genai.owasp.org/llmrisk/llm01-prompt-injection/">OWASP GenAI LLM01 Prompt Injection</a></li>
+      <li><a href="https://genai.owasp.org/llmrisk/llm062025-excessive-agency/">OWASP GenAI Excessive Agency</a></li>
+      <li><a href="https://genai.owasp.org/llmrisk/llm072025-system-prompt-leakage/">OWASP GenAI System Prompt Leakage</a></li>
+      <li><a href="https://modelcontextprotocol.io/docs/tutorials/security/security_best_practices">MCP security best practices</a></li>
+      <li><a href="https://csrc.nist.gov/pubs/sp/800/162/upd2/final">NIST SP 800-162 ABAC</a></li>
+    </ol>
+  </section>
+
+  <footer>
+    Generated for BD issue orch-0sc.7 in /data/codes/orchestrators. This is a consolidated orchestrator report from four sub-agent research slices, anchored on prior FastAPI, React/Vite, Pydantic AI, Temporal, app-owned tool registry, and subscription-first coding adapter decisions.
+  </footer>
+</main>
+</body>
+</html>

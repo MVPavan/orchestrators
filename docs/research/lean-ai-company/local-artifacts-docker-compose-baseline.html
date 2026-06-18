@@ -1,0 +1,781 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Local Artifacts And Docker Compose Baseline</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #f6f7f5;
+      --surface: #ffffff;
+      --surface-2: #eef0ec;
+      --text: #202322;
+      --muted: #656d68;
+      --line: #d7ddd8;
+      --accent: #246b62;
+      --accent-soft: #e3f0ed;
+      --risk: #a13524;
+      --risk-soft: #f7dfdc;
+      --med: #7b5815;
+      --med-soft: #f2e5c7;
+      --high: #236a3e;
+      --high-soft: #dff0e6;
+      --code: #eef1ef;
+      --shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #111514;
+        --surface: #191e1d;
+        --surface-2: #222827;
+        --text: #edf0ee;
+        --muted: #a9b0ac;
+        --line: #333d3a;
+        --accent: #76c5b9;
+        --accent-soft: #143832;
+        --risk: #f08d80;
+        --risk-soft: #3a1d1a;
+        --med: #e2c46f;
+        --med-soft: #342c16;
+        --high: #92d7a9;
+        --high-soft: #173522;
+        --code: #222827;
+        --shadow: none;
+      }
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.6;
+    }
+    main {
+      max-width: 1140px;
+      margin: 0 auto;
+      padding: 44px 20px 64px;
+    }
+    header { margin-bottom: 34px; }
+    .eyebrow {
+      color: var(--accent);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0;
+      text-transform: uppercase;
+    }
+    h1 {
+      margin: 8px 0 12px;
+      font-size: clamp(32px, 5vw, 56px);
+      line-height: 1.05;
+      letter-spacing: 0;
+    }
+    h2 {
+      margin: 0;
+      font-size: 24px;
+      letter-spacing: 0;
+    }
+    h3 {
+      margin: 22px 0 10px;
+      font-size: 17px;
+      letter-spacing: 0;
+    }
+    p { margin: 10px 0; }
+    a { color: var(--accent); }
+    code {
+      background: var(--code);
+      border: 1px solid var(--line);
+      border-radius: 5px;
+      padding: 1px 5px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.92em;
+    }
+    pre {
+      overflow-x: auto;
+      background: var(--code);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 14px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 13px;
+      line-height: 1.55;
+    }
+    .subtitle {
+      max-width: 880px;
+      color: var(--muted);
+      font-size: 18px;
+    }
+    .kpis {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-top: 22px;
+    }
+    .kpi {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 16px;
+      box-shadow: var(--shadow);
+    }
+    .kpi strong {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 18px;
+    }
+    .kpi span {
+      display: block;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+    section {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 24px;
+      margin: 18px 0;
+      box-shadow: var(--shadow);
+    }
+    .section-head {
+      display: flex;
+      gap: 14px;
+      align-items: center;
+      padding-bottom: 12px;
+      margin-bottom: 14px;
+      border-bottom: 1px solid var(--line);
+    }
+    .section-num {
+      color: var(--muted);
+      font-size: 28px;
+      font-weight: 800;
+      line-height: 1;
+      font-variant-numeric: tabular-nums;
+    }
+    .callout {
+      border-left: 4px solid var(--accent);
+      background: var(--accent-soft);
+      border-radius: 0 8px 8px 0;
+      padding: 14px 16px;
+      margin: 12px 0 16px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 14px 0;
+      font-size: 14px;
+    }
+    th, td {
+      border: 1px solid var(--line);
+      padding: 10px 11px;
+      text-align: left;
+      vertical-align: top;
+    }
+    th {
+      background: var(--surface-2);
+      font-weight: 700;
+    }
+    .tag {
+      display: inline-block;
+      border-radius: 999px;
+      padding: 2px 8px;
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .tag.high { color: var(--high); background: var(--high-soft); }
+    .tag.med { color: var(--med); background: var(--med-soft); }
+    .tag.risk { color: var(--risk); background: var(--risk-soft); }
+    .diagram {
+      overflow-x: auto;
+      background: var(--surface-2);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 12px;
+      margin: 16px 0;
+    }
+    svg {
+      min-width: 900px;
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+    .box { fill: var(--surface); stroke: var(--line); stroke-width: 1.5; }
+    .box-accent { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 1.5; }
+    .svg-title { fill: var(--text); font-size: 16px; font-weight: 700; }
+    .svg-note { fill: var(--muted); font-size: 12px; }
+    .arrow { fill: none; stroke: var(--accent); stroke-width: 2; marker-end: url(#arrow); }
+    .dash { stroke-dasharray: 6 5; }
+    ul { padding-left: 22px; }
+    li { margin: 6px 0; }
+    .small {
+      color: var(--muted);
+      font-size: 13px;
+    }
+    footer {
+      color: var(--muted);
+      font-size: 13px;
+      margin-top: 28px;
+      padding-top: 18px;
+      border-top: 1px solid var(--line);
+    }
+    @media (max-width: 860px) {
+      .kpis { grid-template-columns: 1fr 1fr; }
+      section { padding: 18px; }
+    }
+    @media (max-width: 620px) {
+      main { padding: 28px 14px 48px; }
+      .kpis { grid-template-columns: 1fr; }
+      th, td { padding: 9px; }
+    }
+  </style>
+</head>
+<body>
+<main>
+  <header>
+    <div class="eyebrow">BD orch-0sc.8 | Deep research | Retrieved 2026-06-17</div>
+    <h1>Local artifacts and Docker Compose baseline</h1>
+    <p class="subtitle">
+      Consolidated sub-agent research validating a lean local-storage and single-host Compose baseline for the FastAPI, React/Vite, Postgres, Temporal, Pydantic AI, LiteLLM, tool-registry, and subscription-first coding-adapter architecture.
+    </p>
+    <div class="kpis">
+      <div class="kpi">
+        <strong>Local files v1</strong>
+        <span>Use filesystem bytes with Postgres metadata and authorization. No large artifact payloads in Temporal or Postgres blobs.</span>
+      </div>
+      <div class="kpi">
+        <strong>Object-shaped keys</strong>
+        <span>Design storage keys and metadata for S3 migration from day one, even while using local filesystem.</span>
+      </div>
+      <div class="kpi">
+        <strong>Compose baseline</strong>
+        <span>Postgres, init jobs, Temporal, LiteLLM, FastAPI, worker, proxy, static UI. MinIO is optional.</span>
+      </div>
+      <div class="kpi">
+        <strong>Backup as pair</strong>
+        <span>DB dump plus artifact archive share one backup set and restore drill. No live Postgres volume tar.</span>
+      </div>
+    </div>
+  </header>
+
+  <section>
+    <div class="section-head"><span class="section-num">01</span><h2>Answer</h2></div>
+    <div class="callout">
+      <p><strong>Recommendation:</strong> confirm <strong>local artifact storage plus Docker Compose</strong> as the v1 baseline. Implement artifacts as a claim-check store: Postgres owns metadata, access control, retention, and audit; the local filesystem owns immutable bytes; Temporal and agents carry only compact artifact references.</p>
+      <p><strong>Do not</strong> add MinIO, S3, Kubernetes, managed Postgres, or Temporal Cloud by default. Keep those as explicit upgrade paths triggered by scale, reliability, multi-host, direct browser transfer, or compliance needs.</p>
+    </div>
+    <p>
+      The baseline is viable only if it is treated as an operational contract, not a dumping folder. Every artifact write needs an app-generated key, checksum, size, MIME evidence, retention class, sensitivity state, and lifecycle status. Every backup needs both Postgres metadata and the artifact bytes from the same backup set.
+    </p>
+    <p>
+      Use a storage adapter boundary immediately: <code>local_fs</code> now and <code>s3</code> later. The database row format should not change when the backend changes.
+    </p>
+  </section>
+
+  <section>
+    <div class="section-head"><span class="section-num">02</span><h2>Scope And Method</h2></div>
+    <p>
+      Four sub-agents researched independent slices: artifact model and serving, Docker Compose topology, backup/retention/cleanup, and migration/upgrade triggers. Sources favored official Docker, Temporal, PostgreSQL, FastAPI/Starlette, LiteLLM, AWS S3, MinIO, OWASP, and prior local decision artifacts.
+    </p>
+    <table>
+      <thead>
+        <tr><th>Prior Decision</th><th>Constraint For This Baseline</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>FastAPI and Postgres own product state.</td>
+          <td>Artifact metadata, ACLs, retention, audit, backup references, and UI state are app tables and APIs.</td>
+        </tr>
+        <tr>
+          <td>Temporal owns execution state.</td>
+          <td>Temporal stores small claim-check references only. Prompts, traces, CLI logs, diffs, and generated files stay outside event history.</td>
+        </tr>
+        <tr>
+          <td>React/Vite is the product UI.</td>
+          <td>Static build can be served by proxy/API in deployment; Vite dev server is local-only.</td>
+        </tr>
+        <tr>
+          <td>LiteLLM Proxy is the model gateway.</td>
+          <td>Compose includes LiteLLM with healthcheck and secrets. Postgres-backed mode is useful if virtual keys, spend, or model DB are enabled.</td>
+        </tr>
+        <tr>
+          <td>Codex/Claude Code adapters are subscription-first CLI lanes.</td>
+          <td>Workspaces should be host-visible bind mounts in dev; coding evidence becomes controlled artifacts, not arbitrary filesystem sharing.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <div class="section-head"><span class="section-num">03</span><h2>Artifact Architecture</h2></div>
+    <div class="diagram">
+      <svg viewBox="0 0 980 430" role="img" aria-label="Artifact claim-check architecture">
+        <defs>
+          <marker id="arrow" markerWidth="10" markerHeight="10" refX="7" refY="3" orient="auto" markerUnits="strokeWidth">
+            <path d="M0,0 L0,6 L8,3 z" fill="var(--accent)"></path>
+          </marker>
+        </defs>
+
+        <rect class="box-accent" x="40" y="50" width="190" height="76" rx="8"></rect>
+        <text class="svg-title" x="62" y="82">Temporal Activity</text>
+        <text class="svg-note" x="62" y="106">agent, tool, CLI adapter</text>
+
+        <rect class="box-accent" x="314" y="50" width="200" height="76" rx="8"></rect>
+        <text class="svg-title" x="336" y="82">Artifact Service</text>
+        <text class="svg-note" x="336" y="106">reserve, write, verify</text>
+
+        <rect class="box" x="604" y="42" width="165" height="70" rx="8"></rect>
+        <text class="svg-title" x="626" y="74">Postgres</text>
+        <text class="svg-note" x="626" y="98">metadata and ACLs</text>
+
+        <rect class="box" x="604" y="132" width="165" height="70" rx="8"></rect>
+        <text class="svg-title" x="626" y="164">Local Files</text>
+        <text class="svg-note" x="626" y="188">immutable bytes</text>
+
+        <rect class="box-accent" x="42" y="266" width="200" height="76" rx="8"></rect>
+        <text class="svg-title" x="64" y="298">Run Snapshot</text>
+        <text class="svg-note" x="64" y="322">artifact_id, hash, size</text>
+
+        <rect class="box" x="318" y="266" width="200" height="76" rx="8"></rect>
+        <text class="svg-title" x="340" y="298">FastAPI Routes</text>
+        <text class="svg-note" x="340" y="322">list, preview, download</text>
+
+        <rect class="box" x="604" y="266" width="180" height="76" rx="8"></rect>
+        <text class="svg-title" x="626" y="298">React UI</text>
+        <text class="svg-note" x="626" y="322">authorized artifacts</text>
+
+        <rect class="box" x="808" y="132" width="140" height="70" rx="8"></rect>
+        <text class="svg-title" x="830" y="164">S3 Later</text>
+        <text class="svg-note" x="830" y="188">same keys</text>
+
+        <path class="arrow" d="M230 88 H314"></path>
+        <path class="arrow" d="M514 76 H604"></path>
+        <path class="arrow" d="M514 100 C560 110 560 162 604 168"></path>
+        <path class="arrow" d="M414 126 C414 198 168 198 142 266"></path>
+        <path class="arrow" d="M242 304 H318"></path>
+        <path class="arrow" d="M518 304 H604"></path>
+        <path class="arrow dash" d="M769 168 H808"></path>
+      </svg>
+    </div>
+    <p class="small">
+      The activity receives or produces bytes, the artifact service reserves a row and writes immutable bytes, then returns a compact claim-check reference. FastAPI serves private artifacts through authenticated routes; static mounts are only for public app assets.
+    </p>
+    <table>
+      <thead>
+        <tr><th>Category</th><th>Examples</th><th>Default Retention</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>run_input</code></td>
+          <td>Task packet, prompt/context snapshot, spec/registry snapshot hashes.</td>
+          <td>180-365 days, longer for accepted deliverables.</td>
+        </tr>
+        <tr>
+          <td><code>agent_trace</code></td>
+          <td>Model messages, event JSONL, tool-call stream, CLI stdout/stderr.</td>
+          <td>30 days, or 7 days if unredacted/sensitive.</td>
+        </tr>
+        <tr>
+          <td><code>tool_result</code></td>
+          <td>Structured outputs, external API responses, generated data files.</td>
+          <td>30-180 days depending on sensitivity and replay value.</td>
+        </tr>
+        <tr>
+          <td><code>coding_evidence</code></td>
+          <td>Git diffs, untracked captures, test logs, build logs, review findings.</td>
+          <td>180-365 days for accepted work; short retention for failed attempts.</td>
+        </tr>
+        <tr>
+          <td><code>deliverable</code></td>
+          <td>Reports, HTML artifacts, exports, patches, images, PDFs.</td>
+          <td>Project lifetime unless explicitly deleted.</td>
+        </tr>
+        <tr>
+          <td><code>preview</code></td>
+          <td>Redacted excerpts, thumbnails, safe rendered previews.</td>
+          <td>Derived; delete with source artifact or regenerate.</td>
+        </tr>
+        <tr>
+          <td><code>audit_security</code></td>
+          <td>Redaction report, checksum manifest, secret-grant usage, scan results.</td>
+          <td>1-2 years or project lifetime.</td>
+        </tr>
+      </tbody>
+    </table>
+    <h3>Minimum Artifact Row</h3>
+    <pre><code>artifact(
+  id uuid primary key,
+  run_id uuid not null,
+  step_id uuid null,
+  tool_call_id uuid null,
+  category text not null,
+  logical_name text not null,
+  display_filename text not null,
+  mime_type text not null,
+  size_bytes bigint not null,
+  sha256 text not null,
+  storage_backend text not null,      -- local_fs now, s3 later
+  storage_key text not null,          -- app-generated, never user path
+  visibility text not null,
+  redaction_status text not null,
+  preview_status text not null,
+  retention_class text not null,
+  delete_after timestamptz null,
+  status text not null,               -- reserved, available, failed, deleted
+  backup_set_id text null,
+  metadata jsonb not null,
+  created_at timestamptz not null
+)</code></pre>
+  </section>
+
+  <section>
+    <div class="section-head"><span class="section-num">04</span><h2>Compose Baseline</h2></div>
+    <table>
+      <thead>
+        <tr><th>Service</th><th>Default?</th><th>Role</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>postgres</code></td>
+          <td><span class="tag high">Yes</span></td>
+          <td>One pinned Postgres container with separate databases/roles for app, Temporal, and LiteLLM where needed. Healthcheck with <code>pg_isready</code>.</td>
+        </tr>
+        <tr>
+          <td><code>app-migrate</code></td>
+          <td><span class="tag high">Yes</span></td>
+          <td>One-shot app migration job. API and worker depend on successful completion, not only container start.</td>
+        </tr>
+        <tr>
+          <td><code>temporal-db-init</code> and <code>temporal-namespace-init</code></td>
+          <td><span class="tag high">Yes</span></td>
+          <td>One-shot schema and namespace setup for the local Temporal service using Postgres persistence.</td>
+        </tr>
+        <tr>
+          <td><code>temporal</code></td>
+          <td><span class="tag high">Yes</span></td>
+          <td>Internal service. Do not expose <code>7233</code> publicly. Local override may bind to <code>127.0.0.1</code>.</td>
+        </tr>
+        <tr>
+          <td><code>temporal-ui</code></td>
+          <td><span class="tag med">Local profile</span></td>
+          <td>Useful operator UI. Bind to localhost or place behind auth; do not expose unauthenticated in deployment.</td>
+        </tr>
+        <tr>
+          <td><code>litellm</code></td>
+          <td><span class="tag high">Yes</span></td>
+          <td>Model gateway with readiness healthcheck, config mount, and secrets. Use Postgres-backed mode if virtual keys/spend/model DB are used.</td>
+        </tr>
+        <tr>
+          <td><code>api</code></td>
+          <td><span class="tag high">Yes</span></td>
+          <td>FastAPI edge for run APIs, artifact metadata, previews/downloads, approvals, and event streams. Healthcheck <code>/healthz</code>.</td>
+        </tr>
+        <tr>
+          <td><code>worker</code></td>
+          <td><span class="tag high">Yes</span></td>
+          <td>Temporal worker running Pydantic AI, tool gateway calls, and CLI adapter activities. May run on host in local dev when CLI auth/worktrees require it.</td>
+        </tr>
+        <tr>
+          <td><code>proxy</code></td>
+          <td><span class="tag high">Yes</span></td>
+          <td>Caddy or nginx. Only deployment service publishing HTTP(S); routes API and serves built React/Vite assets.</td>
+        </tr>
+        <tr>
+          <td><code>ui-dev</code></td>
+          <td><span class="tag med">Local profile</span></td>
+          <td>Vite HMR only. Do not use Vite preview as production server.</td>
+        </tr>
+        <tr>
+          <td><code>minio</code></td>
+          <td><span class="tag med">Optional profile</span></td>
+          <td>Enable only when testing S3 semantics: presigned URLs, multipart behavior, lifecycle, or SDK compatibility.</td>
+        </tr>
+      </tbody>
+    </table>
+    <table>
+      <thead>
+        <tr><th>Volume Or Mount</th><th>Type</th><th>Use</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>pgdata</code></td>
+          <td>Named volume</td>
+          <td>Postgres data. Backup with PostgreSQL tools, not live volume tar.</td>
+        </tr>
+        <tr>
+          <td><code>artifacts</code></td>
+          <td>Named volume or controlled host bind</td>
+          <td>Artifact bytes. Use bind mount when human inspection or backup tooling needs host access; otherwise named volume is simpler.</td>
+        </tr>
+        <tr>
+          <td><code>workspaces</code></td>
+          <td>Host bind mount</td>
+          <td>Per-run git worktrees and CLI adapter output. Host Git/debug access matters.</td>
+        </tr>
+        <tr>
+          <td><code>litellm_config</code>, <code>temporal_dynamicconfig</code></td>
+          <td>Read-only config binds</td>
+          <td>Configuration files only. Secrets come from Compose secrets or real secret manager, not committed config.</td>
+        </tr>
+        <tr>
+          <td><code>caddy_data</code>, <code>caddy_config</code></td>
+          <td>Named volumes</td>
+          <td>Needed if Caddy manages TLS certificates. Not required for local HTTP-only profile.</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>
+      Use long-form <code>depends_on</code> with health and completion conditions for database readiness and migration/init jobs. Use explicit networks: <code>front</code> for proxy-to-API, <code>backend</code> for app services, and internal <code>data</code> for Postgres. Debug ports bind to <code>127.0.0.1</code>, not all interfaces.
+    </p>
+  </section>
+
+  <section>
+    <div class="section-head"><span class="section-num">05</span><h2>Backup, Cleanup, And Serving</h2></div>
+    <table>
+      <thead>
+        <tr><th>Concern</th><th>V1 Decision</th><th>Reason</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Write flow</td>
+          <td>Reserve row, write temp file on same filesystem, compute SHA-256/size/type, atomic rename, mark available.</td>
+          <td>Filesystem and DB are not one transaction; lifecycle status and sweeper handle failures.</td>
+        </tr>
+        <tr>
+          <td>Serving</td>
+          <td>Use authenticated FastAPI routes and Starlette/FastAPI file responses for downloads/previews.</td>
+          <td><code>StaticFiles</code> is for public app assets, not per-artifact ACLs or preview policy.</td>
+        </tr>
+        <tr>
+          <td>Preview safety</td>
+          <td>Allowlisted preview types only. Unsafe HTML, SVG, markdown, and logs default to download or sandboxed/redacted preview.</td>
+          <td>Previews are a security boundary, not only a UX feature.</td>
+        </tr>
+        <tr>
+          <td>Backup</td>
+          <td>Quiesced v1 backup window: maintenance-mode API/workers, <code>pg_dump -Fc</code>, artifact archive, manifest/checksums, one <code>backup_set_id</code>.</td>
+          <td>DB metadata and files must restore to a coherent point.</td>
+        </tr>
+        <tr>
+          <td>Restore</td>
+          <td>Periodic fresh restore drill: restore DB dump, restore artifact archive, run checksum and orphan scans.</td>
+          <td>Until restore is tested, backup is only a hope.</td>
+        </tr>
+        <tr>
+          <td>Cleanup</td>
+          <td>DB-driven retention job skips active runs/holds, records tombstones, deletes bytes, and runs orphan scans both directions.</td>
+          <td>Scanning filesystem should not define product truth.</td>
+        </tr>
+        <tr>
+          <td>Secrets</td>
+          <td>Never store tokens, DB URLs, OAuth material, credential files, or full env dumps as artifacts.</td>
+          <td>Use Compose secrets and app redaction; secret values do not belong in evidence storage.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <div class="section-head"><span class="section-num">06</span><h2>Decision Matrix</h2></div>
+    <table>
+      <thead>
+        <tr><th>Option</th><th>Best Fit</th><th>Sacrifice</th><th>Verdict</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Local filesystem + Postgres metadata</strong></td>
+          <td>Single-host v1, local CLI adapters, fast iteration, simple backups if disciplined.</td>
+          <td>No multi-host artifact sharing, manual backup discipline, disk pressure risk.</td>
+          <td><span class="tag high">Choose v1</span></td>
+        </tr>
+        <tr>
+          <td><strong>Postgres blobs or large objects</strong></td>
+          <td>Small binary fields tightly coupled to relational rows.</td>
+          <td>Bloats DB backups, locking, and restore path for large traces/logs/files.</td>
+          <td><span class="tag risk">Reject for artifacts</span></td>
+        </tr>
+        <tr>
+          <td><strong>MinIO in default Compose</strong></td>
+          <td>Early testing of S3 SDK behavior, presigned URLs, multipart, lifecycle semantics.</td>
+          <td>Another stateful service before object-store pressure exists.</td>
+          <td><span class="tag med">Optional profile</span></td>
+        </tr>
+        <tr>
+          <td><strong>S3/object storage from day one</strong></td>
+          <td>Multi-host, direct browser transfer, lifecycle policy, cloud durability.</td>
+          <td>Credentials, IAM/policy, CORS, endpoint, cost, and local-dev friction.</td>
+          <td><span class="tag med">Upgrade path</span></td>
+        </tr>
+        <tr>
+          <td><strong>Docker Compose deployment</strong></td>
+          <td>Trusted single host, local dev, prototype, early internal use.</td>
+          <td>No HA, weak rolling deploy story, host-level backup and secrets responsibility.</td>
+          <td><span class="tag high">Choose baseline</span></td>
+        </tr>
+        <tr>
+          <td><strong>Kubernetes/managed services now</strong></td>
+          <td>Multi-host production, autoscaling, managed secrets, separate worker pools, stronger ingress.</td>
+          <td>Large operations jump before product pressure justifies it.</td>
+          <td><span class="tag med">Defer</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <div class="section-head"><span class="section-num">07</span><h2>Upgrade Triggers</h2></div>
+    <table>
+      <thead>
+        <tr><th>Move To</th><th>Trigger</th><th>Preparation Already Required In V1</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>S3/object storage</td>
+          <td>Workers on multiple hosts, direct browser upload/download, local backup discomfort, disk pressure, customer durability, lifecycle/retention needs.</td>
+          <td>Backend field, S3-safe keys, SHA-256/size metadata, no local-path authority.</td>
+        </tr>
+        <tr>
+          <td>MinIO local profile</td>
+          <td>You need to test S3 semantics before cloud: presigned URLs, multipart, bucket lifecycle, SDK compatibility.</td>
+          <td>Storage adapter tests that run against both local filesystem and S3-compatible backend.</td>
+        </tr>
+        <tr>
+          <td>Temporal Cloud</td>
+          <td>Workflow availability matters beyond the Compose host, Temporal upgrades/security/visibility become a tax, or multiple worker fleets need managed connectivity.</td>
+          <td>Keep Temporal endpoint/config injectable; do not couple code to local service names.</td>
+        </tr>
+        <tr>
+          <td>Managed Postgres</td>
+          <td>Required PITR, failover, automated backups, patching, storage scaling, monitored performance, or meaningful user/customer data.</td>
+          <td>Use standard PostgreSQL backup/restore and migrations, not container-volume assumptions.</td>
+        </tr>
+        <tr>
+          <td>Container orchestration</td>
+          <td>More than one host, rolling deploys, autoscaling, separate worker pools, network policy, managed secrets, production ingress.</td>
+          <td>Clear service boundaries, healthchecks, env/secrets discipline, stateless API/worker containers.</td>
+        </tr>
+        <tr>
+          <td>Artifact service</td>
+          <td>Preview transforms, scanning, quotas, signed-link policy, CDN, cross-runtime sharing, tenant-heavy audit, or dedicated artifact permissions.</td>
+          <td>Keep FastAPI artifact routes behind an internal service boundary and stable artifact IDs.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <div class="section-head"><span class="section-num">08</span><h2>Failure Modes</h2></div>
+    <table>
+      <thead>
+        <tr><th>Risk</th><th>Severity</th><th>Mitigation</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Postgres metadata and artifact bytes restore to different points.</td>
+          <td><span class="tag risk">High</span></td>
+          <td>Quiesced backup window, shared <code>backup_set_id</code>, manifest/checksums, restore drill.</td>
+        </tr>
+        <tr>
+          <td>Live Postgres volume tar produces an unusable or inconsistent backup.</td>
+          <td><span class="tag risk">High</span></td>
+          <td>Use <code>pg_dump</code> for small v1; move to physical backup/WAL/PITR when RPO/RTO requires it.</td>
+        </tr>
+        <tr>
+          <td>Secrets, OAuth tokens, DB URLs, or provider keys leak into logs/artifacts.</td>
+          <td><span class="tag risk">High</span></td>
+          <td>Denylist, redaction, Compose secrets, env discipline, never-artifact secret classes.</td>
+        </tr>
+        <tr>
+          <td>Preview route creates XSS or serves unsafe active content.</td>
+          <td><span class="tag risk">High</span></td>
+          <td>Allowlisted preview types, sandbox/redaction, default-to-download for unknown HTML/SVG/markdown/logs.</td>
+        </tr>
+        <tr>
+          <td>Temporal event history bloats with large prompts, traces, or files.</td>
+          <td><span class="tag risk">High</span></td>
+          <td>Claim-check references only; large payloads go to artifacts with hashes and summaries.</td>
+        </tr>
+        <tr>
+          <td>Host bind mount lets a compromised container damage host files.</td>
+          <td><span class="tag risk">High</span></td>
+          <td>Dedicated host dirs, non-root UID/GID, read-only mounts where possible, least mounted services.</td>
+        </tr>
+        <tr>
+          <td>Disk fills from traces, screenshots, or video/debug bundles.</td>
+          <td><span class="tag med">Medium</span></td>
+          <td>Category retention, file caps, quotas/alerts, cleanup job, large-debug retention class.</td>
+        </tr>
+        <tr>
+          <td>Compose debug ports expose Temporal, LiteLLM, Postgres, or UI publicly.</td>
+          <td><span class="tag med">Medium</span></td>
+          <td>Publish only proxy by default; local debug ports bind <code>127.0.0.1</code>.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <div class="section-head"><span class="section-num">09</span><h2>Sources</h2></div>
+    <p class="small">Sources were gathered by sub-agents and spot-checked by the orchestrator. Retrieved 2026-06-17 unless noted.</p>
+    <ol>
+      <li><a href="worker-workflow-engine.html">Prior worker/workflow engine decision</a></li>
+      <li><a href="tool-registry-sdk-integration.html">Prior tool registry decision</a></li>
+      <li><a href="agent-role-department-spec-model.html">Prior role/department spec decision</a></li>
+      <li><a href="codex-claude-code-adapters.html">Prior Codex and Claude Code adapter decision</a></li>
+      <li><a href="ui-layer-fastapi-product.html">Prior React/Vite UI decision</a></li>
+      <li><a href="https://docs.docker.com/compose/intro/compose-application-model/">Docker Compose application model</a></li>
+      <li><a href="https://docs.docker.com/reference/compose-file/services/">Docker Compose services, healthcheck, depends_on, ports</a></li>
+      <li><a href="https://docs.docker.com/reference/compose-file/networks/">Docker Compose networks</a></li>
+      <li><a href="https://docs.docker.com/engine/storage/volumes/">Docker volumes</a></li>
+      <li><a href="https://docs.docker.com/engine/storage/bind-mounts/">Docker bind mounts</a></li>
+      <li><a href="https://docs.docker.com/compose/how-tos/use-secrets/">Docker Compose secrets</a></li>
+      <li><a href="https://docs.docker.com/compose/how-tos/production/">Docker Compose production guidance</a></li>
+      <li><a href="https://docs.temporal.io/self-hosted-guide/deployment">Temporal self-hosted deployment</a></li>
+      <li><a href="https://github.com/temporalio/samples-server/tree/main/compose">Temporal Compose samples</a></li>
+      <li><a href="https://docs.temporal.io/cloud/limits">Temporal Cloud limits</a></li>
+      <li><a href="https://docs.temporal.io/self-hosted-guide/defaults">Temporal self-hosted defaults</a></li>
+      <li><a href="https://docs.temporal.io/cloud">Temporal Cloud</a></li>
+      <li><a href="https://docs.temporal.io/cloud/migrate">Temporal Cloud migration</a></li>
+      <li><a href="https://pydantic.dev/docs/ai/integrations/durable_execution/temporal/">Pydantic AI Temporal integration</a></li>
+      <li><a href="https://docs.litellm.ai/docs/proxy/deploy">LiteLLM Proxy deployment</a></li>
+      <li><a href="https://docs.litellm.ai/docs/proxy/health">LiteLLM Proxy health</a></li>
+      <li><a href="https://docs.litellm.ai/docs/proxy/configs">LiteLLM Proxy config</a></li>
+      <li><a href="https://fastapi.tiangolo.com/advanced/custom-response/">FastAPI custom responses and FileResponse</a></li>
+      <li><a href="https://www.starlette.io/responses/">Starlette responses</a></li>
+      <li><a href="https://fastapi.tiangolo.com/tutorial/static-files/">FastAPI static files</a></li>
+      <li><a href="https://fastapi.tiangolo.com/deployment/docker/">FastAPI Docker deployment</a></li>
+      <li><a href="https://vite.dev/guide/static-deploy">Vite static deployment</a></li>
+      <li><a href="https://caddyserver.com/docs/caddyfile/directives/reverse_proxy">Caddy reverse proxy</a></li>
+      <li><a href="https://www.postgresql.org/docs/current/backup.html">PostgreSQL backup and restore</a></li>
+      <li><a href="https://www.postgresql.org/docs/current/backup-dump.html">PostgreSQL SQL dump backup</a></li>
+      <li><a href="https://www.postgresql.org/docs/current/app-pgdump.html">PostgreSQL pg_dump</a></li>
+      <li><a href="https://www.postgresql.org/docs/current/backup-file.html">PostgreSQL filesystem backup caveats</a></li>
+      <li><a href="https://www.postgresql.org/docs/current/continuous-archiving.html">PostgreSQL WAL and PITR</a></li>
+      <li><a href="https://www.postgresql.org/docs/current/app-pgbasebackup.html">PostgreSQL pg_basebackup</a></li>
+      <li><a href="https://www.postgresql.org/docs/current/app-pgverifybackup.html">PostgreSQL pg_verifybackup</a></li>
+      <li><a href="https://www.postgresql.org/docs/current/datatype-json.html">PostgreSQL JSON types</a></li>
+      <li><a href="https://www.postgresql.org/docs/current/largeobjects.html">PostgreSQL large objects</a></li>
+      <li><a href="https://docs.aws.amazon.com/AmazonS3/latest/userguide/object-keys.html">Amazon S3 object keys</a></li>
+      <li><a href="https://docs.aws.amazon.com/AmazonS3/latest/userguide/UsingMetadata.html">Amazon S3 metadata</a></li>
+      <li><a href="https://docs.aws.amazon.com/AmazonS3/latest/userguide/checking-object-integrity.html">Amazon S3 object integrity</a></li>
+      <li><a href="https://docs.aws.amazon.com/AmazonS3/latest/userguide/using-presigned-url.html">Amazon S3 presigned URLs</a></li>
+      <li><a href="https://docs.min.io/aistor/developers/s3-api-compatibility/">MinIO S3 API compatibility</a></li>
+      <li><a href="https://docs.min.io/aistor/installation/container/">MinIO container deployment</a></li>
+      <li><a href="https://cheatsheetseries.owasp.org/cheatsheets/File_Upload_Cheat_Sheet.html">OWASP File Upload Cheat Sheet</a></li>
+      <li><a href="https://cheatsheetseries.owasp.org/cheatsheets/Logging_Cheat_Sheet.html">OWASP Logging Cheat Sheet</a></li>
+      <li><a href="https://www.gnu.org/software/coreutils/manual/html_node/sha2-utilities.html">GNU SHA-2 utilities</a></li>
+      <li><a href="https://csrc.nist.gov/pubs/sp/800/88/r2/final">NIST SP 800-88 Rev. 2 media sanitization</a></li>
+      <li><a href="https://kubernetes.io/docs/concepts/workloads/controllers/deployment/">Kubernetes Deployments</a></li>
+      <li><a href="https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Welcome.html">Amazon RDS overview</a></li>
+    </ol>
+  </section>
+
+  <footer>
+    Generated for BD issue orch-0sc.8 in /data/codes/orchestrators. This is a consolidated orchestrator report from four sub-agent research slices, anchored on prior FastAPI, React/Vite, Pydantic AI, Temporal, app-owned tool registry, role-spec, and subscription-first coding adapter decisions.
+  </footer>
+</main>
+</body>
+</html>

@@ -1,0 +1,662 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tool Registry And SDK Tool Integration Strategy</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #f7f5f0;
+      --surface: #ffffff;
+      --surface-2: #f0ede6;
+      --text: #202124;
+      --muted: #64635f;
+      --line: #d8d3c8;
+      --accent: #256b5f;
+      --accent-soft: #e3f0ed;
+      --risk: #9f2d20;
+      --risk-soft: #f7dedb;
+      --med: #7a5a16;
+      --med-soft: #f2e6c8;
+      --high: #1f6b3b;
+      --high-soft: #dff0e6;
+      --code: #f3f0e8;
+      --shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #111315;
+        --surface: #191c1f;
+        --surface-2: #23272b;
+        --text: #eeeeea;
+        --muted: #aaa49b;
+        --line: #353a40;
+        --accent: #72b8a7;
+        --accent-soft: #17342f;
+        --risk: #f08b7c;
+        --risk-soft: #3a1f1c;
+        --med: #e0c06f;
+        --med-soft: #342d18;
+        --high: #8bd3a5;
+        --high-soft: #173322;
+        --code: #22272c;
+        --shadow: none;
+      }
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.6;
+    }
+    main {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 44px 20px 64px;
+    }
+    header { margin-bottom: 34px; }
+    .eyebrow {
+      color: var(--accent);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0;
+      text-transform: uppercase;
+    }
+    h1 {
+      margin: 8px 0 12px;
+      font-size: clamp(32px, 5vw, 56px);
+      line-height: 1.05;
+      letter-spacing: 0;
+    }
+    h2 {
+      margin: 0;
+      font-size: 24px;
+      letter-spacing: 0;
+    }
+    h3 {
+      margin: 22px 0 10px;
+      font-size: 17px;
+      letter-spacing: 0;
+    }
+    p { margin: 10px 0; }
+    a { color: var(--accent); }
+    code {
+      background: var(--code);
+      border: 1px solid var(--line);
+      border-radius: 5px;
+      padding: 1px 5px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.92em;
+    }
+    .subtitle {
+      max-width: 860px;
+      color: var(--muted);
+      font-size: 18px;
+    }
+    .kpis {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-top: 22px;
+    }
+    .kpi {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 16px;
+      box-shadow: var(--shadow);
+    }
+    .kpi strong {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 18px;
+    }
+    .kpi span {
+      display: block;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+    section {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 24px;
+      margin: 18px 0;
+      box-shadow: var(--shadow);
+    }
+    .section-head {
+      display: flex;
+      gap: 14px;
+      align-items: center;
+      padding-bottom: 12px;
+      margin-bottom: 14px;
+      border-bottom: 1px solid var(--line);
+    }
+    .section-num {
+      color: var(--muted);
+      font-size: 28px;
+      font-weight: 800;
+      line-height: 1;
+      font-variant-numeric: tabular-nums;
+    }
+    .callout {
+      border-left: 4px solid var(--accent);
+      background: var(--accent-soft);
+      border-radius: 0 8px 8px 0;
+      padding: 14px 16px;
+      margin: 12px 0 16px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 14px 0;
+      font-size: 14px;
+    }
+    th, td {
+      border: 1px solid var(--line);
+      padding: 10px 11px;
+      text-align: left;
+      vertical-align: top;
+    }
+    th {
+      background: var(--surface-2);
+      font-weight: 700;
+    }
+    .tag {
+      display: inline-block;
+      border-radius: 999px;
+      padding: 2px 8px;
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .tag.high { color: var(--high); background: var(--high-soft); }
+    .tag.med { color: var(--med); background: var(--med-soft); }
+    .tag.risk { color: var(--risk); background: var(--risk-soft); }
+    .diagram {
+      overflow-x: auto;
+      background: var(--surface-2);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 12px;
+      margin: 16px 0;
+    }
+    svg {
+      min-width: 900px;
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+    .box { fill: var(--surface); stroke: var(--line); stroke-width: 1.5; }
+    .box-accent { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 1.5; }
+    .svg-title { fill: var(--text); font-size: 16px; font-weight: 700; }
+    .svg-note { fill: var(--muted); font-size: 12px; }
+    .arrow { fill: none; stroke: var(--accent); stroke-width: 2; marker-end: url(#arrow); }
+    .dash { stroke-dasharray: 6 5; }
+    ul { padding-left: 22px; }
+    li { margin: 6px 0; }
+    .small {
+      color: var(--muted);
+      font-size: 13px;
+    }
+    footer {
+      color: var(--muted);
+      font-size: 13px;
+      margin-top: 28px;
+      padding-top: 18px;
+      border-top: 1px solid var(--line);
+    }
+    @media (max-width: 820px) {
+      .kpis { grid-template-columns: 1fr 1fr; }
+      section { padding: 18px; }
+    }
+    @media (max-width: 620px) {
+      main { padding: 28px 14px 48px; }
+      .kpis { grid-template-columns: 1fr; }
+      th, td { padding: 9px; }
+    }
+  </style>
+</head>
+<body>
+<main>
+  <header>
+    <div class="eyebrow">BD orch-0sc.6 | Deep research | Retrieved 2026-06-17</div>
+    <h1>Tool registry and SDK tool integration strategy</h1>
+    <p class="subtitle">
+      Consolidated sub-agent research on building an internal tool registry for the FastAPI, Postgres, Temporal, Pydantic AI, LiteLLM, Codex CLI, and Claude Code CLI architecture.
+    </p>
+    <div class="kpis">
+      <div class="kpi">
+        <strong>Registry is product state</strong>
+        <span>Store canonical tool definitions, permissions, approvals, audit, and versions in Postgres.</span>
+      </div>
+      <div class="kpi">
+        <strong>Pydantic AI is adapter</strong>
+        <span>Generate stable toolsets from registry snapshots; do not let SDK objects become truth.</span>
+      </div>
+      <div class="kpi">
+        <strong>MCP is ABI</strong>
+        <span>Use MCP as the portability interface for external ecosystems, not as the policy source.</span>
+      </div>
+      <div class="kpi">
+        <strong>Approvals are durable</strong>
+        <span>Approval rows and argument hashes live in the app, not transient SDK callback state.</span>
+      </div>
+    </div>
+  </header>
+
+  <section>
+    <div class="section-head"><span class="section-num">01</span><h2>Answer</h2></div>
+    <div class="callout">
+      <p><strong>Recommendation:</strong> build a small app-owned <strong>Capability Registry</strong> plus <strong>Tool Execution Gateway</strong> in FastAPI/Postgres. Expose per-run, policy-filtered toolsets to Pydantic AI. Expose the same curated subset as internal MCP only when another runtime needs portability.</p>
+      <p><strong>Do not</strong> make Pydantic AI toolsets, MCP server listings, OpenAPI imports, LangChain tools, LiteLLM aliases, Claude permissions, or OpenAI Agents SDK tool catalogs the registry of record. Those are adapter surfaces.</p>
+    </div>
+    <p>
+      The internal registry should feel like a small internet-style tool catalog: searchable names, namespaces, versions, descriptions, examples, owners, risk badges, required grants, and role availability. But execution must be conservative: no raw external catalog is automatically callable. A tool becomes callable only after curation, schema validation, policy assignment, approval policy, secret binding, and contract tests.
+    </p>
+    <p>
+      For v1, start with native Python registry tools exposed through Pydantic AI <code>FunctionToolset</code> or a custom registry-backed toolset, plus a few hand-wrapped MCP/CLI adapters. Defer a broad plugin marketplace, LiteLLM MCP Gateway as a security boundary, and LangChain/DeepAgents as the central registry until concrete gaps appear.
+    </p>
+    <p>
+      <strong>Subscription-login gate:</strong> every adapter must be checked for whether it can run under the required account model, not just whether it accepts API keys. Claude Code CLI is the clear subscription-compatible coding adapter. Pydantic AI, OpenAI Agents SDK, LangChain/DeepAgents, and LiteLLM are primarily SDK/API-key or gateway surfaces for service-owned model traffic. MCP is auth-neutral transport: each MCP client/server pair still needs its own subscription-login or API-key validation. Claude Agent SDK remains conditional until its current auth and billing boundary is verified for the intended deployment.
+    </p>
+  </section>
+
+  <section>
+    <div class="section-head"><span class="section-num">02</span><h2>Context And Method</h2></div>
+    <p>
+      Research was split across four sub-agents: Pydantic AI tool mechanics, ecosystem reuse across OpenAI/Claude/LangChain/DeepAgents/LiteLLM, registry and security architecture, and red-team synthesis. Source weighting favored current official docs, current specs, and prior local decision artifacts.
+    </p>
+    <table>
+      <thead>
+        <tr><th>Prior Decision</th><th>Constraint For Tool Strategy</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>FastAPI and Postgres own product state.</td>
+          <td>Registry, approvals, tool calls, artifacts, audit, and UI event projection are app tables and APIs.</td>
+        </tr>
+        <tr>
+          <td>Pydantic AI is the default in-process SDK.</td>
+          <td>Use Pydantic AI as the primary tool adapter, but keep canonical definitions outside SDK objects.</td>
+        </tr>
+        <tr>
+          <td>Temporal owns durable workflow execution.</td>
+          <td>Tool execution runs in activities or integration-managed activities; workflows use stable registry snapshots and claim-check payloads.</td>
+        </tr>
+        <tr>
+          <td>LiteLLM Proxy is the model gateway.</td>
+          <td>Run contract tests per model alias for tool calling, schema strictness, streaming, usage, and fallback behavior.</td>
+        </tr>
+        <tr>
+          <td>Codex and Claude are subscription-first CLI adapters.</td>
+          <td>Expose them as controlled coding-run tools or child workflows, not as generic shell access or SDK-owned tool registries.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <div class="section-head"><span class="section-num">03</span><h2>Architecture</h2></div>
+    <div class="diagram" role="img" aria-label="Tool registry architecture">
+      <svg viewBox="0 0 1060 420" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+            <path d="M0,0 L0,6 L9,3 z" fill="currentColor"></path>
+          </marker>
+        </defs>
+        <rect class="box" x="28" y="42" width="150" height="78" rx="8"></rect>
+        <text class="svg-title" x="52" y="75">React UI</text>
+        <text class="svg-note" x="52" y="97">catalog, approvals</text>
+
+        <rect class="box-accent" x="232" y="34" width="178" height="94" rx="8"></rect>
+        <text class="svg-title" x="256" y="67">FastAPI</text>
+        <text class="svg-note" x="256" y="89">registry API</text>
+        <text class="svg-note" x="256" y="106">execution gateway</text>
+
+        <rect class="box-accent" x="472" y="34" width="188" height="94" rx="8"></rect>
+        <text class="svg-title" x="500" y="67">Postgres</text>
+        <text class="svg-note" x="500" y="89">ToolDefinition</text>
+        <text class="svg-note" x="500" y="106">ToolCall, Approval</text>
+
+        <rect class="box-accent" x="742" y="34" width="250" height="94" rx="8"></rect>
+        <text class="svg-title" x="770" y="67">Temporal</text>
+        <text class="svg-note" x="770" y="89">RunWorkflow</text>
+        <text class="svg-note" x="770" y="106">tool activities</text>
+
+        <rect class="box" x="230" y="184" width="162" height="74" rx="8"></rect>
+        <text class="svg-title" x="252" y="216">Pydantic AI</text>
+        <text class="svg-note" x="252" y="238">generated toolsets</text>
+
+        <rect class="box" x="438" y="184" width="162" height="74" rx="8"></rect>
+        <text class="svg-title" x="466" y="216">Internal MCP</text>
+        <text class="svg-note" x="466" y="238">portable ABI</text>
+
+        <rect class="box" x="646" y="184" width="162" height="74" rx="8"></rect>
+        <text class="svg-title" x="674" y="216">Adapters</text>
+        <text class="svg-note" x="674" y="238">HTTP, MCP, CLI</text>
+
+        <rect class="box" x="836" y="184" width="156" height="74" rx="8"></rect>
+        <text class="svg-title" x="860" y="216">Artifacts</text>
+        <text class="svg-note" x="860" y="238">large results</text>
+
+        <rect class="box" x="230" y="314" width="160" height="66" rx="8"></rect>
+        <text class="svg-title" x="254" y="344">LiteLLM</text>
+        <text class="svg-note" x="254" y="364">model gateway</text>
+
+        <rect class="box" x="438" y="314" width="160" height="66" rx="8"></rect>
+        <text class="svg-title" x="466" y="344">Codex CLI</text>
+        <text class="svg-note" x="466" y="364">coding runs</text>
+
+        <rect class="box" x="646" y="314" width="160" height="66" rx="8"></rect>
+        <text class="svg-title" x="672" y="344">Claude CLI</text>
+        <text class="svg-note" x="672" y="364">coding runs</text>
+
+        <rect class="box" x="836" y="314" width="156" height="66" rx="8"></rect>
+        <text class="svg-title" x="858" y="344">External APIs</text>
+        <text class="svg-note" x="858" y="364">scoped grants</text>
+
+        <path class="arrow" d="M178 81 H232"></path>
+        <path class="arrow" d="M410 81 H472"></path>
+        <path class="arrow" d="M660 81 H742"></path>
+        <path class="arrow" d="M566 128 V184"></path>
+        <path class="arrow" d="M742 218 H600"></path>
+        <path class="arrow" d="M392 221 H438"></path>
+        <path class="arrow" d="M600 221 H646"></path>
+        <path class="arrow" d="M808 221 H836"></path>
+        <path class="arrow dash" d="M311 258 V314"></path>
+        <path class="arrow dash" d="M518 258 V314"></path>
+        <path class="arrow dash" d="M727 258 V314"></path>
+        <path class="arrow dash" d="M914 258 V314"></path>
+      </svg>
+    </div>
+    <p>
+      Solid arrows are control/state flow. Dashed arrows are execution adapters. The app presents only the selected tool subset to each run; the model never sees the full registry, raw secret configuration, or unrestricted MCP catalogs.
+    </p>
+  </section>
+
+  <section>
+    <div class="section-head"><span class="section-num">04</span><h2>Registry Contract</h2></div>
+    <table>
+      <thead>
+        <tr><th>Record</th><th>Required Fields</th><th>Why It Exists</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>tool_definition</code></td>
+          <td><code>tool_id</code>, namespace, name, version, owner, status, source, transport, schema dialect, input schema, output schema, content hash.</td>
+          <td>Canonical tool identity and contract. Versions and hashes prevent silent schema mutation.</td>
+        </tr>
+        <tr>
+          <td><code>tool_policy</code></td>
+          <td>risk class, side-effect class, role allowlist, tenant/resource scope, approval policy, sandbox policy, network policy.</td>
+          <td>Separates capability description from authorization and safety.</td>
+        </tr>
+        <tr>
+          <td><code>tool_runtime</code></td>
+          <td>executor kind, endpoint/ref, timeout, retry policy, idempotency key template, concurrency/sequential flag, streaming support.</td>
+          <td>Lets the same catalog support Python functions, MCP, HTTP APIs, CLI adapters, and child workflows.</td>
+        </tr>
+        <tr>
+          <td><code>tool_secret_binding</code></td>
+          <td>secret aliases, grant scope, lease duration, injection mode, redaction policy.</td>
+          <td>Secrets are never model-visible inputs. Executors resolve short-lived grants server-side.</td>
+        </tr>
+        <tr>
+          <td><code>tool_call</code></td>
+          <td>run id, step id, tool version, validated args hash, approval id, executor id, status, retry count, started/ended timestamps.</td>
+          <td>Durable audit and replay boundary for every invocation.</td>
+        </tr>
+        <tr>
+          <td><code>tool_result</code></td>
+          <td><code>ok</code>, result version, data or artifact refs, redaction status, external ids, retryable, safe-to-show flag, audit severity.</td>
+          <td>Gives the model a sanitized result while the app retains full provenance.</td>
+        </tr>
+      </tbody>
+    </table>
+    <h3>Error Taxonomy</h3>
+    <p>
+      Normalize errors into protocol/contract, validation, auth/grant, approval denied, rate limit, sandbox violation, timeout/cancelled, upstream failure, retry exhausted, output validation, and internal defect. Each error should state whether it is retryable, user-correctable, safe to show the model, and whether it requires audit escalation.
+    </p>
+  </section>
+
+  <section>
+    <div class="section-head"><span class="section-num">05</span><h2>Execution Lifecycle</h2></div>
+    <table>
+      <thead>
+        <tr><th>Step</th><th>Owner</th><th>Rule</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Resolve</td>
+          <td>FastAPI + Postgres</td>
+          <td>Resolve exact tool version and registry snapshot for the run. Do not bind to "latest" inside a durable workflow.</td>
+        </tr>
+        <tr>
+          <td>Authorize</td>
+          <td>FastAPI policy layer</td>
+          <td>Filter by role, department, tenant, resource scope, and model/runtime capability before presenting tools.</td>
+        </tr>
+        <tr>
+          <td>Validate</td>
+          <td>Gateway</td>
+          <td>Validate input against registry JSON Schema/Pydantic model; reject unknown fields for sensitive tools.</td>
+        </tr>
+        <tr>
+          <td>Approve</td>
+          <td>Postgres + UI + Temporal signal/update</td>
+          <td>Approval is keyed to exact tool id, version, args hash, actor, scope, and expiry. Changed args invalidate approval.</td>
+        </tr>
+        <tr>
+          <td>Execute</td>
+          <td>Temporal activity or controlled adapter</td>
+          <td>External I/O, model calls, MCP calls, DB queries, file I/O, and CLI runs stay out of deterministic workflow code.</td>
+        </tr>
+        <tr>
+          <td>Persist</td>
+          <td>Postgres + artifact store</td>
+          <td>Store normalized result envelope and large payloads by reference. Avoid large prompt/tool payloads in Temporal history.</td>
+        </tr>
+        <tr>
+          <td>Project</td>
+          <td>FastAPI event stream</td>
+          <td>Project stable app events to the UI. SDK streams are input signals, not the durable user-facing ledger.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <div class="section-head"><span class="section-num">06</span><h2>SDK Integration Matrix</h2></div>
+    <table>
+      <thead>
+        <tr><th>Surface</th><th>Reuse</th><th>Keep App-Owned</th><th>Verdict</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Pydantic AI</strong></td>
+          <td>Function tools, toolsets, MCP toolsets, filtering, prefixing, approval wrappers, deferred tools, return schemas, typed deps.</td>
+          <td>Canonical tool definitions, approvals, audit, secrets, artifacts, registry versioning, Temporal-safe snapshots.</td>
+          <td><span class="tag high">Primary v1 adapter</span></td>
+        </tr>
+        <tr>
+          <td><strong>MCP</strong></td>
+          <td>Portable <code>tools/list</code> and <code>tools/call</code> ABI for Claude CLI, OpenAI Agents SDK, LangChain, DeepAgents, and possible LiteLLM gateway use.</td>
+          <td>Trust decisions. MCP metadata and annotations are descriptive and must not self-certify safety.</td>
+          <td><span class="tag high">Interop ABI, not truth</span></td>
+        </tr>
+        <tr>
+          <td><strong>OpenAI Agents SDK</strong></td>
+          <td>Hosted tools, function tools, agents-as-tools, hosted/local MCP, tool search, namespaces, approvals, streaming events.</td>
+          <td>Product approval/audit state and provider parity tests, especially through LiteLLM aliases.</td>
+          <td><span class="tag med">Sidecar or spike path</span></td>
+        </tr>
+        <tr>
+          <td><strong>Claude Code CLI</strong></td>
+          <td>Subscription-compatible coding runs, built-in file/bash/code tools, stream-json output, MCP config, permission modes.</td>
+          <td>Tool registry policy, workspace isolation, approvals, artifact capture, and audit around the CLI process.</td>
+          <td><span class="tag high">Coding adapter, not registry</span></td>
+        </tr>
+        <tr>
+          <td><strong>Claude Agent SDK</strong></td>
+          <td>Programmatic tool approval and custom tools via MCP when API-key billing or approved subscription auth is acceptable.</td>
+          <td>Subscription-first product auth boundary, durable approvals, and registry truth.</td>
+          <td><span class="tag med">Conditional</span></td>
+        </tr>
+        <tr>
+          <td><strong>LangChain / DeepAgents</strong></td>
+          <td>Large ecosystem of tools, MCP adapters, HITL/checkpointing patterns, dynamic filtering, DeepAgents file/shell/subagent harness.</td>
+          <td>Safety. DeepAgents permissions do not cover arbitrary custom/MCP tools or sandbox execution.</td>
+          <td><span class="tag med">Curated import only</span></td>
+        </tr>
+        <tr>
+          <td><strong>LiteLLM</strong></td>
+          <td>Model gateway, OpenAI-style tool-call forwarding, optional MCP Gateway/proxy experiments.</td>
+          <td>Tool execution, approval, audit, and strict provider contract tests.</td>
+          <td><span class="tag med">Gateway, not tool engine</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <div class="section-head"><span class="section-num">07</span><h2>Failure Modes</h2></div>
+    <table>
+      <thead>
+        <tr><th>Risk</th><th>Severity</th><th>Mitigation</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>SDK object graph becomes the product registry.</td>
+          <td><span class="tag risk">High</span></td>
+          <td>Persist canonical registry records in Postgres; generate SDK toolsets from immutable snapshots.</td>
+        </tr>
+        <tr>
+          <td>External MCP/OpenAPI catalog is exposed wholesale.</td>
+          <td><span class="tag risk">High</span></td>
+          <td>Require curation, policy assignment, contract tests, and per-run filtering before exposure.</td>
+        </tr>
+        <tr>
+          <td>Approval is tied to a tool name, not exact arguments.</td>
+          <td><span class="tag risk">High</span></td>
+          <td>Approval rows include tool version, args hash, scope, reviewer, expiry, and decision. Changed args re-prompt.</td>
+        </tr>
+        <tr>
+          <td>Secrets leak through model context, SDK traces, MCP metadata, or Temporal history.</td>
+          <td><span class="tag risk">High</span></td>
+          <td>Use aliases and short-lived server-side grants only. Redact before persistence and never put raw secrets in tool args.</td>
+        </tr>
+        <tr>
+          <td>Temporal workflows replay non-deterministic tool or network calls.</td>
+          <td><span class="tag risk">High</span></td>
+          <td>Run model/tool/MCP/API/file I/O in activities or supported integrations; keep workflow code deterministic.</td>
+        </tr>
+        <tr>
+          <td>Tool schema mutates while a long-running workflow waits for approval.</td>
+          <td><span class="tag med">Medium</span></td>
+          <td>Pin registry snapshots and route old workflow versions until they drain or migrate explicitly.</td>
+        </tr>
+        <tr>
+          <td>LiteLLM/provider fallback changes tool or structured-output behavior.</td>
+          <td><span class="tag med">Medium</span></td>
+          <td>Run provider contract tests for tool calls, strict schemas, streams, usage, and fallback behavior before enabling aliases.</td>
+        </tr>
+        <tr>
+          <td>Registry becomes a bloated marketplace before first workflows exist.</td>
+          <td><span class="tag med">Medium</span></td>
+          <td>Start with 8-12 curated internal tools and add external imports only when a workflow needs them.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <div class="section-head"><span class="section-num">08</span><h2>Implementation Decisions</h2></div>
+    <table>
+      <thead>
+        <tr><th>Question</th><th>Decision</th><th>First Spike</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>What is the first registry type?</td>
+          <td>Postgres tables plus FastAPI registry/execution endpoints. No separate registry service in v1.</td>
+          <td>Create <code>ToolDefinition</code>, <code>ToolPolicy</code>, <code>ToolCall</code>, <code>ToolResult</code>, and <code>Approval</code> tables.</td>
+        </tr>
+        <tr>
+          <td>How does Pydantic AI see tools?</td>
+          <td>Generate per-run Pydantic toolsets from registry snapshots and role policy.</td>
+          <td>Build one registry-backed <code>FunctionToolset</code> wrapper with one read tool, one approval tool, and one artifact-returning tool.</td>
+        </tr>
+        <tr>
+          <td>How do other runtimes reuse tools?</td>
+          <td>Expose a curated internal MCP server after the app-owned executor exists.</td>
+          <td>Serve <code>tools/list</code> and <code>tools/call</code> for the same approved subset; consume it from Claude CLI or OpenAI Agents SDK.</td>
+        </tr>
+        <tr>
+          <td>How are human approvals represented?</td>
+          <td>App approval row is authoritative; SDK approval/deferred-tool APIs are adapters into that row.</td>
+          <td>Pause one tool call, write approval row, approve via FastAPI, and resume Temporal workflow.</td>
+        </tr>
+        <tr>
+          <td>What tools are custom first?</td>
+          <td>Run status, artifact search/read, approval request, memory/RAG read, coding-run launch, web fetch/search, and external API wrappers.</td>
+          <td>Do not expose generic shell, browser, filesystem write, or broad MCP servers until sandbox/secret policy exists.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <div class="section-head"><span class="section-num">09</span><h2>Sources</h2></div>
+    <p class="small">Sources were gathered by sub-agents and spot-checked by the orchestrator. Retrieved 2026-06-17 unless noted.</p>
+    <ol>
+      <li><a href="agent-sdk-stack-litellm.html">Prior agent SDK stack decision</a></li>
+      <li><a href="worker-workflow-engine.html">Prior worker/workflow engine decision</a></li>
+      <li><a href="codex-claude-code-adapters.html">Prior Codex and Claude Code adapter decision</a></li>
+      <li><a href="https://pydantic.dev/docs/ai/tools-toolsets/tools/">Pydantic AI function tools</a></li>
+      <li><a href="https://pydantic.dev/docs/ai/tools-toolsets/toolsets/">Pydantic AI toolsets</a></li>
+      <li><a href="https://pydantic.dev/docs/ai/tools-toolsets/deferred-tools/">Pydantic AI deferred tools</a></li>
+      <li><a href="https://pydantic.dev/docs/ai/mcp/client/">Pydantic AI MCP client</a></li>
+      <li><a href="https://pydantic.dev/docs/ai/integrations/durable_execution/temporal/">Pydantic AI Temporal integration</a></li>
+      <li><a href="https://pydantic.dev/docs/ai/integrations/ui/overview/">Pydantic AI UI event streams</a></li>
+      <li><a href="https://openai.github.io/openai-agents-python/tools/">OpenAI Agents SDK tools</a></li>
+      <li><a href="https://openai.github.io/openai-agents-python/mcp/">OpenAI Agents SDK MCP</a></li>
+      <li><a href="https://openai.github.io/openai-agents-python/human_in_the_loop/">OpenAI Agents SDK human-in-the-loop</a></li>
+      <li><a href="https://code.claude.com/docs/en/cli-reference">Claude Code CLI reference</a></li>
+      <li><a href="https://code.claude.com/docs/en/tools-reference">Claude Code tools reference</a></li>
+      <li><a href="https://code.claude.com/docs/en/agent-sdk/overview">Claude Agent SDK overview</a></li>
+      <li><a href="https://code.claude.com/docs/en/agent-sdk/custom-tools">Claude Agent SDK custom tools</a></li>
+      <li><a href="https://code.claude.com/docs/en/agent-sdk/user-input">Claude Agent SDK approvals and user input</a></li>
+      <li><a href="https://code.claude.com/docs/en/agent-sdk/permissions">Claude Agent SDK permissions</a></li>
+      <li><a href="https://docs.langchain.com/oss/python/langchain/tools">LangChain tools</a></li>
+      <li><a href="https://docs.langchain.com/oss/python/langchain/mcp">LangChain MCP adapters</a></li>
+      <li><a href="https://docs.langchain.com/oss/python/langchain/human-in-the-loop">LangChain human-in-the-loop</a></li>
+      <li><a href="https://docs.langchain.com/oss/python/deepagents/tools">DeepAgents tools</a></li>
+      <li><a href="https://docs.langchain.com/oss/python/deepagents/permissions">DeepAgents permissions</a></li>
+      <li><a href="https://docs.litellm.ai/docs/completion/function_call">LiteLLM function calling</a></li>
+      <li><a href="https://docs.litellm.ai/docs/mcp">LiteLLM MCP Gateway</a></li>
+      <li><a href="https://modelcontextprotocol.io/specification/2025-06-18/server/tools">MCP server tools specification</a></li>
+      <li><a href="https://modelcontextprotocol.io/docs/tutorials/security/security_best_practices">MCP security best practices</a></li>
+      <li><a href="https://spec.openapis.org/oas/latest.html">OpenAPI specification</a></li>
+      <li><a href="https://json-schema.org/draft/2020-12/json-schema-core">JSON Schema 2020-12 core</a></li>
+      <li><a href="https://docs.temporal.io/workflows">Temporal workflows</a></li>
+      <li><a href="https://docs.temporal.io/activities">Temporal activities</a></li>
+      <li><a href="https://docs.temporal.io/encyclopedia/retry-policies">Temporal retry policies</a></li>
+      <li><a href="https://fastapi.tiangolo.com/tutorial/response-model/">FastAPI response models</a></li>
+      <li><a href="https://fastapi.tiangolo.com/tutorial/security/first-steps/">FastAPI security dependencies</a></li>
+      <li><a href="https://docs.pydantic.dev/latest/concepts/json_schema/">Pydantic JSON Schema</a></li>
+    </ol>
+  </section>
+
+  <footer>
+    Generated for BD issue orch-0sc.6 in /data/codes/orchestrators. This is a consolidated orchestrator report from sub-agent research slices and local project context.
+  </footer>
+</main>
+</body>
+</html>

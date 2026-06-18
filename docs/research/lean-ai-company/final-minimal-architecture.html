@@ -1,0 +1,725 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Final Minimal Architecture</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #f6f7f5;
+      --surface: #ffffff;
+      --surface-2: #eef0ec;
+      --text: #202322;
+      --muted: #656d68;
+      --line: #d7ddd8;
+      --accent: #246b62;
+      --accent-soft: #e3f0ed;
+      --risk: #a13524;
+      --risk-soft: #f7dfdc;
+      --med: #7b5815;
+      --med-soft: #f2e5c7;
+      --high: #236a3e;
+      --high-soft: #dff0e6;
+      --code: #eef1ef;
+      --shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #111514;
+        --surface: #191e1d;
+        --surface-2: #222827;
+        --text: #edf0ee;
+        --muted: #a9b0ac;
+        --line: #333d3a;
+        --accent: #76c5b9;
+        --accent-soft: #143832;
+        --risk: #f08d80;
+        --risk-soft: #3a1d1a;
+        --med: #e2c46f;
+        --med-soft: #342c16;
+        --high: #92d7a9;
+        --high-soft: #173522;
+        --code: #222827;
+        --shadow: none;
+      }
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.6;
+    }
+    main {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 44px 20px 64px;
+    }
+    header { margin-bottom: 34px; }
+    .eyebrow {
+      color: var(--accent);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0;
+      text-transform: uppercase;
+    }
+    h1 {
+      margin: 8px 0 12px;
+      font-size: clamp(32px, 5vw, 56px);
+      line-height: 1.05;
+      letter-spacing: 0;
+    }
+    h2 {
+      margin: 0;
+      font-size: 24px;
+      letter-spacing: 0;
+    }
+    h3 {
+      margin: 22px 0 10px;
+      font-size: 17px;
+      letter-spacing: 0;
+    }
+    p { margin: 10px 0; }
+    a { color: var(--accent); }
+    code {
+      background: var(--code);
+      border: 1px solid var(--line);
+      border-radius: 5px;
+      padding: 1px 5px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.92em;
+    }
+    .subtitle {
+      max-width: 920px;
+      color: var(--muted);
+      font-size: 18px;
+    }
+    .kpis {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-top: 22px;
+    }
+    .kpi {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 16px;
+      box-shadow: var(--shadow);
+    }
+    .kpi strong {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 18px;
+    }
+    .kpi span {
+      display: block;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+    section {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 24px;
+      margin: 18px 0;
+      box-shadow: var(--shadow);
+    }
+    .section-head {
+      display: flex;
+      gap: 14px;
+      align-items: center;
+      padding-bottom: 12px;
+      margin-bottom: 14px;
+      border-bottom: 1px solid var(--line);
+    }
+    .section-num {
+      color: var(--muted);
+      font-size: 28px;
+      font-weight: 800;
+      line-height: 1;
+      font-variant-numeric: tabular-nums;
+    }
+    .callout {
+      border-left: 4px solid var(--accent);
+      background: var(--accent-soft);
+      border-radius: 0 8px 8px 0;
+      padding: 14px 16px;
+      margin: 12px 0 16px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 14px 0;
+      font-size: 14px;
+    }
+    th, td {
+      border: 1px solid var(--line);
+      padding: 10px 11px;
+      text-align: left;
+      vertical-align: top;
+    }
+    th {
+      background: var(--surface-2);
+      font-weight: 700;
+    }
+    .tag {
+      display: inline-block;
+      border-radius: 999px;
+      padding: 2px 8px;
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .tag.high { color: var(--high); background: var(--high-soft); }
+    .tag.med { color: var(--med); background: var(--med-soft); }
+    .tag.risk { color: var(--risk); background: var(--risk-soft); }
+    .diagram {
+      overflow-x: auto;
+      background: var(--surface-2);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 12px;
+      margin: 16px 0;
+    }
+    svg {
+      min-width: 1000px;
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+    .box { fill: var(--surface); stroke: var(--line); stroke-width: 1.5; }
+    .box-accent { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 1.5; }
+    .svg-title { fill: var(--text); font-size: 15px; font-weight: 700; }
+    .svg-note { fill: var(--muted); font-size: 12px; }
+    .arrow { fill: none; stroke: var(--accent); stroke-width: 2; marker-end: url(#arrow); }
+    .dash { stroke-dasharray: 6 5; }
+    ul { padding-left: 22px; }
+    li { margin: 6px 0; }
+    .small {
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+    footer {
+      color: var(--muted);
+      font-size: 13px;
+      margin-top: 28px;
+      padding-top: 18px;
+      border-top: 1px solid var(--line);
+    }
+    @media (max-width: 920px) {
+      .kpis { grid-template-columns: 1fr 1fr; }
+      .two-col { grid-template-columns: 1fr; }
+      section { padding: 18px; }
+    }
+    @media (max-width: 620px) {
+      main { padding: 28px 14px 48px; }
+      .kpis { grid-template-columns: 1fr; }
+      th, td { padding: 9px; }
+    }
+  </style>
+</head>
+<body>
+<main>
+  <header>
+    <div class="eyebrow">BD orch-0sc.9 | Deep research consolidation | Generated 2026-06-18</div>
+    <h1>Final minimal architecture</h1>
+    <p class="subtitle">
+      Consolidated orchestrator report from sub-agent research across the resolved lean AI-company architecture decisions: FastAPI, React/Vite, Temporal, Pydantic AI, LiteLLM, app-owned registries, subscription-compatible coding adapters, local artifacts, and Docker Compose.
+    </p>
+    <div class="kpis">
+      <div class="kpi">
+        <strong>FastAPI + React</strong>
+        <span>FastAPI owns API/control contracts. React/Vite owns the cockpit and consumes app-owned APIs and event streams.</span>
+      </div>
+      <div class="kpi">
+        <strong>Temporal + Postgres</strong>
+        <span>Temporal owns durable execution. Postgres owns product truth, audit, specs, tools, approvals, artifacts, and UI-visible state.</span>
+      </div>
+      <div class="kpi">
+        <strong>Pydantic AI + LiteLLM</strong>
+        <span>Pydantic AI is the default Python SDK adapter. LiteLLM Proxy is the model gateway, not the agent state layer.</span>
+      </div>
+      <div class="kpi">
+        <strong>CLI coding lanes</strong>
+        <span>Codex CLI and Claude Code CLI are the subscription-first coding adapters. SDK paths stay conditional.</span>
+      </div>
+    </div>
+  </header>
+
+  <section>
+    <div class="section-head"><span class="section-num">01</span><h2>Answer</h2></div>
+    <div class="callout">
+      <p><strong>Decision:</strong> build the first version as a FastAPI control plane, React/Vite cockpit, app-owned Postgres product database, Temporal execution engine, Pydantic AI agent adapter, LiteLLM model gateway, app-owned Capability Registry and Spec Registry, subscription-compatible Codex and Claude Code CLI coding adapters, local claim-check artifact storage, and Docker Compose single-host deployment.</p>
+      <p><strong>V1 discipline:</strong> prove one vertical slice before broadening the platform: one run, one role snapshot, one model alias, one gated tool, one approval, one artifact, one event stream, and one contract-test harness.</p>
+    </div>
+    <p>
+      The important boundary is not which library has the broadest feature list. It is which component owns which truth. Postgres is product and audit truth. Temporal is execution truth. LiteLLM is model gateway truth. Pydantic AI, Codex, Claude Code, MCP, and OpenAI/LangChain integrations are adapter surfaces. React is a projection and control surface, not durable workflow state.
+    </p>
+    <p>
+      The corrected coding-adapter stance is CLI-first for subscription compatibility: Codex uses <code>codex exec</code>, <code>codex exec resume</code>, and <code>codex exec review</code>; Claude uses <code>claude -p</code> for the subscription-OAuth path. Claude Agent SDK is conditional, not the default, unless its auth and billing model is explicitly acceptable for the deployment.
+    </p>
+  </section>
+
+  <section>
+    <div class="section-head"><span class="section-num">02</span><h2>Decision Inventory</h2></div>
+    <table>
+      <thead>
+        <tr><th>Chosen Component</th><th>Responsibility</th><th>Rejected V1 Alternatives</th><th>Non-Negotiable Constraint</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>FastAPI, Starlette, Uvicorn</strong></td>
+          <td>HTTP edge, OpenAPI contracts, run APIs, approvals, artifact metadata, stream endpoints.</td>
+          <td>Django core, Django plus FastAPI hybrid as the default.</td>
+          <td>FastAPI is not the whole app platform. Auth, sessions, admin, migrations, workflow, and state must be explicit components.</td>
+        </tr>
+        <tr>
+          <td><strong>SQLAlchemy 2.x, asyncpg, Alembic, Authlib</strong></td>
+          <td>Postgres access, migrations, external identity, and internal inspection through a narrow admin surface.</td>
+          <td>SQLModel as anchor, stale auth/session packages, public admin mutation workflows.</td>
+          <td>Use reviewed migrations and strong auth. SQLAdmin is inspection-first and not the main mutation path.</td>
+        </tr>
+        <tr>
+          <td><strong>React, Vite, TypeScript</strong></td>
+          <td>Assistant cockpit, chat, timelines, approvals, artifacts, coding diffs, live run status.</td>
+          <td>HTMX as default product UI, Next.js, Reflex, NiceGUI, Streamlit-style shells.</td>
+          <td>FastAPI remains authoritative. Use generated API types and SSE first; WebSockets only when bidirectional live control is required.</td>
+        </tr>
+        <tr>
+          <td><strong>Temporal</strong></td>
+          <td>Durable workflows, retries, timers, cancellation, approval waiting, fan-out/fan-in, coding-run lifecycle.</td>
+          <td>Prefect, Redis queues, custom Postgres workflow engine, Temporal plus Prefect in the same v1 lifecycle.</td>
+          <td>Workflow code stays deterministic. Model calls, DB writes, file IO, CLI calls, and network calls run in activities.</td>
+        </tr>
+        <tr>
+          <td><strong>App-owned Postgres domain model</strong></td>
+          <td>Runs, sessions, messages, approvals, tools, specs, artifacts, usage, audit, event projection.</td>
+          <td>SDK session state, Temporal history, browser state, or LiteLLM logs as product truth.</td>
+          <td>Every SDK/workflow state transition maps back to app records through idempotent services and event projection.</td>
+        </tr>
+        <tr>
+          <td><strong>Pydantic AI</strong></td>
+          <td>Default typed Python agent SDK for model calls, tool exposure, structured outputs, and streams.</td>
+          <td>OpenAI Agents SDK central, Claude SDK central, LangGraph or DeepAgents as default runtime.</td>
+          <td>The SDK is an execution adapter. Product semantics, approvals, artifacts, sessions, and audit stay app-owned.</td>
+        </tr>
+        <tr>
+          <td><strong>LiteLLM Proxy</strong></td>
+          <td>Centralized model gateway, provider aliases, keys, budgets, fallback, and model-call logging where enabled.</td>
+          <td>Provider clients scattered through the app, LiteLLM as agent/tool/session source of truth.</td>
+          <td>Aliases require contract tests for streaming, tool calls, strict output, usage, fallback, and correlation metadata.</td>
+        </tr>
+        <tr>
+          <td><strong>Capability Registry and Tool Execution Gateway</strong></td>
+          <td>Canonical tool definitions, tool policy, schema validation, secrets, approvals, execution lifecycle, normalized results.</td>
+          <td>Pydantic toolsets, MCP listings, OpenAPI imports, LiteLLM aliases, LangChain tools, or Claude permissions as registry truth.</td>
+          <td>V1 is a small curated registry seed, not a marketplace. Raw MCP/OpenAPI import comes after executor and policy contracts exist.</td>
+        </tr>
+        <tr>
+          <td><strong>Spec Registry</strong></td>
+          <td>Immutable department, role, workflow, prompt, model, context, approval, tool, and adapter-policy versions.</td>
+          <td>Mutable JSON blobs, framework-owned agent specs, CrewAI/AutoGen teams, OPA/Cedar/OpenFGA in v1.</td>
+          <td>Code owns execution semantics. DB stores typed parameters, version IDs, hashes, and publish/activation state.</td>
+        </tr>
+        <tr>
+          <td><strong>Codex and Claude Code CLI adapters</strong></td>
+          <td>External coding runs in isolated worktrees, with task packets, logs, diffs, test evidence, reviews, and approval gates.</td>
+          <td>Plugin/app-server substrate, shared desktop login, API-key SDK default, interactive slash-command automation.</td>
+          <td>Subscription mode is explicit. No product design should assume a central server can safely multiplex one desktop login across users.</td>
+        </tr>
+        <tr>
+          <td><strong>Local artifact store and Docker Compose</strong></td>
+          <td>Immutable local bytes, Postgres metadata, single-host service topology, volumes, healthchecks, and profile-gated debug tools.</td>
+          <td>Postgres blobs, default MinIO/S3, Kubernetes, managed Postgres, Temporal Cloud.</td>
+          <td>Use claim-check references, object-shaped keys, authenticated FastAPI serving, paired DB plus artifact backups, and restore drills.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <div class="section-head"><span class="section-num">03</span><h2>System Diagram</h2></div>
+    <div class="diagram">
+      <svg viewBox="0 0 1120 620" role="img" aria-label="Final minimal architecture diagram">
+        <defs>
+          <marker id="arrow" markerWidth="10" markerHeight="10" refX="7" refY="3" orient="auto" markerUnits="strokeWidth">
+            <path d="M0,0 L0,6 L8,3 z" fill="var(--accent)"></path>
+          </marker>
+        </defs>
+
+        <rect class="box-accent" x="34" y="54" width="168" height="74" rx="8"></rect>
+        <text class="svg-title" x="54" y="84">React/Vite UI</text>
+        <text class="svg-note" x="54" y="108">cockpit and approvals</text>
+
+        <rect class="box-accent" x="296" y="48" width="188" height="86" rx="8"></rect>
+        <text class="svg-title" x="318" y="80">FastAPI Control</text>
+        <text class="svg-note" x="318" y="104">REST, SSE, auth, APIs</text>
+
+        <rect class="box" x="604" y="38" width="192" height="96" rx="8"></rect>
+        <text class="svg-title" x="626" y="72">App Postgres</text>
+        <text class="svg-note" x="626" y="96">product and audit truth</text>
+        <text class="svg-note" x="626" y="116">runs, specs, tools, artifacts</text>
+
+        <rect class="box-accent" x="296" y="214" width="188" height="86" rx="8"></rect>
+        <text class="svg-title" x="318" y="246">Temporal</text>
+        <text class="svg-note" x="318" y="270">execution truth</text>
+        <text class="svg-note" x="318" y="290">run and coding workflows</text>
+
+        <rect class="box" x="604" y="214" width="192" height="86" rx="8"></rect>
+        <text class="svg-title" x="626" y="246">Workers</text>
+        <text class="svg-note" x="626" y="270">activities and projection</text>
+        <text class="svg-note" x="626" y="290">Pydantic AI runtime</text>
+
+        <rect class="box" x="894" y="54" width="176" height="74" rx="8"></rect>
+        <text class="svg-title" x="916" y="84">Spec Registry</text>
+        <text class="svg-note" x="916" y="108">versioned role snapshots</text>
+
+        <rect class="box" x="894" y="164" width="176" height="74" rx="8"></rect>
+        <text class="svg-title" x="916" y="194">Tool Registry</text>
+        <text class="svg-note" x="916" y="218">capabilities and policy</text>
+
+        <rect class="box" x="894" y="274" width="176" height="74" rx="8"></rect>
+        <text class="svg-title" x="916" y="304">Artifact Store</text>
+        <text class="svg-note" x="916" y="328">local claim-check bytes</text>
+
+        <rect class="box" x="604" y="396" width="192" height="86" rx="8"></rect>
+        <text class="svg-title" x="626" y="428">LiteLLM Proxy</text>
+        <text class="svg-note" x="626" y="452">model aliases and budgets</text>
+        <text class="svg-note" x="626" y="472">provider gateway</text>
+
+        <rect class="box" x="296" y="396" width="188" height="86" rx="8"></rect>
+        <text class="svg-title" x="318" y="428">CodingRunWorkflow</text>
+        <text class="svg-note" x="318" y="452">worktrees, logs, diffs</text>
+        <text class="svg-note" x="318" y="472">approval to apply</text>
+
+        <rect class="box" x="72" y="380" width="130" height="64" rx="8"></rect>
+        <text class="svg-title" x="94" y="410">Codex CLI</text>
+        <text class="svg-note" x="94" y="432">exec, review</text>
+
+        <rect class="box" x="72" y="470" width="130" height="64" rx="8"></rect>
+        <text class="svg-title" x="94" y="500">Claude CLI</text>
+        <text class="svg-note" x="94" y="522">claude -p</text>
+
+        <path class="arrow" d="M202 91 H296"></path>
+        <path class="arrow" d="M484 90 H604"></path>
+        <path class="arrow" d="M390 134 V214"></path>
+        <path class="arrow" d="M484 257 H604"></path>
+        <path class="arrow" d="M796 86 H894"></path>
+        <path class="arrow" d="M796 216 H894"></path>
+        <path class="arrow" d="M796 306 H894"></path>
+        <path class="arrow" d="M700 300 V396"></path>
+        <path class="arrow" d="M604 438 H484"></path>
+        <path class="arrow" d="M296 428 H202"></path>
+        <path class="arrow dash" d="M137 444 V470"></path>
+        <path class="arrow dash" d="M982 348 C982 560 700 560 390 482"></path>
+      </svg>
+    </div>
+    <p class="small">
+      Solid lines show normal control and execution flow. Dashed lines show coding-lane and artifact references. Docker Compose wraps Postgres, Temporal, LiteLLM, API, worker, proxy, built UI, artifact/workspace volumes, and profile-gated local debug services.
+    </p>
+  </section>
+
+  <section>
+    <div class="section-head"><span class="section-num">04</span><h2>Responsibility Map</h2></div>
+    <table>
+      <thead>
+        <tr><th>Plane</th><th>Components</th><th>Owns</th><th>Does Not Own</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Control plane</td>
+          <td>FastAPI, app services, auth/session layer.</td>
+          <td>API contracts, user actions, approvals, event projection, artifact routes, workflow start/signal/cancel requests.</td>
+          <td>Durable execution mechanics, model provider routing, browser-only state.</td>
+        </tr>
+        <tr>
+          <td>Execution plane</td>
+          <td>Temporal service, workers, <code>RunWorkflow</code>, <code>CodingRunWorkflow</code>.</td>
+          <td>Workflow histories, retries, timers, cancellation, signal/update handling, task queues.</td>
+          <td>Product truth, large payloads, auth policy source of truth, UI state.</td>
+        </tr>
+        <tr>
+          <td>Data plane</td>
+          <td>Postgres, SQLAlchemy, Alembic, app repositories.</td>
+          <td>Canonical run/session/event/spec/tool/approval/artifact/audit records and idempotency keys.</td>
+          <td>Temporal replay history, raw artifact bytes, provider credentials in model context.</td>
+        </tr>
+        <tr>
+          <td>Model plane</td>
+          <td>LiteLLM Proxy, Pydantic AI, provider aliases.</td>
+          <td>Model routing, model-call behavior, structured-output and tool-call contract checks, gateway-level budgets/logs.</td>
+          <td>Departments, roles, tools, sessions, artifacts, human approvals.</td>
+        </tr>
+        <tr>
+          <td>Tool plane</td>
+          <td>Capability Registry, Tool Execution Gateway, generated SDK toolsets.</td>
+          <td>Tool definitions, policy, secrets, validation, approvals, normalized call/result records.</td>
+          <td>Marketplace breadth, raw arbitrary shell, unvetted MCP/OpenAPI imports.</td>
+        </tr>
+        <tr>
+          <td>Policy/spec plane</td>
+          <td>Spec Registry and small policy evaluator.</td>
+          <td>Published versions, activation state, model/tool/context/approval/adapter policy, per-run snapshots.</td>
+          <td>Executable Python, SQL, shell scripts, provider credentials, arbitrary policy language in v1.</td>
+        </tr>
+        <tr>
+          <td>Artifact plane</td>
+          <td>Artifact Service, local filesystem backend, authenticated FastAPI routes.</td>
+          <td>Immutable bytes, metadata, checksum, MIME, retention, preview/download lifecycle, backup-set membership.</td>
+          <td>Postgres blobs for large data, public static mounts for private data, Temporal payload storage.</td>
+        </tr>
+        <tr>
+          <td>Coding adapter lane</td>
+          <td>Workspace manager, Codex CLI adapter, Claude Code CLI adapter, verifier, git collector.</td>
+          <td>Per-run worktrees, leases, subprocess invocation, stream capture, diffs, test evidence, patch provenance.</td>
+          <td>General shell access, shared mutable checkout writes, unverified final prose as completion evidence.</td>
+        </tr>
+        <tr>
+          <td>Deployment plane</td>
+          <td>Docker Compose, proxy, service volumes, secrets, healthchecks.</td>
+          <td>Single-host topology and local operational wiring.</td>
+          <td>Product semantics, long-term scale strategy, policy decisions.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <div class="section-head"><span class="section-num">05</span><h2>Integration Path</h2></div>
+    <ol>
+      <li>A user starts a run through FastAPI. FastAPI authenticates the user, resolves active spec/tool/model/approval/adapter versions, writes an app run and immutable run snapshot, then starts a Temporal workflow with compact IDs and hashes.</li>
+      <li>Temporal executes deterministic workflow logic. Any model call, DB write, file operation, tool call, CLI process, or external network call happens through activities or supported durable SDK integration.</li>
+      <li>Pydantic AI is constructed from the per-run snapshot and calls LiteLLM Proxy for model access. LiteLLM handles provider aliases and model gateway behavior; it does not become session memory or artifact storage.</li>
+      <li>Tool calls flow through generated per-run toolsets into the Tool Execution Gateway. The gateway validates exact tool version, input schema, args hash, actor, role, scope, and required approval.</li>
+      <li>Human approvals are app-owned rows in Postgres. Temporal waits on a signal or update tied to the exact approval row, tool version, args hash, actor, scope, and expiry.</li>
+      <li>Large outputs use claim-check storage. Activities reserve artifact rows, write immutable local bytes, calculate checksum/size/MIME, and return compact artifact references.</li>
+      <li>FastAPI projects run status, events, approvals, and artifacts to React through REST and SSE. The browser may cache and filter state, but app APIs remain authoritative.</li>
+      <li>Coding work is a later specialized workflow. A coding task leases an isolated git worktree, invokes Codex or Claude Code through subscription-compatible CLI adapters, captures logs/diffs/tests/artifacts, and requires app policy or human approval before apply.</li>
+    </ol>
+  </section>
+
+  <section>
+    <div class="section-head"><span class="section-num">06</span><h2>Implementation Sequence</h2></div>
+    <table>
+      <thead>
+        <tr><th>Order</th><th>Milestone</th><th>Gate</th><th>Main Risk Controlled</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>0</td>
+          <td>Compatibility spike for FastAPI, Temporal, Pydantic AI, and LiteLLM.</td>
+          <td>Import smoke tests, one Pydantic AI call through LiteLLM, one Temporal workflow/activity test.</td>
+          <td>Version mismatch before project scaffold.</td>
+        </tr>
+        <tr>
+          <td>1</td>
+          <td>App scaffold: Python package, FastAPI health, React/Vite shell, Docker Compose config, verification commands.</td>
+          <td><code>/healthz</code>, frontend typecheck/build, Compose config, initial pytest/ruff commands.</td>
+          <td>Unproven repo shape and nonexistent test surface.</td>
+        </tr>
+        <tr>
+          <td>2</td>
+          <td>Local service baseline: Postgres, migrations, Temporal, LiteLLM, API, worker, proxy, volumes.</td>
+          <td>Stack boots from zero and migrations apply on an empty DB.</td>
+          <td>Hidden operational assumptions in Compose.</td>
+        </tr>
+        <tr>
+          <td>3</td>
+          <td>Product state and event ledger for runs, sessions, messages, approvals, tools, artifacts, events, and usage.</td>
+          <td>Repository/service tests for idempotent writes and queryable audit records.</td>
+          <td>SDK or Temporal state becoming competing product truth.</td>
+        </tr>
+        <tr>
+          <td>4</td>
+          <td>Artifact claim-check service.</td>
+          <td>Reserve/write/hash/read lifecycle tests and no raw local path leaks in API responses.</td>
+          <td>Temporal history bloat and uncontrolled filesystem exposure.</td>
+        </tr>
+        <tr>
+          <td>5</td>
+          <td>Minimal Spec Registry and Capability Registry.</td>
+          <td>Snapshot hash tests, schema validation, and one read-only plus one approval-gated tool.</td>
+          <td>Mutable JSON configs or framework object graphs becoming product truth.</td>
+        </tr>
+        <tr>
+          <td>6</td>
+          <td>Model/tool contract gate through Pydantic AI and LiteLLM.</td>
+          <td>Streaming, non-streaming, strict output, tool round trip, fallback, usage/cost, correlation ID, and approval pause/resume tests.</td>
+          <td>Provider or gateway drift breaking tool and structured-output behavior.</td>
+        </tr>
+        <tr>
+          <td>7</td>
+          <td>Temporal <code>RunWorkflow</code> for first generic agent run.</td>
+          <td>Workflow integration test with model call, tool call, approval signal/update, artifact write, retry, and cancellation.</td>
+          <td>Non-determinism and duplicate side effects on retry.</td>
+        </tr>
+        <tr>
+          <td>8</td>
+          <td>Thin UI/API cockpit.</td>
+          <td>Start run, view timeline, approve/reject, inspect artifact, reconnect SSE, build/typecheck frontend.</td>
+          <td>Browser state becoming source of truth.</td>
+        </tr>
+        <tr>
+          <td>9</td>
+          <td>Coding department: workspaces, Codex adapter, Claude CLI adapter, <code>CodingRunWorkflow</code>.</td>
+          <td>Toy repo end-to-end: task, worktree, CLI run, supervisor tests, diff artifact, critic review, human apply/discard.</td>
+          <td>Two writers in one checkout, subscription auth confusion, prose-only completion claims.</td>
+        </tr>
+        <tr>
+          <td>10</td>
+          <td>Hardening: OIDC/dev auth posture, CSRF/session rules, secrets/redaction, backup/restore, reconciliation, retention sweeper.</td>
+          <td>Authz/CSRF/redaction tests plus restore drill that checks app DB, Temporal DB, LiteLLM DB if used, and artifact bytes.</td>
+          <td>Security and recovery gaps hidden by local-only development.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <div class="section-head"><span class="section-num">07</span><h2>Upgrade Triggers</h2></div>
+    <table>
+      <thead>
+        <tr><th>Do Not Add By Default</th><th>Add When</th><th>Keep The Exit Path Ready By</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Next.js</td>
+          <td>Public SEO pages, SSR, edge rendering, or a Node BFF becomes a real requirement.</td>
+          <td>Keeping the UI behind stable FastAPI APIs and generated contracts.</td>
+        </tr>
+        <tr>
+          <td>HTMX as default</td>
+          <td>The UI stays under a few simple internal screens and rich timelines/diffs/streaming controls do not materialize.</td>
+          <td>Keeping React screens as API consumers rather than business logic owners.</td>
+        </tr>
+        <tr>
+          <td>Prefect</td>
+          <td>Scheduled data/eval/ops jobs need Prefect's operator experience outside the core human-gated run lifecycle.</td>
+          <td>Keeping Temporal core workflows and app-owned run state separate from batch job orchestration.</td>
+        </tr>
+        <tr>
+          <td>OpenAI Agents SDK as central SDK</td>
+          <td>Its provider behavior, LiteLLM path, tracing, tools, and handoffs pass the app's contract gates better than Pydantic AI for a specific lane.</td>
+          <td>Treating it as a sidecar adapter behind app-owned specs/tools/state.</td>
+        </tr>
+        <tr>
+          <td>LangChain DeepAgents or LangGraph as central runtime</td>
+          <td>A specific multi-step research/agent pattern needs its graph abstractions and passes artifact/tool/approval boundaries.</td>
+          <td>Invoking it inside a Temporal activity or sidecar lane, not replacing the app-owned workflow boundary.</td>
+        </tr>
+        <tr>
+          <td>Claude Agent SDK</td>
+          <td>API-key billing is acceptable, or Anthropic-supported subscription-product auth is explicitly available for the deployment.</td>
+          <td>Keeping Claude Code CLI <code>claude -p</code> as the subscription-first v1 path.</td>
+        </tr>
+        <tr>
+          <td>MCP server marketplace</td>
+          <td>The app-owned Tool Execution Gateway exists and external runtimes need a portable <code>tools/list</code> and <code>tools/call</code> ABI.</td>
+          <td>Maintaining canonical tool definitions, policy, approvals, secrets, and audit in Postgres.</td>
+        </tr>
+        <tr>
+          <td>S3 or MinIO</td>
+          <td>Multi-host workers, disk pressure, direct browser uploads/downloads, object lifecycle policy, or backup requirements exceed local files.</td>
+          <td>Using object-shaped keys, <code>storage_backend</code>, checksums, and claim-check refs from day one.</td>
+        </tr>
+        <tr>
+          <td>Temporal Cloud or managed Postgres</td>
+          <td>Availability, failover, PITR, upgrades, security maintenance, or operator burden exceed the single-host baseline.</td>
+          <td>Keeping endpoints/config injectable and restore drills explicit.</td>
+        </tr>
+        <tr>
+          <td>Kubernetes</td>
+          <td>Multiple hosts, independent worker pools, rolling deploys, resource isolation, or production SRE controls are necessary.</td>
+          <td>Avoiding Compose-specific assumptions in app code.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <div class="section-head"><span class="section-num">08</span><h2>Risks And Gates</h2></div>
+    <table>
+      <thead>
+        <tr><th>Risk</th><th>Severity</th><th>Gate Or Mitigation</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Temporal and Postgres diverge on run state after duplicate starts, failed signals, cancellation, or worker replay.</td>
+          <td><span class="tag risk">High</span></td>
+          <td>Define an app run state machine, Temporal state mapping, idempotency keys, outbox/projector, reconciliation job, and operator repair path.</td>
+        </tr>
+        <tr>
+          <td>Subscription-compatible coding adapters are treated as if one server-side desktop login can safely serve all users.</td>
+          <td><span class="tag risk">High</span></td>
+          <td>Model adapter modes explicitly: single-user local runner, per-user local runner, service credential runner, and API-key fallback. Gate each by policy.</td>
+        </tr>
+        <tr>
+          <td>FastAPI auth/admin is deferred while later layers assume enforcement exists.</td>
+          <td><span class="tag risk">High</span></td>
+          <td>Pick a v1 auth posture before real workflows: external OIDC/Authlib plus server-side session/CSRF, or explicitly single-operator local-only.</td>
+        </tr>
+        <tr>
+          <td>Tool registry becomes a marketplace before one workflow proves schemas, approvals, secrets, and audit.</td>
+          <td><span class="tag med">Medium</span></td>
+          <td>Seed only a small curated registry. No raw MCP/OpenAPI import until the app-owned executor and policy checks work.</td>
+        </tr>
+        <tr>
+          <td>LiteLLM fallback or provider changes break tool calling, strict output, streaming, or usage reporting.</td>
+          <td><span class="tag risk">High</span></td>
+          <td>Activation depends on model/tool contract tests per alias and SDK path.</td>
+        </tr>
+        <tr>
+          <td>Backups capture app DB and artifacts but not Temporal or LiteLLM persistence, creating restore ambiguity.</td>
+          <td><span class="tag med">Medium</span></td>
+          <td>Define backup sets that include app DB, Temporal DB, LiteLLM DB if enabled, and artifact bytes. Run restore drills with workers/API quiesced.</td>
+        </tr>
+        <tr>
+          <td>Coding runs trust final agent prose instead of supervisor-verifiable diffs, test output, and artifacts.</td>
+          <td><span class="tag med">Medium</span></td>
+          <td>Supervisor captures git diff, command logs, test results, artifact hashes, and critic output before human apply/discard.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <div class="section-head"><span class="section-num">09</span><h2>Source Trail</h2></div>
+    <p>
+      This artifact consolidates prior local deep-research reports and four sub-agent passes for this BD task: decision inventory, responsibility map, implementation sequencing, and red-team consistency review. The detailed primary-source citations remain in the component reports below.
+    </p>
+    <div class="two-col">
+      <ul>
+        <li><a href="fastapi-core-framework.html">FastAPI core framework decision</a></li>
+        <li><a href="ui-layer-fastapi-product.html">React/Vite UI decision</a></li>
+        <li><a href="agent-sdk-stack-litellm.html">Agent SDK and LiteLLM decision</a></li>
+        <li><a href="worker-workflow-engine.html">Worker and workflow engine decision</a></li>
+      </ul>
+      <ul>
+        <li><a href="tool-registry-sdk-integration.html">Tool registry and SDK integration decision</a></li>
+        <li><a href="codex-claude-code-adapters.html">Codex and Claude Code adapter decision</a></li>
+        <li><a href="agent-role-department-spec-model.html">Agent role and department spec model</a></li>
+        <li><a href="local-artifacts-docker-compose-baseline.html">Local artifacts and Docker Compose baseline</a></li>
+      </ul>
+    </div>
+    <p class="small">
+      Confidence is high for the architecture ownership boundaries because all prior decision artifacts converge on the same separation of concerns. Confidence is medium for exact provider/CLI adapter behavior until the implementation runs live compatibility and contract checks against the installed tool versions and intended account modes.
+    </p>
+  </section>
+
+  <footer>
+    Generated for BD issue orch-0sc.9 in /data/codes/orchestrators. This is the final consolidation of the resolved lean AI-company architecture research sequence; it does not close the parent epic until the human review step is complete.
+  </footer>
+</main>
+</body>
+</html>
