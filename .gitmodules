@@ -17,3 +17,7 @@
 	path = external/paperclip
 	url = https://github.com/paperclipai/paperclip.git
 	branch = master
+[submodule "external/codex-adapter"]
+	path = external/codex-adapter
+	url = https://github.com/MVPavan/codex-adapter.git
+	branch = main
