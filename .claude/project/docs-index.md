@@ -34,8 +34,8 @@ These files came from the copied harness and may contain useful patterns, but th
 
 | Path | Current Status | Use With Care |
 | --- | --- | --- |
-| `.claude/docs/codex-usage-guide.md` | Claude-plugin-oriented Codex guide from prior setup | Cross-check against `docs/research/codex-usage-options.md` before applying |
-| `.claude/docs/codex-discussions.md` | Discussion history for Codex plugin usage | Treat as historical notes |
+| `.claude/docs/codex-usage-guide.md` | LEGACY tombstone — broker-era `openai-codex` plugin (retired) | Superseded; use `.claude/commands/use-codex.md`. Deep docs: installed plugin at `${CLAUDE_PLUGIN_ROOT}/` (or `~/.claude/plugins/cache/codex-adapter/codex-adapter/<version>/`) |
+| `.claude/docs/codex-discussions.md` | Broker-era discussion history | Historical notes only |
 | `.claude/docs/beads-issue-tracking-adoption.md` | Beads adoption notes | Useful background; `.beads/beads.md` wins |
 | `.claude/docs/mlflow-experiment-tracking-adoption.md` | Prior experiment-tracking adoption plan | Not current policy for this repo |
 

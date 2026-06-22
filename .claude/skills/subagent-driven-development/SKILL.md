@@ -33,8 +33,8 @@ Use this when the work is large enough that one session should coordinate rather
 7. Run code-quality review second.
 8. Fix and re-review until both pass.
 9. In Claude Code with Codex available, run Codex code review before final completion:
-   - `standard` work: `/codex:review --wait` (standard defect spotting).
-   - `deep` work: `/codex:adversarial-review --wait` (actively tries to break the change).
+   - `standard` work: `/codex-review` (adversarial prose review of the diff).
+   - `deep` work: `/codex-review` at higher effort — the `codex-runner` skill with `--role review -e xhigh`.
 
 ## Task Sizing
 

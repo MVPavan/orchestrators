@@ -22,8 +22,8 @@ This skill turns approved requirements into an execution-ready plan.
    - the smallest tracer-bullet step that proves the path
 6. For risky behavior changes, call out test-first or characterization-first execution.
 7. In Claude Code with Codex available, critique plans before finalizing:
-   - Use `/codex:rescue --wait --fresh "Critique this plan for scope gaps, ordering issues, missing test coverage, design doc misalignment: <plan summary>"`.
-   - Do NOT use `/codex:review` or `/codex:adversarial-review` — those operate on git diffs, not plan documents.
+   - Use `/codex-critique "Critique this plan for scope gaps, ordering issues, missing test coverage, design doc misalignment: <plan summary>"`.
+   - Do NOT use `/codex-review` — it operates on git diffs, not plan documents.
 8. Hand the plan to subagent-driven development or direct execution, depending on scope.
 
 ## Rules
