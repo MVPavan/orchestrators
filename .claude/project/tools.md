@@ -15,7 +15,7 @@ Routing guidance for this repo. Current project facts live in `.claude/project/`
 - **Default project direction:** prefer repo-native `codex exec`, `codex exec resume`, and `codex review` wrappers for automation.
 - **Cloud work:** use `codex cloud` for offloaded branch/PR-style work after a Codex cloud environment is configured.
 - **Cross-agent bridge:** consider `codex mcp-server` or the Codex SDK when Gemini or another runtime needs Codex as a callable tool.
-- **Claude plugin:** the installed Claude Code Codex plugin is useful for interactive Claude workflows, but should not be the core project substrate.
+- **Claude plugin:** the `codex-adapter` plugin is the supported Claude Code integration — it wraps `codex exec` with roles, concurrency, and no broker. Install from the marketplace (`MVPavan/codex-adapter`); invocation rules in `.claude/commands/use-codex.md`. (The old `openai-codex` broker plugin is retired.)
 - **Raw app-server:** treat `codex app-server` as experimental and isolate/version-pin any direct integration.
 
 ## Claude Code
