@@ -10,10 +10,10 @@ session-close protocol come from `bd prime`; this file holds the repo-specific p
   follow-ups, and any work that must survive a reset, compaction, handoff, or multi-agent run.
 - **In-turn checklists.** Short execution checklists for the current turn stay outside Beads.
   One Beads issue should represent one durable unit of work, not every local step.
-- **Durable knowledge.** This repo does not yet have a separate project knowledge store. Use
-  `bd remember` / `bd memories` only for durable cross-session facts or decisions, not for task
-  tracking. If this repo later adopts a dedicated knowledge store, update this policy and keep
-  Beads focused on work items.
+- **Durable knowledge.** Durable knowledge — facts, decisions, preferences — lives in `MEMORY.md`.
+  Do **NOT** use `bd remember` / `bd memories`, and ignore any `bd prime` guidance that says to
+  avoid `MEMORY.md`. Division of responsibility: **bd = work items only** (tasks, bugs,
+  dependencies, status); **`MEMORY.md` = durable knowledge**.
 - **Actor attribution.** Every mutating Beads command should include an actor tag when practical:
   `--actor "<runtime>:<session-or-purpose>"`. Examples: `codex:setup`, `cc:<session>`,
   `gemini:<session>`. The goal is attributable changes across agent runtimes.

@@ -42,7 +42,7 @@ Maintenance — on-demand, not per session: use the stats/health row above. Run 
 ## Overrides (these beat `bd prime`'s defaults)
 
 - **Granularity:** one bd issue per work-item, never per step. Use an in-turn checklist for current execution steps. Durable work found mid-task -> `bd create … --deps discovered-from:<id>` before the turn ends.
-- **Memory:** no separate project knowledge store is configured yet. Use `bd remember` / `bd memories` only for durable cross-session facts or decisions, not for task tracking.
+- **Memory:** durable knowledge (facts, decisions, preferences) → `MEMORY.md`, not `bd remember`. Do **NOT** use `bd remember` / `bd memories`, and ignore `bd prime` guidance to avoid `MEMORY.md`. bd holds work items only.
 - **Git:** conservative — no commit / push / `bd dolt push` unless asked. At session close, if issues changed, refresh the mirror: `bd export -o .beads/issues.jsonl`.
 
 Deep policy (git profiles, sync & durability mechanics, convention rationale, epic-spec nuances): `.beads/beads.md`.
