@@ -1,0 +1,1002 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lean Architecture Versus External Agent Architectures</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #f6f7f5;
+      --surface: #ffffff;
+      --surface-2: #eef1ed;
+      --text: #1f2421;
+      --muted: #626b65;
+      --line: #d6ddd7;
+      --accent: #246b62;
+      --accent-soft: #e2f0ed;
+      --blue: #315f9c;
+      --blue-soft: #e5edf8;
+      --green: #247244;
+      --green-soft: #e1f2e7;
+      --amber: #8b5a12;
+      --amber-soft: #f5e9cc;
+      --red: #a23a2c;
+      --red-soft: #f7dfdc;
+      --purple: #66519b;
+      --purple-soft: #ece8f6;
+      --code: #eef1ef;
+      --shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #111513;
+        --surface: #191e1c;
+        --surface-2: #222925;
+        --text: #edf0ed;
+        --muted: #a8b0aa;
+        --line: #343d38;
+        --accent: #76c5b9;
+        --accent-soft: #153832;
+        --blue: #94b8f0;
+        --blue-soft: #1c2b41;
+        --green: #8bd7a3;
+        --green-soft: #173623;
+        --amber: #e0c06d;
+        --amber-soft: #342b17;
+        --red: #f08d80;
+        --red-soft: #3b201c;
+        --purple: #b8a6ef;
+        --purple-soft: #29223d;
+        --code: #222925;
+        --shadow: none;
+      }
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+    }
+
+    main {
+      max-width: 1220px;
+      margin: 0 auto;
+      padding: 44px 20px 72px;
+    }
+
+    header {
+      margin-bottom: 28px;
+      padding-bottom: 24px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .eyebrow {
+      color: var(--accent);
+      font-size: 13px;
+      font-weight: 760;
+      letter-spacing: 0;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      max-width: 940px;
+      margin: 8px 0 12px;
+      font-size: clamp(32px, 5vw, 56px);
+      line-height: 1.05;
+      letter-spacing: 0;
+    }
+
+    .subtitle {
+      max-width: 920px;
+      margin: 0;
+      color: var(--muted);
+      font-size: 18px;
+    }
+
+    .kpis {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-top: 22px;
+    }
+
+    .kpi,
+    section,
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+    }
+
+    .kpi {
+      min-height: 112px;
+      padding: 16px;
+    }
+
+    .kpi strong {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 22px;
+      line-height: 1.1;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .kpi span {
+      display: block;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 20px 0 32px;
+    }
+
+    nav a {
+      display: inline-flex;
+      align-items: center;
+      min-height: 34px;
+      padding: 0 12px;
+      color: var(--text);
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      font-size: 13px;
+      text-decoration: none;
+    }
+
+    section {
+      padding: 24px;
+      margin: 18px 0;
+    }
+
+    .section-head {
+      display: flex;
+      gap: 14px;
+      align-items: baseline;
+      padding-bottom: 12px;
+      margin-bottom: 16px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .section-num {
+      color: var(--muted);
+      font-size: 28px;
+      font-weight: 800;
+      line-height: 1;
+      font-variant-numeric: tabular-nums;
+    }
+
+    h2 {
+      margin: 0;
+      font-size: 24px;
+      line-height: 1.2;
+      letter-spacing: 0;
+    }
+
+    h3 {
+      margin: 20px 0 8px;
+      font-size: 17px;
+      line-height: 1.25;
+      letter-spacing: 0;
+    }
+
+    p { margin: 10px 0; }
+
+    a {
+      color: var(--accent);
+      text-underline-offset: 3px;
+    }
+
+    code {
+      background: var(--code);
+      border: 1px solid var(--line);
+      border-radius: 5px;
+      padding: 1px 5px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.92em;
+    }
+
+    ul { padding-left: 22px; }
+    li { margin: 6px 0; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 14px 0;
+      font-size: 14px;
+    }
+
+    th,
+    td {
+      border: 1px solid var(--line);
+      padding: 10px 11px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background: var(--surface-2);
+      font-weight: 750;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      margin: 12px 0;
+    }
+
+    .tag {
+      display: inline-block;
+      border-radius: 999px;
+      padding: 2px 8px;
+      font-size: 12px;
+      font-weight: 760;
+      white-space: nowrap;
+    }
+
+    .tag.direct { color: var(--green); background: var(--green-soft); }
+    .tag.moderate { color: var(--blue); background: var(--blue-soft); }
+    .tag.major { color: var(--amber); background: var(--amber-soft); }
+    .tag.no { color: var(--red); background: var(--red-soft); }
+    .tag.infer { color: var(--purple); background: var(--purple-soft); }
+    .tag.keep { color: var(--accent); background: var(--accent-soft); }
+
+    .callout {
+      margin: 12px 0 16px;
+      padding: 14px 16px;
+      border-left: 4px solid var(--accent);
+      border-radius: 0 8px 8px 0;
+      background: var(--accent-soft);
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .card {
+      padding: 16px;
+    }
+
+    .card h3 {
+      margin-top: 0;
+    }
+
+    .small {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .diagram {
+      overflow-x: auto;
+      background: var(--surface-2);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 12px;
+      margin: 16px 0;
+    }
+
+    svg {
+      min-width: 1040px;
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    .box { fill: var(--surface); stroke: var(--line); stroke-width: 1.4; }
+    .box-accent { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 1.5; }
+    .box-blue { fill: var(--blue-soft); stroke: var(--blue); stroke-width: 1.5; }
+    .box-green { fill: var(--green-soft); stroke: var(--green); stroke-width: 1.5; }
+    .box-amber { fill: var(--amber-soft); stroke: var(--amber); stroke-width: 1.5; }
+    .box-red { fill: var(--red-soft); stroke: var(--red); stroke-width: 1.5; }
+    .svg-title { fill: var(--text); font-size: 15px; font-weight: 750; }
+    .svg-note { fill: var(--muted); font-size: 12px; }
+    .arrow { fill: none; stroke: var(--accent); stroke-width: 2; marker-end: url(#arrow); }
+    .dash { stroke-dasharray: 6 5; }
+
+    details {
+      margin-top: 12px;
+      padding: 12px 14px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--surface-2);
+    }
+
+    summary {
+      cursor: pointer;
+      font-weight: 750;
+    }
+
+    footer {
+      margin-top: 28px;
+      padding-top: 18px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    @media (max-width: 920px) {
+      .kpis { grid-template-columns: 1fr 1fr; }
+      .grid-2 { grid-template-columns: 1fr; }
+      section { padding: 18px; }
+    }
+
+    @media (max-width: 620px) {
+      main { padding: 28px 14px 52px; }
+      .kpis { grid-template-columns: 1fr; }
+      th, td { padding: 9px; }
+    }
+  </style>
+</head>
+<body>
+<main>
+  <header>
+    <div class="eyebrow">BD orch-0sc.10 | Deep research comparison | Generated 2026-06-18</div>
+    <h1>Lean architecture versus external agent architectures</h1>
+    <p class="subtitle">
+      Orchestrator synthesis from sub-agent research comparing the accepted FastAPI, Temporal,
+      Postgres, LiteLLM, Pydantic AI lean architecture and inferred just-in-time run assembly
+      pattern against Gascity, Gastown, OpenHands, and Paperclip.
+    </p>
+    <div class="kpis">
+      <div class="kpi">
+        <strong>1</strong>
+        <span>Accepted lean stack: FastAPI, React/Vite, Postgres, Temporal, LiteLLM, Pydantic AI, app-owned registries, CLI coding lanes.</span>
+      </div>
+      <div class="kpi">
+        <strong>0</strong>
+        <span>Formal local docs found for a named JIT architecture. This report treats JIT as an inferred run-start assembly style.</span>
+      </div>
+      <div class="kpi">
+        <strong>4</strong>
+        <span>External architectures compared: Gascity, Gastown, OpenHands, and Paperclip.</span>
+      </div>
+      <div class="kpi">
+        <strong>4</strong>
+        <span>Fit classes used: directly implementable, moderate addition, major architecture change, structurally incompatible.</span>
+      </div>
+    </div>
+  </header>
+
+  <nav aria-label="Sections">
+    <a href="#answer">Answer</a>
+    <a href="#profiles">Architecture Profiles</a>
+    <a href="#pros-cons">Pros And Cons</a>
+    <a href="#translation">Translation Map</a>
+    <a href="#possibility">Possibility Matrix</a>
+    <a href="#impossible">Impossibilities</a>
+    <a href="#recommendation">Recommendation</a>
+    <a href="#sources">Sources</a>
+  </nav>
+
+  <section id="answer">
+    <div class="section-head"><span class="section-num">01</span><h2>Answer</h2></div>
+    <div class="callout">
+      <p><strong>Yes, we can do the comparison.</strong> The useful conclusion is not "choose Paperclip" or "choose Gascity." The right move is to keep the accepted lean architecture as the spine, then selectively borrow external patterns that can be translated into app-owned Postgres state, Temporal workflows, and bounded adapter lanes.</p>
+      <p><strong>Important correction:</strong> I found no formal repo artifact that defines a separate "just-in-time" or "JIT" architecture. In this report, JIT means an inferred implementation pattern: assemble the run snapshot, toolset, model alias, approval policy, workspace lease, and adapter config at run start, then freeze those choices for execution.</p>
+    </div>
+    <p>
+      Most Paperclip qualities are implementable in the lean architecture, but not by copying Paperclip's Node service, Drizzle schema, SQL heartbeat queue, or plugin platform as-is. Most OpenHands qualities are implementable as product and runtime-boundary patterns, but OpenHands should not become the core execution substrate. Gascity and Gastown are strongest as references for reconciliation safety and coding-lane mechanics, not as replacements for Temporal and app-owned Postgres.
+    </p>
+    <p>
+      I interpret the user's "R architecture" phrasing as "our architecture": the accepted lean/minimal architecture documented in <a href="final-minimal-architecture.html">final-minimal-architecture.html</a>.
+    </p>
+  </section>
+
+  <section id="profiles">
+    <div class="section-head"><span class="section-num">02</span><h2>Architecture Profiles</h2></div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Architecture</th>
+            <th>Core Owner</th>
+            <th>Durable Truth</th>
+            <th>Live Execution</th>
+            <th>Best At</th>
+            <th>Worst Fit For</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Lean minimal</strong><br><code>docs/research/lean-ai-company/final-minimal-architecture.html</code></td>
+            <td>FastAPI control plane plus Temporal execution plane.</td>
+            <td>App-owned Postgres owns product/audit truth; Temporal owns workflow history; local artifact store owns large bytes.</td>
+            <td>Temporal workers run activities for model calls, DB writes, file IO, CLI execution, approvals, and cancellation.</td>
+            <td>Smallest coherent product architecture with clean ownership boundaries.</td>
+            <td>Instant full Paperclip/OpenHands parity, multi-tenant platform breadth, arbitrary plugin marketplace.</td>
+          </tr>
+          <tr>
+            <td><strong>JIT run assembly</strong><br><span class="tag infer">inferred pattern</span></td>
+            <td>FastAPI resolves active spec/tool/model/approval/adapter versions at run start.</td>
+            <td>Immutable per-run snapshot in Postgres with hashes and compact IDs passed into Temporal.</td>
+            <td>Temporal executes the frozen snapshot; no "latest config" lookup inside long-running workflows.</td>
+            <td>Flexibility without making mutable framework state product truth.</td>
+            <td>Ad hoc runtime mutation, unversioned prompts/tools, non-replayable workflow behavior.</td>
+          </tr>
+          <tr>
+            <td><strong>Gascity</strong><br><code>external/gascity</code></td>
+            <td>Machine supervisor and per-city <code>CityRuntime</code> reconcile desired state.</td>
+            <td><code>city.toml</code>, packs, formulas, orders, Beads, session beads, supervisor registry, event logs.</td>
+            <td>Runtime providers such as tmux/subprocess/ACP start, observe, nudge, and stop sessions.</td>
+            <td>Configurable desired-state orchestration and partial-evidence-safe reconciliation.</td>
+            <td>Being the product app database, workflow engine, or UI-first company product.</td>
+          </tr>
+          <tr>
+            <td><strong>Gastown</strong><br><code>external/gastown</code></td>
+            <td><code>gt</code> CLI plus daemon/refinery/witness runtime around towns, rigs, and polecats.</td>
+            <td>Town Beads, rig Beads, Dolt SQL server, git repos/worktrees, config/runtime files.</td>
+            <td>Tmux-backed agent sessions, worktrees, merge queue, recovery daemon.</td>
+            <td>Local multi-agent coding operations with identity, assignment, worktree, and merge mechanics.</td>
+            <td>Replacing a web product control plane or Temporal-backed durable workflow model.</td>
+          </tr>
+          <tr>
+            <td><strong>Paperclip</strong><br><code>external/paperclip</code></td>
+            <td>Node/Express server service layer and heartbeat service.</td>
+            <td>Broad Postgres/Drizzle schema for companies, agents, issues, runs, wakeups, costs, approvals, plugins, environments, workspaces.</td>
+            <td>Heartbeat claims queued work, realizes workspace/environment, calls adapters, persists logs/usage/results.</td>
+            <td>Productized AI-company control plane and adapter/plugin ecosystem.</td>
+            <td>Lean first cut; Temporal-first execution; strict schema ownership if copied wholesale.</td>
+          </tr>
+          <tr>
+            <td><strong>OpenHands</strong><br><code>external/OpenHands</code></td>
+            <td>FastAPI app-server and React frontend around sandbox-hosted agent-server.</td>
+            <td>SQL metadata/start tasks/callbacks/pending messages, file/object event storage, settings/secrets stores, sandbox records.</td>
+            <td>App-server starts conversations; sandbox agent-server owns running conversation.</td>
+            <td>Sandboxed software-engineering conversations and app-server/runtime boundary discipline.</td>
+            <td>Becoming the lean architecture's Temporal/Pydantic AI execution substrate.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="pros-cons">
+    <div class="section-head"><span class="section-num">03</span><h2>Pros And Cons</h2></div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Option</th>
+            <th>Pros</th>
+            <th>Cons</th>
+            <th>How To Use It</th>
+            <th>Do Not Use It When</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Lean minimal</strong></td>
+            <td>Clear truth ownership; good fit for FastAPI decision; Temporal covers retries, timers, signals, cancellation; Postgres supports audit and UI projection; CLI coding lanes can preserve subscription login.</td>
+            <td>Requires explicit schemas, migrations, reconciliation, auth, tool registry, artifact service, contract tests, and worker discipline. It does not give Paperclip/OpenHands breadth for free.</td>
+            <td>Keep as the base architecture. Borrow external features only after mapping them to Postgres domain state and Temporal workflows or activities.</td>
+            <td>You need immediate full plugin marketplace, multi-tenant SaaS governance, and broad adapter parity before proving one vertical slice.</td>
+          </tr>
+          <tr>
+            <td><strong>JIT run assembly</strong></td>
+            <td>Keeps product flexible while retaining replayability: each run freezes active spec, role, model alias, tool versions, approvals, context, workspace, and adapter mode.</td>
+            <td>Can become chaos if it means mutable live config, framework-owned session state, or ad hoc prompt/tool mutation during execution.</td>
+            <td>Use as an implementation technique inside lean minimal: resolve late, snapshot once, execute deterministically.</td>
+            <td>You want arbitrary live edits to long-running workflows without migration/version rules.</td>
+          </tr>
+          <tr>
+            <td><strong>Gascity</strong></td>
+            <td>Excellent desired-state safety model; typed domain core with CLI/API projections; provider/store abstractions; order triggers; partial-query safeguards to avoid destructive reconciliation.</td>
+            <td>Custom control loop complexity; Beads/session state becomes central; many provider modes; worker boundary still has migration complexity.</td>
+            <td>Borrow reconciliation patterns: partial-read flags, provider health snapshots, idempotency/epoch fences, conservative drains, typed projection APIs.</td>
+            <td>You are tempted to replace Temporal with a custom supervisor tick loop or put product truth in Beads.</td>
+          </tr>
+          <tr>
+            <td><strong>Gastown</strong></td>
+            <td>Strongest local coding-lane reference: isolated worktrees, named worker identities, adapter presets, git evidence, merge/refinery gates, recovery daemon.</td>
+            <td>Distributed truth across Beads, Dolt, git, tmux, files, and CLI side effects; Dolt dependency; provider flag drift risk.</td>
+            <td>Borrow coding-run mechanics: worktree leases, branch naming, evidence capture, review/apply gates, provider compatibility metadata.</td>
+            <td>You need a clean web product state model or multi-user product auth before local CLI orchestration breadth.</td>
+          </tr>
+          <tr>
+            <td><strong>Paperclip</strong></td>
+            <td>Closest external model to an AI-company product: durable agents/issues/runs/costs, workspaces, environments, adapters, plugins, routines, secrets, budgets, UI/CLI/MCP API clients.</td>
+            <td>Not lean; broad service layer; heartbeat path composes many domains; custom SQL queue/recovery overlaps with Temporal; plugin workers and plugin migrations expand the security surface.</td>
+            <td>Borrow schema ideas and correctness features: wakeups/runs, issue locks, workspace-finalize barrier, environment leases, adapter auth checks, UI/CLI/MCP as API clients.</td>
+            <td>You want to preserve Temporal as execution truth and a Python/FastAPI/Pydantic codebase without a full plugin platform.</td>
+          </tr>
+          <tr>
+            <td><strong>OpenHands</strong></td>
+            <td>Strong FastAPI/React app-server precedent; useful async start-task UX, sandbox health model, session API key boundary, provider integrations, MCP PR/MR tools, enterprise overlay lessons.</td>
+            <td>Execution semantics live behind pinned SDK/agent-server packages; no local Temporal/Pydantic AI usage found; direct runtime URLs and file-backed settings/secrets are not product-truth patterns for our system.</td>
+            <td>Borrow app-server/runtime boundary ideas, start-task records, sandbox adapter model, event callbacks, provider abstractions, and tenant/auth lessons.</td>
+            <td>You are considering making OpenHands SDK/agent-server the central runtime instead of Temporal plus Pydantic AI.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="translation">
+    <div class="section-head"><span class="section-num">04</span><h2>Translation Map</h2></div>
+    <div class="diagram" role="img" aria-label="External patterns translated into the lean architecture">
+      <svg viewBox="0 0 1120 560" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+            <path d="M0,0 L0,6 L9,3 z" fill="var(--accent)"></path>
+          </marker>
+        </defs>
+
+        <rect class="box-accent" x="420" y="44" width="280" height="82" rx="8"></rect>
+        <text class="svg-title" x="456" y="78">Lean Architecture Spine</text>
+        <text class="svg-note" x="456" y="102">FastAPI + Postgres + Temporal + LiteLLM</text>
+
+        <rect class="box" x="452" y="192" width="216" height="72" rx="8"></rect>
+        <text class="svg-title" x="486" y="222">JIT Run Snapshot</text>
+        <text class="svg-note" x="486" y="244">resolve late, freeze once</text>
+
+        <rect class="box-blue" x="48" y="66" width="240" height="88" rx="8"></rect>
+        <text class="svg-title" x="78" y="100">Gascity</text>
+        <text class="svg-note" x="78" y="124">desired-state safety</text>
+        <text class="svg-note" x="78" y="142">provider contracts</text>
+
+        <rect class="box-amber" x="48" y="334" width="240" height="88" rx="8"></rect>
+        <text class="svg-title" x="78" y="368">Gastown</text>
+        <text class="svg-note" x="78" y="392">worktrees, evidence</text>
+        <text class="svg-note" x="78" y="410">merge/review gates</text>
+
+        <rect class="box-green" x="832" y="66" width="240" height="88" rx="8"></rect>
+        <text class="svg-title" x="862" y="100">Paperclip</text>
+        <text class="svg-note" x="862" y="124">AI-company control plane</text>
+        <text class="svg-note" x="862" y="142">runs, locks, adapters</text>
+
+        <rect class="box-amber" x="832" y="334" width="240" height="88" rx="8"></rect>
+        <text class="svg-title" x="862" y="368">OpenHands</text>
+        <text class="svg-note" x="862" y="392">sandbox boundary</text>
+        <text class="svg-note" x="862" y="410">start-task UX</text>
+
+        <rect class="box" x="356" y="362" width="178" height="74" rx="8"></rect>
+        <text class="svg-title" x="382" y="392">Coding Lane</text>
+        <text class="svg-note" x="382" y="414">CLI adapters</text>
+
+        <rect class="box" x="586" y="362" width="178" height="74" rx="8"></rect>
+        <text class="svg-title" x="612" y="392">Runtime Lane</text>
+        <text class="svg-note" x="612" y="414">workers, env leases</text>
+
+        <path class="arrow" d="M288 110 H420"></path>
+        <path class="arrow" d="M832 110 H700"></path>
+        <path class="arrow" d="M560 126 V192"></path>
+        <path class="arrow" d="M168 334 C250 282 340 250 452 230"></path>
+        <path class="arrow" d="M952 334 C860 280 760 250 668 230"></path>
+        <path class="arrow dash" d="M445 362 C430 320 446 288 502 264"></path>
+        <path class="arrow dash" d="M675 362 C690 320 674 288 618 264"></path>
+      </svg>
+    </div>
+    <p class="small">
+      Solid lines are borrowable external architecture patterns. Dashed lines are specialized lanes. The core rule remains: external patterns must pass through app-owned Postgres contracts and Temporal execution boundaries before becoming product behavior.
+    </p>
+  </section>
+
+  <section id="possibility">
+    <div class="section-head"><span class="section-num">05</span><h2>Possibility Matrix</h2></div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Source</th>
+            <th>Quality Or Feature</th>
+            <th>Fit In Lean Architecture</th>
+            <th>How To Implement In Our Stack</th>
+            <th>Important Caveat</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Paperclip</td>
+            <td>Central product API/control plane with UI, CLI, and MCP as API clients.</td>
+            <td><span class="tag direct">Direct</span></td>
+            <td>FastAPI service modules and stable REST/SSE APIs; React/Vite cockpit consumes APIs; any CLI/MCP wrapper remains a client.</td>
+            <td>Do not duplicate business rules in clients.</td>
+          </tr>
+          <tr>
+            <td>Paperclip</td>
+            <td>Durable agents, issues, wakeups, runs, costs, approvals, secrets, skills, environments, workspaces.</td>
+            <td><span class="tag moderate">Moderate</span></td>
+            <td>Start with minimal Postgres tables: runs, sessions, messages, approvals, tools, specs, artifacts, usage, workspaces, adapter invocations.</td>
+            <td>Do not copy the full schema before the first vertical slice proves need.</td>
+          </tr>
+          <tr>
+            <td>Paperclip</td>
+            <td>Issue locks, dependency readiness, and workspace-finalize barrier.</td>
+            <td><span class="tag moderate">Moderate</span></td>
+            <td>Add app-level dependency/lock tables and enforce them before starting Temporal workflows; model workspace finalization as an activity result and domain state transition.</td>
+            <td>Worth borrowing early for coding work, but keep locks idempotent and Temporal-safe.</td>
+          </tr>
+          <tr>
+            <td>Paperclip</td>
+            <td>Heartbeat execution lifecycle.</td>
+            <td><span class="tag moderate">Moderate if translated</span></td>
+            <td>Translate wakeup -> run -> claim -> environment -> adapter -> result into Temporal workflows/activities, with Postgres as domain read/write model.</td>
+            <td>Do not copy it as an in-process SQL queue; that conflicts with Temporal ownership.</td>
+          </tr>
+          <tr>
+            <td>Paperclip</td>
+            <td>Workspace/environment leasing and execution target resolution.</td>
+            <td><span class="tag moderate">Moderate to major</span></td>
+            <td>V1: local worktree lease. Later: runner abstraction for SSH, sandbox, or container execution. Store lease and realization metadata in Postgres.</td>
+            <td>Scope grows quickly once remote execution, network policy, and cleanup are included.</td>
+          </tr>
+          <tr>
+            <td>Paperclip</td>
+            <td>Adapter registry for Claude, Codex, Gemini, HTTP/process, and plugin-provided adapters.</td>
+            <td><span class="tag moderate">Moderate</span></td>
+            <td>Implement app-owned adapter registry metadata for CLI coding lanes and model/tool contract tests. Codex/Claude default to subscription-compatible CLI auth modes.</td>
+            <td>Adapter breadth is not enough; each adapter needs auth-mode gates, evidence capture, cancellation, and redaction.</td>
+          </tr>
+          <tr>
+            <td>Paperclip</td>
+            <td>Codex local managed <code>CODEX_HOME</code>, skill injection, and subscription-aware default behavior.</td>
+            <td><span class="tag direct">Direct with hardening</span></td>
+            <td>Borrow the managed-home idea for Codex CLI lanes; explicitly model <code>auth_mode=subscription</code> versus API key fallback.</td>
+            <td>Do not multiplex one desktop subscription login across unrelated users or tenants.</td>
+          </tr>
+          <tr>
+            <td>Paperclip</td>
+            <td>Claude local subscription/API-key distinction and quota/login probes.</td>
+            <td><span class="tag direct">Direct with hardening</span></td>
+            <td>Use Claude Code CLI as v1 Claude lane, reject API-key fallback unless explicitly enabled, and surface login/quota state in the UI.</td>
+            <td>Claude Agent SDK remains conditional when subscription auth is mandatory.</td>
+          </tr>
+          <tr>
+            <td>Paperclip</td>
+            <td>Full plugin platform: manifest, workers, jobs, tools, webhooks, UI, plugin DB migrations.</td>
+            <td><span class="tag major">Major</span></td>
+            <td>Defer. If needed later, build a constrained plugin worker ABI with explicit permissions and no arbitrary schema writes by default.</td>
+            <td>Not v1. Security and migration blast radius are too large.</td>
+          </tr>
+          <tr>
+            <td>Paperclip</td>
+            <td>Plugin-owned arbitrary DB migrations.</td>
+            <td><span class="tag no">Incompatible v1</span></td>
+            <td>Only allow app-reviewed migrations or plugin-private namespaces after the platform exists.</td>
+            <td>Violates strict app-owned schema control.</td>
+          </tr>
+          <tr>
+            <td>OpenHands</td>
+            <td>FastAPI router aggregation and app-server/service boundary.</td>
+            <td><span class="tag direct">Direct</span></td>
+            <td>Use FastAPI routers for runs, approvals, artifacts, settings, git, tools, and health; keep business logic in services.</td>
+            <td>OpenHands is a precedent for shape, not execution ownership.</td>
+          </tr>
+          <tr>
+            <td>OpenHands</td>
+            <td>Async start-task UX for slow conversation startup.</td>
+            <td><span class="tag direct">Direct</span></td>
+            <td>Create app run/start-task rows before starting Temporal; return task immediately; stream state through SSE.</td>
+            <td>Unlike OpenHands, failures should remain durable domain events tied to workflow IDs.</td>
+          </tr>
+          <tr>
+            <td>OpenHands</td>
+            <td>Sandbox interface with status, exposed URLs, and session API keys.</td>
+            <td><span class="tag moderate">Moderate</span></td>
+            <td>Define an execution environment adapter for coding/runtime lanes. Store environment health, URLs, keys, and lease state in Postgres.</td>
+            <td>Keep secrets server-side; prefer FastAPI proxy routes unless direct browser runtime URLs are explicitly safe.</td>
+          </tr>
+          <tr>
+            <td>OpenHands</td>
+            <td>Pending message buffering before a runtime is ready.</td>
+            <td><span class="tag moderate">Moderate</span></td>
+            <td>Use a durable app message queue/outbox keyed to the run and Temporal workflow state.</td>
+            <td>Do not delete queued messages on attempted delivery unless success is recorded or loss is acceptable by product policy.</td>
+          </tr>
+          <tr>
+            <td>OpenHands</td>
+            <td>OpenHands SDK/agent-server as core execution runtime.</td>
+            <td><span class="tag no">Incompatible</span></td>
+            <td>Use only as a sidecar adapter if a specific sandboxed coding lane proves value.</td>
+            <td>Conflicts with Temporal as execution truth and Pydantic AI as default SDK adapter.</td>
+          </tr>
+          <tr>
+            <td>OpenHands</td>
+            <td>Enterprise overlay model.</td>
+            <td><span class="tag major">Major</span></td>
+            <td>Borrow the warning, not the structure: model auth/tenancy early rather than adding it as a late overlay.</td>
+            <td>Postponing tenant scoping will make later security work expensive.</td>
+          </tr>
+          <tr>
+            <td>Gascity</td>
+            <td>Typed domain core with CLI/API/dashboard as projections.</td>
+            <td><span class="tag direct">Direct</span></td>
+            <td>Keep FastAPI and React as projections over app services and Postgres state; avoid UI/client ownership of workflow state.</td>
+            <td>This reinforces the lean boundary rather than replacing it.</td>
+          </tr>
+          <tr>
+            <td>Gascity</td>
+            <td>Desired-state reconciliation with partial-query safety.</td>
+            <td><span class="tag moderate">Moderate</span></td>
+            <td>Add reconciliation jobs for Postgres vs Temporal state, workspace leases, artifact bytes, and adapter invocations. Track partial evidence explicitly.</td>
+            <td>Do not build a second workflow engine around the reconciler.</td>
+          </tr>
+          <tr>
+            <td>Gascity</td>
+            <td>Orders, formulas, molecules, event triggers.</td>
+            <td><span class="tag major">Major if full parity</span></td>
+            <td>Implement only concrete needs as Temporal schedules/workflows and versioned Spec Registry entries.</td>
+            <td>Full formula language is not needed for v1.</td>
+          </tr>
+          <tr>
+            <td>Gascity</td>
+            <td>Runtime provider interface.</td>
+            <td><span class="tag moderate">Moderate</span></td>
+            <td>Create a runner adapter interface for local subprocess, CLI coding lane, and later container/remote execution.</td>
+            <td>Provider breadth is useful only after the first runner is safe and observable.</td>
+          </tr>
+          <tr>
+            <td>Gascity</td>
+            <td>Beads as universal product/session persistence.</td>
+            <td><span class="tag no">Incompatible</span></td>
+            <td>Use Postgres as product truth and Beads only for this repo's project tracking, not the product runtime.</td>
+            <td>Would break the accepted owner split.</td>
+          </tr>
+          <tr>
+            <td>Gastown</td>
+            <td>Per-run isolated git worktrees and branch evidence.</td>
+            <td><span class="tag direct">Direct</span></td>
+            <td>Implement in <code>CodingRunWorkflow</code>: lease worktree, run CLI adapter, capture diff/logs/tests/artifacts, require approve/apply.</td>
+            <td>Keep one writer per worktree; never let CLI agents write the shared checkout directly.</td>
+          </tr>
+          <tr>
+            <td>Gastown</td>
+            <td>Merge queue/refinery gates.</td>
+            <td><span class="tag moderate">Moderate</span></td>
+            <td>Start with human apply/discard and independent test evidence. Add automated merge queue once coding lane volume requires it.</td>
+            <td>A merge queue before reliable coding-run evidence is premature.</td>
+          </tr>
+          <tr>
+            <td>Gastown</td>
+            <td>Agent runtime preset registry.</td>
+            <td><span class="tag moderate">Moderate</span></td>
+            <td>Maintain adapter compatibility metadata: command, args, auth mode, resume behavior, output mode, files, env, cancellation, known failure patterns.</td>
+            <td>Preset metadata is not the product tool registry or policy source of truth.</td>
+          </tr>
+          <tr>
+            <td>Gastown</td>
+            <td>Tmux-centered long-running agent sessions.</td>
+            <td><span class="tag major">Major / optional</span></td>
+            <td>Use only for a local-operator mode if interactive attach becomes important. Otherwise prefer subprocess activities and captured logs.</td>
+            <td>Tmux lifecycle should not become mandatory product infrastructure.</td>
+          </tr>
+          <tr>
+            <td>Gastown</td>
+            <td>Town/rig plus Beads/Dolt/git/tmux as distributed truth.</td>
+            <td><span class="tag no">Incompatible</span></td>
+            <td>Borrow the coding mechanics, not the state architecture.</td>
+            <td>Conflicts with Postgres and Temporal ownership.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="impossible">
+    <div class="section-head"><span class="section-num">06</span><h2>Possibilities And Impossibilities</h2></div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>External Quality</th>
+            <th>Verdict</th>
+            <th>Why</th>
+            <th>Lean Alternative</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Paperclip-style broad AI-company control plane.</td>
+            <td><span class="tag major">Possible, but not v1 breadth</span></td>
+            <td>The domains map cleanly to Postgres, FastAPI, and React, but parity includes many product modules: companies, budgets, plugins, environments, routines, costs, governance, and portability.</td>
+            <td>Implement a narrow run/agent/tool/approval/artifact subset first.</td>
+          </tr>
+          <tr>
+            <td>Paperclip heartbeat path as a custom SQL queue and recovery engine.</td>
+            <td><span class="tag no">Structurally incompatible</span></td>
+            <td>The accepted architecture gives Temporal the durable execution, retry, timer, cancellation, and history role.</td>
+            <td>Represent heartbeat semantics as Temporal workflows and activities; use Postgres for domain state and projections.</td>
+          </tr>
+          <tr>
+            <td>Paperclip plugin ecosystem with plugin migrations and UI extensions.</td>
+            <td><span class="tag major">Possible later, expensive</span></td>
+            <td>It requires a real extension platform, worker supervision, permission model, migration policy, sandboxing, and review process.</td>
+            <td>V1 curated Capability Registry and Tool Execution Gateway. Marketplace later.</td>
+          </tr>
+          <tr>
+            <td>OpenHands sandboxed conversation startup UX.</td>
+            <td><span class="tag direct">Implementable</span></td>
+            <td>Start tasks and sandbox status fit naturally as Postgres rows and SSE projections.</td>
+            <td>Return app start-task rows tied to Temporal workflow IDs; stream progress through FastAPI.</td>
+          </tr>
+          <tr>
+            <td>OpenHands SDK/agent-server owning execution semantics.</td>
+            <td><span class="tag no">Structurally incompatible as core</span></td>
+            <td>Execution semantics would move behind an external runtime boundary, while the accepted design uses Temporal plus Pydantic AI as owned execution surfaces.</td>
+            <td>Use OpenHands-like sandbox adapter only for a deliberate sidecar lane.</td>
+          </tr>
+          <tr>
+            <td>Gascity desired-state reconciliation safety.</td>
+            <td><span class="tag moderate">Implementable</span></td>
+            <td>The safety idea is independent of Go, Beads, or <code>CityRuntime</code>: do not take destructive action when observations are partial.</td>
+            <td>Add explicit partial-evidence flags to reconciliation jobs and operator repair views.</td>
+          </tr>
+          <tr>
+            <td>Gascity as the main workflow engine.</td>
+            <td><span class="tag no">Structurally incompatible</span></td>
+            <td>It would duplicate or replace Temporal's accepted role and shift truth to Beads/session state.</td>
+            <td>Use Gascity patterns as design inspiration inside Temporal/Postgres boundaries.</td>
+          </tr>
+          <tr>
+            <td>Gastown coding worktree and evidence lifecycle.</td>
+            <td><span class="tag direct">Implementable</span></td>
+            <td>The accepted coding adapter lane already calls for isolated worktrees, CLI adapters, logs, diffs, tests, and approval gates.</td>
+            <td>Build this as <code>CodingRunWorkflow</code> milestone after the generic run proves out.</td>
+          </tr>
+          <tr>
+            <td>Gastown distributed town/rig runtime as the product architecture.</td>
+            <td><span class="tag no">Structurally incompatible</span></td>
+            <td>It intentionally coordinates multiple external state systems. The lean design intentionally centralizes product truth in Postgres and execution truth in Temporal.</td>
+            <td>Borrow only the coding-lane operational mechanics.</td>
+          </tr>
+          <tr>
+            <td>Subscription-based Codex and Claude adapters.</td>
+            <td><span class="tag direct">Required and implementable</span></td>
+            <td>Prior adapter research chose CLI-first because Codex and Claude Code CLI support subscription-style local login paths; Paperclip's local adapters also show subscription-aware handling.</td>
+            <td>Every adapter row must include auth mode. Default Codex/Claude coding lanes to CLI subscription mode; API key fallback is explicit policy.</td>
+          </tr>
+          <tr>
+            <td>One central server multiplexing a single desktop subscription login across users.</td>
+            <td><span class="tag no">Product-policy incompatible</span></td>
+            <td>Even if technically possible locally, it violates the earlier subscription-first constraint and creates unclear user/account boundaries.</td>
+            <td>Support single-operator local mode, per-user local runners, service credentials, or explicit API-key fallback as separate modes.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="recommendation">
+    <div class="section-head"><span class="section-num">07</span><h2>Recommendation</h2></div>
+    <div class="grid-2">
+      <article class="card">
+        <h3>Keep The Base</h3>
+        <p>
+          Keep the accepted lean architecture: FastAPI control plane, React/Vite UI, Postgres product truth, Temporal execution truth, LiteLLM model gateway, Pydantic AI default SDK adapter, app-owned registries, local artifact claim-check storage, and CLI-first Codex/Claude coding lanes.
+        </p>
+      </article>
+      <article class="card">
+        <h3>Adopt A Narrow Borrow List</h3>
+        <p>
+          Borrow only four external ideas in the first implementation pass: Paperclip's run/lock/workspace schema ideas, OpenHands start-task/sandbox UX, Gascity partial-evidence reconciliation safety, and Gastown worktree/evidence/merge-gate mechanics.
+        </p>
+      </article>
+    </div>
+    <h3>Concrete Next Architecture Tasks</h3>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Order</th>
+            <th>Task</th>
+            <th>Borrowed From</th>
+            <th>Gate</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>1</td>
+            <td>Define minimal app domain schema: run, run_snapshot, message, approval, tool_call, artifact, usage, workspace_lease, adapter_invocation.</td>
+            <td>Paperclip plus lean final architecture.</td>
+            <td>Schema supports one generic run with audit and replay-safe IDs.</td>
+          </tr>
+          <tr>
+            <td>2</td>
+            <td>Define start-task and event projection API for UI.</td>
+            <td>OpenHands start-task pattern.</td>
+            <td>FastAPI returns start task immediately and streams Temporal-backed progress through SSE.</td>
+          </tr>
+          <tr>
+            <td>3</td>
+            <td>Define reconciliation and repair contract between Postgres, Temporal, artifact bytes, and workspace leases.</td>
+            <td>Gascity partial-read safety.</td>
+            <td>No destructive cleanup when evidence is partial; operator-visible repair path exists.</td>
+          </tr>
+          <tr>
+            <td>4</td>
+            <td>Define coding-lane adapter contract: auth mode, command, resume, output parser, worktree lease, cancellation, logs, diffs, tests, artifact capture.</td>
+            <td>Gastown plus Paperclip adapter metadata.</td>
+            <td>Codex and Claude CLI adapters can run in subscription mode without shared-checkout writes.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <details>
+      <summary>Red-team conclusion</summary>
+      <p>
+        The strongest argument against the recommendation is that Paperclip is already closer to a productized AI-company control plane than the lean architecture. That is true, but copying Paperclip would import a broad Node/Drizzle/service/plugin architecture and duplicate Temporal's chosen responsibilities. The lean stack is still the cleaner starting point because it makes the ownership boundary explicit before product breadth is added.
+      </p>
+    </details>
+  </section>
+
+  <section id="sources">
+    <div class="section-head"><span class="section-num">08</span><h2>Sources And Confidence</h2></div>
+    <p>
+      This report synthesizes four read-only sub-agent passes plus local source checks. It did not run external applications, install dependencies, execute migrations, or test UI flows. The external codebase Markdown reports remain the canonical detailed source trail.
+    </p>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Source</th>
+            <th>Used For</th>
+            <th>Confidence</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><a href="final-minimal-architecture.html">Final minimal architecture</a></td>
+            <td>Accepted lean stack, owner split, implementation sequence, and adapter stance.</td>
+            <td><span class="tag direct">High for local decision boundary</span></td>
+          </tr>
+          <tr>
+            <td><a href="codex-claude-code-adapters.html">Codex and Claude Code adapter research</a></td>
+            <td>Subscription-compatible coding lane constraint and CLI-first adapter design.</td>
+            <td><span class="tag moderate">Medium for exact CLI behavior until live compatibility tests</span></td>
+          </tr>
+          <tr>
+            <td><a href="../codebases/comparison/html/index.html">External codebase comparison</a></td>
+            <td>Baseline comparison of Gascity, Gastown, Paperclip, and OpenHands.</td>
+            <td><span class="tag direct">High for source-grounded architecture summary</span></td>
+          </tr>
+          <tr>
+            <td><a href="../codebases/gascity/agent/00-index.md">Gascity report set</a></td>
+            <td>Desired-state reconciliation, providers, Beads/session state, partial-read safety.</td>
+            <td><span class="tag direct">High for checked-out source snapshot</span></td>
+          </tr>
+          <tr>
+            <td><a href="../codebases/gastown/agent/00-index.md">Gastown report set</a></td>
+            <td>Coding worktrees, agent presets, Beads/Dolt/tmux tradeoffs, merge/refinery patterns.</td>
+            <td><span class="tag direct">High for checked-out source snapshot</span></td>
+          </tr>
+          <tr>
+            <td><a href="../codebases/paperclip/agent/00-index.md">Paperclip report set</a></td>
+            <td>AI-company control plane, heartbeat execution, adapters, plugins, workspace/environment model.</td>
+            <td><span class="tag direct">High for checked-out source snapshot; no runtime verification</span></td>
+          </tr>
+          <tr>
+            <td><a href="../codebases/openhands/agent/00-index.md">OpenHands report set</a></td>
+            <td>FastAPI/React app-server, sandbox agent-server boundary, start tasks, settings/secrets, provider integrations.</td>
+            <td><span class="tag direct">High for checked-out source snapshot; SDK internals are outside this repo</span></td>
+          </tr>
+          <tr>
+            <td><a href="../../../external/paperclip/packages/adapters/codex-local/src/index.ts">Paperclip Codex local adapter</a> and <a href="../../../external/paperclip/packages/adapters/claude-local/src/server/execute.ts">Claude local adapter</a></td>
+            <td>Subscription-aware local adapter evidence.</td>
+            <td><span class="tag moderate">Medium; exact auth behavior still requires live account-mode tests</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="small">
+      The JIT label is an inference from the accepted run-start snapshot behavior, not a formally documented architecture name in this repo.
+    </p>
+  </section>
+
+  <footer>
+    Generated for BD issue orch-0sc.10 in /data/codes/orchestrators. External repositories were treated as read-only references. This artifact is intended for human review before closing the parent architecture epic.
+  </footer>
+</main>
+</body>
+</html>
