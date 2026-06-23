@@ -1,8 +1,16 @@
 # Codebase Analysis — Tooling Experiments
 
-**Goal.** Use the codebase-analysis tools below as independent *lenses* to understand the **paperclip** repo (`external/paperclip`) as deeply as possible, then compare them — but only where their capabilities genuinely overlap.
+**Goal.** Use the codebase-analysis tools below as independent *lenses* to understand the **paperclip** repo (`external/paperclip`) as deeply as possible, then compare them — but only where their capabilities genuinely overlap. This file is the **executable runbook**: a goal runner can drive it phase by phase after a context compaction.
 
-**Method (capability-first, not a uniform benchmark).** These tools do not solve the same problem; each is strong in its own domain, so we do **not** force a single head-to-head. Comparison is an *output* of capability discovery, not a rubric imposed up front:
+## 0. How this runs (orchestration contract)
+
+- **Main thread = orchestrator only.** It scopes work, curates context, fans out subagents, reviews, and synthesizes. It does **not** do the heavy reading/analysis itself.
+- **Executors = Opus 4.8 subagents**, launched via the Workflow harness `agent({ model: 'opus', effort })`, **one tool per worker**, run in **parallel**.
+- **Critic = Codex `gpt-5.5`**, via `external/codex-adapter/scripts/codex-run.mjs -m gpt-5.5 -e <effort>` (canonical per the `use-codex` skill; read-only sandbox, parallel-safe). At every judgment point, hand Codex an **unbiased, self-contained** prompt (no leading conclusion) and **iterate Opus ↔ Codex until satisfied**.
+- **Plumbing verified 2026-06-22:** Opus and Codex both spawn and run at `medium` / `high` / `xhigh`.
+- **Effort is set by §3's map**, not a flat default.
+
+**Method (capability-first, not a uniform benchmark).** These tools do not solve the same problem; comparison is an *output* of capability discovery, not a rubric imposed up front:
 
 1. **Characterize** each tool — what it is actually capable of, and where it is strong.
 2. **Exploit** each tool to the *full* extent of those capabilities against paperclip; store the results.
@@ -15,11 +23,40 @@
 - **Path:** `external/paperclip`  ·  **Origin:** `github.com/paperclipai/paperclip`
 - **What it is:** "the app people use to manage AI agents for work."
 - **Stack & size (verified):** TypeScript/TSX **pnpm monorepo** — ~3,071 tracked files (1,674 `.ts`, 488 `.tsx`, 311 `.md`, 192 `.json`, 110 `.sql`); workspaces include `packages/`, `server`, `ui`, `cli`, `evals`.
-- **Why it is a good subject:** large, multi-package, multi-language (TS + SQL + shell) — a realistic stress test that punishes shallow file-by-file exploration.
+- **Why it is a good subject:** large, multi-package, multi-language — a realistic stress test that punishes shallow file-by-file exploration.
 
-## 2. Tools under test (the lenses)
+## 2. Isolation rules (MANDATORY)
 
-Each tool lives in `external/harness_repos/<tool>/`. **Status:** only `headroom` is cloned so far; the other seven still need cloning (see §4).
+Each tool runs as an **isolated experiment scoped to paperclip source only**. A tool left to its defaults will happily ingest the entire working tree, the other tool repos, and binaries — that is **not** what we want.
+
+- **Target = paperclip source only.** Point every tool explicitly at `external/paperclip` (or a named subset of it). Never run a tool with `cwd` = the `orchestrators` repo root — it would pull in everything.
+- **Never ingest:** the parent `orchestrators` repo; `external/harness_repos/**` (the tool repos and their binaries); the Codex CLI binary (`~/.local/bin/codex`); any tool's own binary; `.git/`; `node_modules/`; build output (`dist/`, `build/`, `.next/`, `coverage/`); the pnpm store; large binary assets (`*.png`, `*.jpg`, `*.svg`, fonts); oversized lockfiles.
+- **Output isolation:** each tool writes its index/artifacts **only** to `scratchpad/harness/<tool>/`. If a tool insists on writing into its target, run it against a throwaway copy at `scratchpad/harness/<tool>/paperclip/`, never against `external/paperclip` directly.
+- **One tool per subagent**, no shared working directories. Codex stays in its default read-only sandbox.
+- **No silent truncation:** if a tool cannot handle full paperclip source, scope to representative packages and **log exactly what was excluded** in that tool's `exploitation.md`.
+
+Suggested exclude globs (adapt per tool's ignore syntax):
+
+```text
+.git/  node_modules/  dist/  build/  .next/  coverage/  .turbo/
+**/*.png  **/*.jpg  **/*.jpeg  **/*.svg  **/*.ico  **/*.woff*  **/*.mp4
+pnpm-lock.yaml  **/*.min.js  **/*.map
+```
+
+## 3. Effort map (approved)
+
+| Task / phase                                                                    | Nature                                            | Opus                       | Codex 2nd opinion                                           | Rationale                                                     |
+| ------------------------------------------------------------------------------- | ------------------------------------------------- | -------------------------- | ----------------------------------------------------------- | ------------------------------------------------------------- |
+| Setup — clone/install/wire tools                                                | Mechanical (Bash)                                 | orchestrator (no subagent) | —                                                           | Deterministic; no reasoning to spend effort on                |
+| Phase A — capability discovery                                                  | Read repo/docs, extract capability card           | **medium**                 | Codex **medium** on the best-at / claim-credibility verdict | Mostly reading; only the verdict is judgment                  |
+| Phase B — ast-grep, Repomix                                                     | Run CLI, capture output + telemetry               | **medium**                 | optional                                                    | Deterministic invocation, little judgment                     |
+| Phase B — Headroom                                                              | Wrap an output, measure token delta               | **medium**                 | —                                                           | Pure measurement                                              |
+| Phase B — Serena, CodeGraph, Codebase-Memory MCP, Understand-Anything, Graphify | Setup + drive + judge answer quality on paperclip | **high**                   | Codex **medium** if a result is ambiguous                   | MCP/binary setup + judging answer accuracy                    |
+| Phase C — matrix, classify, conclusions                                         | Cross-tool synthesis & judgment                   | **xhigh**                  | Codex **high → xhigh**, iterate until agreement             | Hardest reasoning; firm conclusions need an adversarial check |
+
+## 4. Tools under test (the lenses)
+
+Each tool lives in `external/harness_repos/<tool>/`. **Status:** only `headroom` is cloned so far; the other seven still need cloning (see §6, Phase 0).
 
 | Layer                   | Tool                    | GitHub                                                                            | Best functionality to test                                                                                                                                                                                                                                                                      | What success should look like                                                                                                      |
 | ----------------------- | ----------------------- | --------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
@@ -34,14 +71,14 @@ Each tool lives in `external/harness_repos/<tool>/`. **Status:** only `headroom`
 
 > **Headroom is the odd one out.** It is a token-*compression* layer, not a codebase-*understanding* tool. It is tested differently (Phase B): wrap another tool's output and measure token reduction at equal answer quality — never "ask Headroom about paperclip."
 
-## 3. Repo layout and where results go
+## 5. Repo layout and where results go
 
 - **Tools:** `external/harness_repos/<tool>/` — plain clones, **not** submodules (consistent with the existing `headroom`).
 - **Per-tool results:** `docs/research/harness/results/<tool>/` — `capabilities.md` (Phase A) + `exploitation.md` (Phase B) + small artifacts.
-- **Large / raw artifacts** (packed digests, `graph.json`, logs): `scratchpad/harness/<tool>/` (gitignored); link them from `exploitation.md`.
+- **Large / raw artifacts** (packed digests, `graph.json`, logs) and any throwaway paperclip copies: `scratchpad/harness/<tool>/` (gitignored); link them from `exploitation.md`.
 - **Final synthesis:** `docs/research/harness/findings.md` (Phase C).
 
-## 4. Setup — clone and wiring
+## 6. Phase 0 — Setup (orchestrator, Bash)
 
 Clone each missing tool into `external/harness_repos/`. Exact build/run commands are confirmed per-tool in Phase A — read each README first, do not assume.
 
@@ -56,42 +93,54 @@ Clone each missing tool into `external/harness_repos/`. Exact build/run commands
 | Graphify            | `git clone https://github.com/safishamsi/graphify graphify`                      | Coding-assistant skill                                              |
 | Headroom            | _already cloned_                                                                 | Library / proxy / MCP                                               |
 
-## 5. Phase A — Capability discovery (per tool)
+**Also:** create `scratchpad/harness/` and define the exclude list from §2.
+**Done when:** all 7 tool dirs exist under `external/harness_repos/`; `scratchpad/harness/` exists; the exclude list is written down; one tool runs once against the scoped target without error.
 
-For each tool, read its repo in `external/harness_repos/<tool>/` (README, docs, `--help`, examples) and write `results/<tool>/capabilities.md` answering:
+## 7. Phase A — Capability discovery (Opus **medium** ×7, parallel)
+
+For each tool, an Opus-medium worker reads its repo in `external/harness_repos/<tool>/` (README, docs, `--help`, examples) and writes `results/<tool>/capabilities.md`:
 
 - **Domain & sweet spot** — what class of question is this tool *built* to answer?
-- **Capabilities** — concrete, named operations (e.g. find references, structural rewrite, impact/blast-radius query, pack + token-count, compress tool output).
+- **Capabilities** — concrete, named operations.
 - **Inputs / outputs** — what it ingests, what artifacts it emits.
-- **Invocation** — exact, verified commands or MCP wiring to run it against paperclip.
+- **Invocation** — exact, verified commands or MCP wiring to run it against the **scoped** paperclip target (§2).
 - **Claimed wins** — vendor claims worth checking (e.g. "10× fewer tokens").
 - **Limits** — languages, repo-size ceilings, setup friction, known gaps.
 
-Output: one **capability card** per tool. This is what makes Phases B and C possible.
+**Codex (medium):** unbiased second opinion on the "what is this tool actually best at, and is the vendor claim credible?" verdict; iterate until the orchestrator is satisfied.
+**Done when:** 7 capability cards exist, each with a Codex-reviewed verdict.
 
-## 6. Phase B — Full exploitation against paperclip (per tool)
+## 8. Phase B — Full exploitation against paperclip (effort per §3, parallel)
 
-Drive each tool to the *full* extent of its capabilities on paperclip and record everything in `results/<tool>/exploitation.md`:
+Each worker drives its tool to the *full* extent of its capabilities against the **scoped, isolated** paperclip target and records everything in `results/<tool>/exploitation.md`:
 
-- **Run every capability** from the card against paperclip; capture the actual output/artifact.
+- **Run every capability** from the card; capture the actual output/artifact (to `scratchpad/harness/<tool>/`).
 - **Understanding tools:** answer the standing paperclip questions the tool is meant to answer — architecture map, entrypoints, "what depends on X", "blast radius of changing Y", "read-these-first onboarding".
 - **Headroom:** wrap a verbose operation (e.g. a Repomix digest or a large grep/log) and record tokens in/out before vs after at equal fidelity.
-- **Telemetry per run:** usefulness (your judgment, with evidence), tokens, tool-calls, wall-time, setup friction, failures.
+- **Telemetry per run:** usefulness (judgment, with evidence), tokens, tool-calls, wall-time, setup friction, failures.
+- **Honor §2 isolation on every invocation.**
 
-No capability is left untested; every result is stored so it can be cited in Phase C.
+**Done when:** every capability is exercised and its result + telemetry recorded; isolation respected (no whole-tree / binary ingestion).
 
-## 7. Phase C — Capability map and comparison
+## 9. Phase C — Capability map and comparison (Opus **xhigh**)
 
 1. Build a **capability × tool matrix** from the cards (rows = capabilities, columns = tools, cells = supported? how well?).
 2. Classify each capability:
    - **Unique** — only one tool does it → document the standalone result; nothing to compare.
    - **Overlapping** — a *subset* of tools do it → compare those head-to-head on that capability.
    - **Universal** — *all* tools touch it → compare across all and **establish a firm conclusion**.
-3. Expect (but confirm from the matrix, do not pre-commit) comparison axes like: accurate architecture/onboarding summary, dependency/impact answers, token cost of equivalent understanding.
+3. Compare only along overlapping and universal axes (confirm them from the matrix; do not pre-commit).
 4. Write `findings.md`: per-tool verdict (what each is best at on paperclip) + the overlap/universal comparisons, with evidence.
 
-## 8. Execution notes
+**Codex (high → xhigh):** adversarial review of the overlap/universal conclusions; iterate Opus ↔ Codex until agreement.
+**Done when:** matrix complete; every conclusion has evidence and a Codex sign-off.
 
-- Run Phase A → B one tool at a time; a fresh worker per tool keeps context clean. Phase C is a single synthesis pass.
-- Verify before claiming: every entry in `exploitation.md` cites the actual command/output, not a recollection.
-- Beads not seeded yet (per decision). When this plan is approved, seed: one epic + one issue per tool (Phase A+B) + one synthesis issue.
+## 10. Execution order for the goal runner
+
+1. Run **Phase 0** (orchestrator). Gate on its Done-when.
+2. Run **Phase A**: fan out 7 Opus-medium workers in parallel (one per tool); insert the Codex-medium verdict review; gate on Done-when.
+3. Run **Phase B**: fan out one worker per tool at the effort from §3; Headroom last (it wraps another tool's output); gate on Done-when.
+4. Run **Phase C**: single Opus-xhigh synthesis pass + Codex high→xhigh review; gate on Done-when.
+5. Beads not seeded yet (per decision). Seed only if the user asks: one epic + one issue per tool (A+B) + one synthesis issue.
+
+Throughout: the main thread orchestrates and reviews; it does not do the per-tool reading/analysis itself.

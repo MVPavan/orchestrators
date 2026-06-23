@@ -25,3 +25,9 @@ __pycache__/
 *.db
 .beads-credential-key
 .beads/proxieddb/
+**/scratchpad/*
+
+# Harness experiment — raw tool outputs and cloned tool/subject repos (never committed)
+graphify-out/
+external/harness_repos/
+external/deer-flow/
