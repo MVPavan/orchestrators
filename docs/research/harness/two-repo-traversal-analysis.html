@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Code-Traversal Tool Analysis — bodha + data-miner</title>
+<style>
+  :root{--bg:#0e1116;--card:#161b22;--card2:#1c232d;--bd:#2b333d;--tx:#d7dde4;--mut:#8b97a5;
+        --ac:#6ea8fe;--g:#56d364;--y:#e3b341;--r:#f47067;--pur:#bc8cff;}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;}
+  .wrap{max-width:980px;margin:0 auto;padding:40px 24px 80px;}
+  h1{font-size:30px;margin:0 0 6px;letter-spacing:-.5px}
+  h2{font-size:21px;margin:42px 0 12px;padding-bottom:7px;border-bottom:1px solid var(--bd);color:#fff}
+  h3{font-size:16px;margin:22px 0 8px;color:var(--ac)}
+  p{margin:10px 0}
+  .sub{color:var(--mut);font-size:15px;margin:0 0 14px}
+  .tag{display:inline-block;background:var(--card2);border:1px solid var(--bd);border-radius:20px;padding:3px 11px;font-size:12px;color:var(--mut);margin:2px 4px 2px 0}
+  .card{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:16px 20px;margin:14px 0}
+  .lead{background:linear-gradient(135deg,#161b22,#1a2230);border-left:3px solid var(--ac)}
+  table{border-collapse:collapse;width:100%;margin:12px 0;font-size:14px}
+  th,td{border:1px solid var(--bd);padding:7px 10px;text-align:left}
+  th{background:var(--card2);color:#fff;font-weight:600}
+  td.n,th.n{text-align:center;font-variant-numeric:tabular-nums}
+  tr:nth-child(even){background:#12171e}
+  .win{color:var(--g);font-weight:700}
+  .mid{color:var(--y)}
+  .low{color:var(--r)}
+  code{background:#11161c;border:1px solid var(--bd);border-radius:4px;padding:1px 5px;font-size:13px;color:#cdd6e0}
+  .muted{color:var(--mut)}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media(max-width:680px){.grid{grid-template-columns:1fr}}
+  ul{margin:8px 0;padding-left:22px}li{margin:4px 0}
+  .foot{margin-top:50px;padding-top:16px;border-top:1px solid var(--bd);color:var(--mut);font-size:12.5px}
+  .pill{font-size:11px;padding:1px 7px;border-radius:10px;border:1px solid var(--bd);color:var(--g)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>Code-Traversal Tool Analysis</h1>
+<p class="sub"><b>bodha + data-miner</b> · measured, Codex-gated study of which code-understanding tool best supports traversing and understanding the user's two Python codebases.</p>
+<div>
+  <span class="tag">36 anchors (18 + 18)</span><span class="tag">4 tools scored</span>
+  <span class="tag">21 symbol-type buckets</span><span class="tag">AST gold, Codex-audited</span>
+  <span class="tag">3 Codex passes</span>
+</div>
+
+<div class="card lead">
+<b>Bottom line.</b> For plain file-level "which files touch this name," all four tools are
+near-identical (0.98–1.0) — pick the fastest, <b>ast-grep</b>. The real differentiator is
+<b>disambiguation</b> — "which <i>definition</i> does a usage bind to" — which matters intensely in
+data-miner's <code>auto_annotation_v2/v3/v4</code> dirs that redefine the same class names 3–4×.
+There <b>serena</b> is the clear winner (0.99), with <b>CBM</b> a strong but imperfect second (0.84).
+</div>
+
+<h2>1 · What was run</h2>
+<table>
+<tr><th>Repos</th><td><b>bodha</b> (clean, strict-typed, Pydantic-heavy; 360 files) · <b>data-miner</b> (larger, versioned dirs, collision-heavy; 336 files). Both own their <code>.git</code>.</td></tr>
+<tr><th>Subjects</th><td>Repo-wide git-isolated snapshots. <span class="muted">Codex ruling: src-only scope would drop real cross-dir usage — e.g. <code>manual_reviewer/</code> imports v4 contracts.</span> Live repos never touched.</td></tr>
+<tr><th>Tools</th><td><b>serena</b> (LSP/pyright) · <b>CBM</b> (codebase-memory-mcp graph) · <b>codegraph</b> (tree-sitter graph) · <b>ast-grep</b> (lexical baseline)</td></tr>
+<tr><th>Gold</th><td>AST-built: real identifier refs only (comments/strings excluded), relative-import + alias resolution, per-importer binding attribution. <b>Independent of every tool</b>, Codex-audited.</td></tr>
+</table>
+
+<h2>2 · The two-level result</h2>
+
+<div class="grid">
+<div class="card">
+<h3 style="margin-top:0">Level 1 — merged "which files touch this name"</h3>
+<p class="muted">Near-tied, near-perfect — <i>for this metric: file-level use-sites, def-files excluded.</i> Not a generic "all tools equal at traversal" claim (including def-sites / line-level would separate them).</p>
+<table>
+<tr><th>tool</th><th class="n">macro-F1<span class="muted"> (excl. 2 artifacts)</span></th></tr>
+<tr><td>ast-grep</td><td class="n win">1.000</td></tr>
+<tr><td>CBM</td><td class="n win">0.997</td></tr>
+<tr><td>serena</td><td class="n">0.984</td></tr>
+<tr><td>codegraph</td><td class="n">0.981</td></tr>
+</table>
+</div>
+<div class="card">
+<h3 style="margin-top:0">Level 2 — per-definition disambiguation</h3>
+<p class="muted">"Which files use <i>this</i> definition." Assignment scoring: every def (incl. orphan siblings) scored; a sibling-def hit = false positive for the queried def.</p>
+<table>
+<tr><th>tool</th><th class="n">disambig F1<span class="muted"> (13 collisions)</span></th></tr>
+<tr><td>serena</td><td class="n win">0.995</td></tr>
+<tr><td>CBM</td><td class="n mid">0.844</td></tr>
+<tr><td>codegraph</td><td class="n mid">0.822</td></tr>
+<tr><td>ast-grep</td><td class="n low">0.489</td></tr>
+</table>
+</div>
+</div>
+
+<h2>3 · Per-collision disambiguation (the real test)</h2>
+<p class="muted">mean per-def F1; a sibling-definition hit counts as a false positive for the queried def. (DM16 VLMConfig omitted — its v4 def is star-reexported, untraced by the AST gold.)</p>
+<table>
+<tr><th>symbol</th><th class="n">repo</th><th class="n">defs</th><th class="n">serena</th><th class="n">CBM</th><th class="n">codegraph</th><th class="n">ast-grep</th></tr>
+<tr><td>EntityProfile</td><td class="n">bodha</td><td class="n">2</td><td class="n win">1.00</td><td class="n win">1.00</td><td class="n win">1.00</td><td class="n low">0.50</td></tr>
+<tr><td>KnowledgeAuditResult <span class="muted">(alias)</span></td><td class="n">bodha</td><td class="n">2</td><td class="n win">1.00</td><td class="n low">0.50</td><td class="n low">0.50</td><td class="n mid">0.79</td></tr>
+<tr><td>BoundingBox</td><td class="n">dm</td><td class="n">3</td><td class="n win">1.00</td><td class="n mid">0.76</td><td class="n mid">0.66</td><td class="n low">0.44</td></tr>
+<tr><td>Candidate</td><td class="n">dm</td><td class="n">3</td><td class="n win">1.00</td><td class="n mid">0.72</td><td class="n win">0.93</td><td class="n low">0.48</td></tr>
+<tr><td>FinalAnnotation</td><td class="n">dm</td><td class="n">3</td><td class="n win">1.00</td><td class="n mid">0.86</td><td class="n mid">0.72</td><td class="n low">0.48</td></tr>
+<tr><td>FilterConfig</td><td class="n">dm</td><td class="n">4</td><td class="n win">1.00</td><td class="n mid">0.64</td><td class="n mid">0.74</td><td class="n low">0.35</td></tr>
+<tr><td>OutputConfig</td><td class="n">dm</td><td class="n">4</td><td class="n mid">0.94</td><td class="n win">1.00</td><td class="n mid">0.81</td><td class="n low">0.30</td></tr>
+<tr><td>get_logger</td><td class="n">dm</td><td class="n">4</td><td class="n win">1.00</td><td class="n win">0.91</td><td class="n mid">0.70</td><td class="n low">0.34</td></tr>
+<tr><td>StageWorker</td><td class="n">dm</td><td class="n">2</td><td class="n win">1.00</td><td class="n win">1.00</td><td class="n win">1.00</td><td class="n mid">0.66</td></tr>
+<tr><td>Verdict <span class="muted">(cross-dir)</span></td><td class="n">dm</td><td class="n">2</td><td class="n win">1.00</td><td class="n win">1.00</td><td class="n win">1.00</td><td class="n mid">0.66</td></tr>
+<tr><td>ensure_dir</td><td class="n">dm</td><td class="n">2</td><td class="n win">1.00</td><td class="n win">1.00</td><td class="n win">0.96</td><td class="n low">0.50</td></tr>
+<tr><td>DatasetConfig</td><td class="n">dm</td><td class="n">4</td><td class="n win">1.00</td><td class="n win">1.00</td><td class="n win">1.00</td><td class="n low">0.25</td></tr>
+<tr><td>VLMVerdict</td><td class="n">dm</td><td class="n">2</td><td class="n win">1.00</td><td class="n low">0.58</td><td class="n mid">0.67</td><td class="n mid">0.61</td></tr>
+</table>
+<p class="muted">serena clean on 12/13 incl. the alias collision (the others score 0.50 there). CBM separates defs but over-attributes across versions and misses the alias. ast-grep can't scope → orphan-sibling false positives.</p>
+
+<h2>4 · Per-tool verdicts</h2>
+
+<div class="card">
+<h3>serena — the precision / disambiguation leader</h3>
+Clean disambiguation (0.995); the <b>only</b> tool that resolves import aliases
+(<code>KnowledgeAuditResult as AgentAuditResult</code> → correct def, verified). Two structural limits:
+<b>(1)</b> needs an in-index definition — for a base class defined in a library
+(<code>AbstractCapability</code> from pydantic-ai, with no def-anchor supplied) it returns nothing;
+<b>(2)</b> <code>find_implementations</code> unsupported in this pyright build.
+</div>
+<div class="card">
+<h3>CBM — strong all-rounder; the pilot verdict softened</h3>
+Best merged among binding tools (0.997). <b>Softening the 4-anchor pilot</b> (which found CBM
+<i>collapses</i> same-named classes): on these repo-wide, git-rooted indexes it does <b>not</b> simply
+collapse — its <code>file_path</code>-scoped queries give different per-def sets (0.84). But the
+separation is <b>imperfect</b>: cross-version over-attribution (<code>BoundingBox</code> v3/v4 overlap
+on <code>manual_reviewer/</code> files) and it <b>misses the alias case</b> (BO2 0.50). Best on the
+method-dispatch anchor (recall 0.83 vs serena 0.50). git-bleed neutralized (both repos own <code>.git</code>).
+</div>
+<div class="card">
+<h3>codegraph — consistent, with two recall caps</h3>
+Solid merged (0.98); per-def scoping works but its trail <b>truncates at ~11 entries</b>, capping
+recall on high-fan-in collisions; missed one local-import use on <code>ContextPack</code>; misses the
+alias (0.50). The safe zero-setup default, not the precision tool.
+</div>
+<div class="card">
+<h3>ast-grep — the honest lexical ceiling</h3>
+Perfect merged recall (1.0) in 0.5 s, and the <b>only</b> tool that finds usages of an
+externally-defined symbol (<code>AbstractCapability</code>: ast-grep 1.0, serena/CBM 0.0). Cannot
+disambiguate (0.49) — orphan-sibling hits become false positives.
+</div>
+
+<h2>5 · Capability laws — confirmed &amp; revised</h2>
+<div class="grid">
+<div class="card"><h3 style="margin-top:0">Confirmed on the user's own code</h3><ul>
+<li>Binding/LSP tools disambiguate collisions; lexical cannot (serena 0.995 vs ast-grep 0.49).</li>
+<li>serena uniquely resolves import aliases to the right definition.</li>
+<li>Method/polymorphic dispatch is the hardest bucket for graph tools (codegraph recall 0.33).</li>
+<li>Merged where-used (file-level, def-excluded) is essentially solved by any tool.</li>
+</ul></div>
+<div class="card"><h3 style="margin-top:0">New / revised on these repos</h3><ul>
+<li><b>CBM disambiguates nontrivially (0.84)</b> — softens, not overturns, the pilot's "collapse": it separates defs but over-attributes across versions and misses aliases.</li>
+<li><b>Externally-defined symbols invert the ranking — for this setup</b> (def outside snapshot, no external anchor supplied): only lexical/name-keyed tools find usages. Dependency indexing could change this.</li>
+<li>codegraph's per-def truncation is a concrete recall ceiling.</li>
+</ul></div>
+</div>
+
+<h2>6 · Practical guidance for these repos</h2>
+<table>
+<tr><th>You want to…</th><th>Use</th><th>Why (measured)</th></tr>
+<tr><td>Trace <b>which definition</b> a usage binds to (v2/v3/v4 configs; bodha's duplicated <code>contracts/</code>; aliased imports)</td><td class="win">serena</td><td>0.995 disambiguation; only tool that nails aliases. The key capability for data-miner.</td></tr>
+<tr><td>"Which files touch this name" — fast, exhaustive</td><td>ast-grep</td><td>1.0 merged recall, 0.5 s; finds externally-defined symbols the others miss.</td></tr>
+<tr><td>Heavy where-used over Pydantic models + decent disambiguation, one index</td><td>CBM</td><td>0.997 merged, 0.84 disambig, best on method dispatch; git-bleed safe here.</td></tr>
+<tr><td>Zero-setup balanced default</td><td>codegraph</td><td>consistent; mind per-def truncation + local-import misses.</td></tr>
+</table>
+
+<h2>7 · Honesty &amp; caveats</h2>
+<ul>
+<li><b>The merged near-tie is metric-specific</b> — file-level use-sites, def-files excluded. Including def-sites or scoring at line level would lower the binding tools vs lexical.</li>
+<li><b>n is small per bucket</b> (1–4); collisions/clean-models have ≥2 anchors. Single run; per-tool outputs not dual-reviewed. File-level scoring only.</li>
+<li><b>Two serena 0.0 anchors are artifacts:</b> <code>AbstractCapability</code> (external def, no anchor supplied — setup-specific, §5) and <code>YOUTUBE_DOMAINS</code> (a module constant the gold-builder didn't register as a def → no def-site to query). Excluding both, serena merged = 0.984.</li>
+<li><b>Gold gaps (Codex-flagged):</b> star re-exports (<code>from .settings import *</code>) not traced → DM16 VLMConfig dropped from the disambiguation mean; <code>attr_caller</code> = attribute refs, not strictly call-sites.</li>
+<li><b>Two scoring bugs found &amp; fixed via Codex review:</b> (a) serena/codegraph per-def dict shapes were dropped to a merged fallback (had inflated CBM's relative lead); (b) the per-def module→def mapping didn't normalize <code>src/</code> layout, which had <b>silently dropped all three bodha collisions</b>, and orphan siblings weren't FP-scored. All §2/§3 numbers are post-fix. The serena &gt; CBM ≈ codegraph &gt; ast-grep ranking held across the fix — the validation Codex required.</li>
+</ul>
+
+<div class="foot">
+<b>Provenance.</b> Subjects, gold, scorer, tool outputs, and three Codex transcripts under
+<code>scratchpad/harness-2repo/</code>. Markdown twin: <code>docs/research/harness/two-repo-traversal-analysis.md</code>.
+Tools: serena 1.5.4.dev0 (pyright) · CBM dev · codegraph 1.0.1 · ast-grep 0.44.0. Codex: GPT-5.x via
+codex-adapter (critique/diagnose, xhigh, read-only). <span class="pill">Codex-reviewed: ground rules · gold audit · findings</span>
+</div>
+
+</div>
+</body>
+</html>

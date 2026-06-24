@@ -1,0 +1,179 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Code-Understanding Tool Robustness — Cross-Repo Final Report</title>
+<style>
+:root{--bg:#0f1117;--card:#1a1d27;--ink:#e6e8ee;--mut:#9aa3b2;--line:#2a2f3d;--acc:#7aa2f7}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);
+font:15px/1.55 -apple-system,Segoe UI,Roboto,sans-serif;padding:0 0 80px}
+.wrap{max-width:1080px;margin:0 auto;padding:0 22px}
+header{background:linear-gradient(120deg,#1a2138,#161a26);padding:34px 0;border-bottom:1px solid var(--line)}
+h1{margin:0 0 6px;font-size:25px}h2{margin:34px 0 12px;font-size:19px;border-left:3px solid var(--acc);padding-left:10px}
+h3{margin:18px 0 6px;font-size:15px;color:#c8d2e6}
+.sub{color:var(--mut);font-size:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px 18px;margin:14px 0}
+table{border-collapse:collapse;width:100%;font-size:13px;margin:6px 0}
+th,td{border:1px solid var(--line);padding:5px 8px;text-align:center}
+th{background:#222736;color:var(--ink);font-weight:600}
+tbody th,tr>th:first-child{text-align:left;background:#1e2330;white-space:nowrap;font-weight:500}
+td.gold{background:#2a2f1a;color:#e8e6a0;font-weight:700}
+.g5{background:#0f3d2e;color:#7ee0b0}.g4{background:#1c3a26;color:#bfe3a0}
+.g3{background:#3a341c;color:#e8d48a}.g2{background:#3d2a1a;color:#e8b07a}.g1{background:#3d1c1c;color:#f08a8a}
+.tag{display:inline-block;background:#222b44;color:#a9c2ff;border-radius:5px;padding:1px 8px;font-size:12px;margin:2px 4px 2px 0}
+.win{color:#7ee0b0;font-weight:600}.fail{color:#f08a8a;font-weight:600}
+ul{margin:6px 0}li{margin:5px 0}code{background:#222736;padding:1px 5px;border-radius:4px;font-size:12px}
+.note{color:var(--mut);font-size:13px}
+.legend span{display:inline-block;padding:1px 7px;border-radius:4px;margin-right:5px;font-size:11px}
+.rev{display:inline-block;background:#3d1c1c;color:#f5a3a3;border:1px solid #5a2a2a;border-radius:5px;padding:1px 8px;font-size:11px;font-weight:700;letter-spacing:.3px}
+.rep{display:inline-block;background:#0f3d2e;color:#7ee0b0;border:1px solid #1c5a44;border-radius:5px;padding:1px 8px;font-size:11px;font-weight:700;letter-spacing:.3px}
+.repw{display:inline-block;background:#3a341c;color:#f0d488;border:1px solid #5a4f2a;border-radius:5px;padding:1px 8px;font-size:11px;font-weight:700;letter-spacing:.3px}
+td.up{color:#7ee0b0;font-weight:700}td.dn{color:#f08a8a;font-weight:700}
+tr>th.left{text-align:left}
+.hl{background:#0f3d2e;color:#7ee0b0;font-weight:700;border:1px solid #1c5a44}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:780px){.grid2{grid-template-columns:1fr}}
+.kpi{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0}
+.kpi .b{background:#161a26;border:1px solid var(--line);border-radius:8px;padding:8px 12px;min-width:120px}
+.kpi .b b{font-size:20px;color:#7aa2f7}.kpi .b span{display:block;color:#9aa3b2;font-size:11px}
+</style></head><body>
+<header><div class="wrap">
+<h1>Code-Understanding Tool Robustness <span class="sub">— cross-repo final report</span></h1>
+<div class="sub"><b>7 static code-navigation tools, the same 20-anchor "where is this symbol used?" probe, replayed across 3 repositories / 2 languages.</b>
+Each round scored against an independently-computed, binding-resolved gold (Codex-reviewed every round; R2/R3 golds also Opus-audited; every round's findings adversarially Codex-reviewed).
+The question: <b>which tool verdicts are durable capability laws, and which were artifacts of one repo, one build, or one language?</b></div>
+<div class="kpi">
+<div class="b"><b>3</b><span>repositories</span></div>
+<div class="b"><b>7</b><span>tools × 20 anchors</span></div>
+<div class="b"><b>2</b><span>languages (TS, Python)</span></div>
+<div class="b"><b>9</b><span>capability buckets</span></div>
+<div class="b"><b>2</b><span>safety defects general to all 3</span></div>
+</div></div></header>
+<div class="wrap">
+
+<div class="card"><b>Tools &amp; the hard ceiling.</b> <code>ag</code>=ast-grep · <code>rpx</code>=repomix · <code>ser</code>=serena ·
+<code>cg</code>=codegraph · <code>CBM</code>=codebase-memory-mcp · <code>gfy</code>=graphify · <code>UA</code>=understand-anything.
+All 7 are static, pre-indexed, read-only structural tools — none runs code, none reads <code>.git</code> history by design, only repomix reads non-code files.
+<code>*</code> marks the two <b>lexical baselines</b> (ast-grep, repomix): their recall is ~1.0 <i>by construction</i>, so their F1 is inflated — judge them on the precision split and per-bucket, not the F1 column.
+<div class="note" style="margin-top:8px">F1 legend: <span class="legend"><span class="g5">≥.90</span><span class="g4">≥.75</span><span class="g3">≥.50</span><span class="g2">≥.25</span><span class="g1">&lt;.25</span></span>
+&nbsp;·&nbsp; <span class="hl" style="padding:1px 7px;border-radius:4px">green</span> = per-row best &nbsp;·&nbsp; status: <span class="rep">CONFIRMED</span> <span class="repw">PARTIAL</span> <span class="rev">REVERSED / artifact</span></div></div>
+
+<h2>1 · The 3-round scoreboard — overall S1 macro-F1</h2>
+<div class="note">One number per tool per repo. The <b>spread</b> column (max−min) is the headline: a tool with a small spread behaves
+the same everywhere; a large spread means its verdict <i>does not transfer</i>. CBM (0.32) and serena (0.24) are the most repo-dependent.</div>
+<table><thead><tr><th class='left'>tool</th><th>R1 paperclip<br><span style='font-weight:400;color:#9aa3b2'>TS/TSX</span></th><th>R2 OpenHands<br><span style='font-weight:400;color:#9aa3b2'>py+ts</span></th><th>R3 DeerFlow<br><span style='font-weight:400;color:#9aa3b2'>py+ts</span></th><th>spread</th><th class='left'>character (3-round)</th></tr></thead><tbody><tr><th class='left'>cg</th><td class='g4'>0.85</td><td class='g4'>0.89</td><td class='g4'>0.79</td><td class=''>0.10</td><td class='left' style='text-align:left;color:#9aa3b2;font-size:12px'>most consistent semantic tool; balanced P/R; JSX-aware</td></tr><tr><th class='left'>CBM</th><td class='g3'>0.63</td><td class='g5'>0.95</td><td class='g4'>0.85</td><td class='dn'>0.32</td><td class='left' style='text-align:left;color:#9aa3b2;font-size:12px'>bimodal by language — best on Python, blind on TS Variable schemas</td></tr><tr><th class='left'>ag*</th><td class='g4'>0.85</td><td class='g4'>0.81</td><td class='g4'>0.84</td><td class=''>0.04</td><td class='left' style='text-align:left;color:#9aa3b2;font-size:12px'>stable but recall-inflated (R≈1.0); collision-precision collapse</td></tr><tr><th class='left'>ser</th><td class='g3'>0.66</td><td class='g5'>0.90</td><td class='g3'>0.74</td><td class='dn'>0.24</td><td class='left' style='text-align:left;color:#9aa3b2;font-size:12px'>highest precision; most idiom-sensitive recall</td></tr><tr><th class='left'>rpx*</th><td class='g4'>0.84</td><td class='g4'>0.75</td><td class='g3'>0.65</td><td class=''>0.19</td><td class='left' style='text-align:left;color:#9aa3b2;font-size:12px'>lexical; precision erodes as repos get polyglot / doc-heavy</td></tr><tr><th class='left'>gfy</th><td class='g4'>0.77</td><td class='g3'>0.62</td><td class='g3'>0.61</td><td class=''>0.16</td><td class='left' style='text-align:left;color:#9aa3b2;font-size:12px'>weakest on Python; secret-drop + same-file-only method graph</td></tr><tr><th class='left'>UA</th><td class='g3'>0.57</td><td class='g3'>0.66</td><td class='g3'>0.72</td><td class=''>0.15</td><td class='left' style='text-align:left;color:#9aa3b2;font-size:12px'>improving; capped by file-granularity + multi-root resolver gaps</td></tr></tbody></table>
+<div class="note">Repos: <b>paperclip</b> (TypeScript/TSX pnpm monorepo) · <b>OpenHands</b> (845 .py two roots + React/TS) · <b>DeerFlow 2.0</b> (635 .py two roots + Next.js/React).</div>
+
+<h2>2 · The precision / recall split — the story F1 hides</h2>
+<div class="note">F1-overall flatters the lexical tools (recall ≈1.0). The real character of each tool is in P vs R:
+<b>serena</b> is a high-precision / variable-recall instrument (P 0.94 → 0.95 → 0.90); <b>CBM</b> is the only tool that is
+high on <i>both</i> on Python (R2 .96/.94, R3 .89/.88); the lexical baselines trade precision for guaranteed recall.</div>
+<table><thead><tr><th class='left'>round · metric</th><th>ag</th><th>rpx</th><th>ser</th><th>cg</th><th>CBM</th><th>gfy</th><th>UA</th></tr></thead><tbody><tr><th class='left'>R1 paperclip · macro-Precision</th><td class='g4'>0.82</td><td class='g4'>0.80</td><td class='hl'>0.94</td><td class='g4'>0.82</td><td class='g4'>0.79</td><td class='g4'>0.75</td><td class='g3'>0.64</td></tr><tr><th class='left'>R1 paperclip · macro-Recall</th><td class='hl'>1.00</td><td class='hl'>1.00</td><td class='g3'>0.59</td><td class='g5'>0.98</td><td class='g3'>0.61</td><td class='g5'>0.92</td><td class='g3'>0.58</td></tr><tr><th class='left'>R2 OpenHands · macro-Precision</th><td class='g4'>0.83</td><td class='g3'>0.68</td><td class='g5'>0.95</td><td class='g4'>0.87</td><td class='hl'>0.96</td><td class='g3'>0.70</td><td class='g3'>0.66</td></tr><tr><th class='left'>R2 OpenHands · macro-Recall</th><td class='g4'>0.88</td><td class='g5'>0.94</td><td class='g4'>0.87</td><td class='hl'>0.97</td><td class='g5'>0.94</td><td class='g3'>0.67</td><td class='g4'>0.80</td></tr><tr><th class='left'>R3 DeerFlow · macro-Precision</th><td class='g4'>0.80</td><td class='g3'>0.55</td><td class='hl'>0.90</td><td class='g4'>0.83</td><td class='g4'>0.89</td><td class='g3'>0.71</td><td class='g4'>0.75</td></tr><tr><th class='left'>R3 DeerFlow · macro-Recall</th><td class='hl'>1.00</td><td class='hl'>1.00</td><td class='g3'>0.67</td><td class='g4'>0.85</td><td class='g4'>0.88</td><td class='g3'>0.67</td><td class='g3'>0.74</td></tr></tbody></table>
+
+<h2>3 · What reproduced across all 3 repos — the verdict table</h2>
+<div class="note">A finding only counts as <i>general</i> if it reproduces on ≥2 anchors per bucket and survives to a 2nd/3rd repo.
+The two safety defects and the CBM Python-model strength are now confirmed across <b>3 repos / 2 languages</b>.</div>
+<table><thead><tr><th class="left">finding (origin)</th><th>paperclip</th><th>OpenHands</th><th>DeerFlow</th><th>verdict</th></tr></thead><tbody>
+<tr><th class="left">graphify silently drops "secret"-named source files <span class="note">(R1)</span></th>
+<td class="g4">✓ drops</td><td class="g5">✓ + corrupts A13</td><td class="g5">✓ + corrupts A7</td><td><span class="rep">GENERAL — safety</span></td></tr>
+<tr><th class="left">CBM git-bleeds into the parent repo's <code>.git</code> <span class="note">(R1)</span></th>
+<td class="g4">✓</td><td class="g4">✓</td><td class="g4">✓</td><td><span class="rep">GENERAL — freshness</span></td></tr>
+<tr><th class="left">CBM strong on data-models <span class="note">(node-type effect)</span></th>
+<td class="g1">0.08 (TS Variable)</td><td class="g5">0.95</td><td class="g5">0.97 model_schema</td><td><span class="rep">GENERAL on Python</span></td></tr>
+<tr><th class="left">graphify method call-graph is same-file-only <span class="note">(R2)</span></th>
+<td class="na">—</td><td class="g2">✓ svc_method .35</td><td class="g2">✓ A20 F1 .12</td><td><span class="rep">GENERAL on Python</span></td></tr>
+<tr><th class="left">lexical: ~perfect recall, collision-precision collapse <span class="note">(R1)</span></th>
+<td class="g1">P .28/.26</td><td class="g3">collisions milder</td><td class="g1">collision .41–.47</td><td><span class="rep">GENERAL</span></td></tr>
+<tr><th class="left">codegraph balanced &amp; consistent, captures JSX <span class="note">(R1)</span></th>
+<td class="g4">0.85</td><td class="g5">0.89</td><td class="g4">0.79</td><td><span class="rep">GENERAL</span></td></tr>
+<tr><th class="left">"serena is barrel-blind" <span class="note">(R1, 0.47)</span></th>
+<td class="g1">0.47 ✗</td><td class="g5">1.00</td><td class="g4">0.76</td><td><span class="rev">ARTIFACT (paperclip build)</span></td></tr>
+<tr><th class="left">"CBM is blind to data models" <span class="note">(R1, 0.08)</span></th>
+<td class="g1">0.08 ✗</td><td class="g5">0.95</td><td class="g5">0.97</td><td><span class="rev">ARTIFACT (TS Variable node)</span></td></tr>
+</tbody></table>
+
+<h2>4 · Per-round bucket heatmaps</h2>
+<div class="note">DeerFlow (R3) and OpenHands (R2) share the same 9-bucket schema and are directly comparable; paperclip (R1) used a
+TS-specific schema. Read down a column to see a tool's profile; the green cell is each bucket's winner.</div>
+<h3>R2 OpenHands &nbsp;<span class="note">(py + ts; the first Python round)</span></h3>
+<table><thead><tr><th class='left'>scope</th><th>ag*</th><th>rpx*</th><th>ser</th><th>cg</th><th>CBM</th><th>gfy</th><th>UA</th></tr></thead><tbody><tr><th class='left' style='font-weight:700'>overall (20)</th><td class='g4'>0.81</td><td class='g4'>0.75</td><td class='g5'>0.90</td><td class='g4'>0.89</td><td class='g5'>0.95</td><td class='g3'>0.62</td><td class='g3'>0.66</td></tr><tr><th class='left'>entrypoint (2)</th><td class='g3'>0.71</td><td class='g3'>0.64</td><td class='g4'>0.80</td><td class='g4'>0.87</td><td class='hl'>0.90</td><td class='g2'>0.40</td><td class='hl'>0.90</td></tr><tr><th class='left'>service_method (4)</th><td class='g3'>0.55</td><td class='g3'>0.62</td><td class='g4'>0.83</td><td class='g4'>0.80</td><td class='hl'>0.92</td><td class='g2'>0.35</td><td class='g2'>0.49</td></tr><tr><th class='left'>barrel_initpy (3)</th><td class='g5'>0.95</td><td class='g5'>0.97</td><td class='hl'>1.00</td><td class='hl'>1.00</td><td class='hl'>1.00</td><td class='g4'>0.82</td><td class='g3'>0.72</td></tr><tr><th class='left'>cross_package (5)</th><td class='g5'>0.94</td><td class='hl'>1.00</td><td class='g5'>0.93</td><td class='hl'>1.00</td><td class='g5'>0.98</td><td class='g5'>0.90</td><td class='g4'>0.81</td></tr><tr><th class='left'>collision (4)</th><td class='g3'>0.56</td><td class='g3'>0.73</td><td class='g3'>0.67</td><td class='g3'>0.64</td><td class='hl'>0.95</td><td class='g2'>0.42</td><td class='g2'>0.46</td></tr><tr><th class='left'>model_schema (3)</th><td class='g5'>0.90</td><td class='g3'>0.72</td><td class='hl'>1.00</td><td class='g5'>0.92</td><td class='g5'>0.95</td><td class='g5'>0.93</td><td class='g3'>0.74</td></tr><tr><th class='left'>type_protocol (4)</th><td class='g5'>0.93</td><td class='g3'>0.66</td><td class='g4'>0.75</td><td class='g4'>0.89</td><td class='hl'>0.99</td><td class='g3'>0.73</td><td class='g3'>0.60</td></tr><tr><th class='left'>react_jsx (3)</th><td class='g4'>0.76</td><td class='g4'>0.86</td><td class='hl'>1.00</td><td class='g4'>0.88</td><td class='g5'>0.92</td><td class='g2'>0.43</td><td class='g2'>0.48</td></tr><tr><th class='left'>dynamic_dispatch (2)</th><td class='g3'>0.66</td><td class='g3'>0.61</td><td class='hl'>1.00</td><td class='hl'>1.00</td><td class='hl'>1.00</td><td class='g2'>0.25</td><td class='g3'>0.53</td></tr></tbody></table>
+<h3>R3 DeerFlow &nbsp;<span class="note">(py + ts; the replication round)</span></h3>
+<table><thead><tr><th class='left'>scope</th><th>ag*</th><th>rpx*</th><th>ser</th><th>cg</th><th>CBM</th><th>gfy</th><th>UA</th></tr></thead><tbody><tr><th class='left' style='font-weight:700'>overall (20)</th><td class='g4'>0.84</td><td class='g3'>0.65</td><td class='g3'>0.74</td><td class='g4'>0.79</td><td class='g4'>0.85</td><td class='g3'>0.61</td><td class='g3'>0.72</td></tr><tr><th class='left'>entrypoint (2)</th><td class='hl'>1.00</td><td class='g3'>0.50</td><td class='hl'>1.00</td><td class='g4'>0.75</td><td class='hl'>1.00</td><td class='g2'>0.44</td><td class='g5'>0.90</td></tr><tr><th class='left'>service_method (4)</th><td class='g4'>0.81</td><td class='g3'>0.69</td><td class='g3'>0.65</td><td class='g4'>0.78</td><td class='hl'>0.86</td><td class='g3'>0.53</td><td class='g4'>0.75</td></tr><tr><th class='left'>barrel_initpy (3)</th><td class='hl'>1.00</td><td class='g4'>0.86</td><td class='g4'>0.76</td><td class='g5'>0.92</td><td class='g5'>0.96</td><td class='g4'>0.89</td><td class='g4'>0.87</td></tr><tr><th class='left'>cross_package (5)</th><td class='hl'>1.00</td><td class='g4'>0.88</td><td class='g3'>0.70</td><td class='g5'>0.98</td><td class='g5'>0.98</td><td class='g4'>0.75</td><td class='g4'>0.83</td></tr><tr><th class='left'>collision (4)</th><td class='g2'>0.47</td><td class='g2'>0.41</td><td class='g2'>0.45</td><td class='hl'>0.55</td><td class='g3'>0.54</td><td class='g2'>0.49</td><td class='g2'>0.45</td></tr><tr><th class='left'>model_schema (3)</th><td class='hl'>1.00</td><td class='g5'>0.95</td><td class='g3'>0.57</td><td class='g4'>0.86</td><td class='g5'>0.97</td><td class='g3'>0.53</td><td class='g4'>0.79</td></tr><tr><th class='left'>type_protocol (3)</th><td class='g4'>0.80</td><td class='g2'>0.40</td><td class='hl'>0.85</td><td class='g4'>0.77</td><td class='g4'>0.83</td><td class='g4'>0.75</td><td class='g3'>0.60</td></tr><tr><th class='left'>react_jsx (3)</th><td class='g3'>0.55</td><td class='g2'>0.43</td><td class='hl'>1.00</td><td class='g3'>0.59</td><td class='g2'>0.38</td><td class='g3'>0.58</td><td class='g3'>0.67</td></tr><tr><th class='left'>dynamic_dispatch (2)</th><td class='hl'>1.00</td><td class='g4'>0.80</td><td class='g4'>0.82</td><td class='g5'>0.90</td><td class='g5'>0.98</td><td class='g4'>0.80</td><td class='g5'>0.93</td></tr></tbody></table>
+<h3>R1 paperclip &nbsp;<span class="note">(TS/TSX; the original round — note its own bucket schema)</span></h3>
+<table><thead><tr><th class='left'>scope</th><th>ag*</th><th>rpx*</th><th>ser</th><th>cg</th><th>CBM</th><th>gfy</th><th>UA</th></tr></thead><tbody><tr><th class='left' style='font-weight:700'>overall (20)</th><td class='g4'>0.85</td><td class='g4'>0.84</td><td class='g3'>0.66</td><td class='g4'>0.85</td><td class='g3'>0.63</td><td class='g4'>0.77</td><td class='g3'>0.57</td></tr><tr><th class='left'>collision (4)</th><td class='g2'>0.37</td><td class='g2'>0.35</td><td class='hl'>0.78</td><td class='g2'>0.35</td><td class='g3'>0.54</td><td class='g3'>0.50</td><td class='g2'>0.48</td></tr><tr><th class='left'>jsx_react (3)</th><td class='g5'>0.98</td><td class='g5'>0.98</td><td class='g5'>0.98</td><td class='g5'>0.98</td><td class='g2'>0.44</td><td class='g5'>0.96</td><td class='hl'>1.00</td></tr><tr><th class='left'>barrel_xpkg (7)</th><td class='hl'>1.00</td><td class='hl'>1.00</td><td class='g2'>0.47</td><td class='hl'>1.00</td><td class='g3'>0.61</td><td class='g4'>0.87</td><td class='g2'>0.26</td></tr><tr><th class='left'>db_schema (2)</th><td class='g5'>0.96</td><td class='g4'>0.88</td><td class='g2'>0.49</td><td class='g5'>0.99</td><td class='g1'>0.08</td><td class='hl'>1.00</td><td class='g1'>0.19</td></tr><tr><th class='left'>factory_service (4)</th><td class='g4'>0.76</td><td class='g4'>0.76</td><td class='g4'>0.85</td><td class='g4'>0.76</td><td class='hl'>0.91</td><td class='g3'>0.67</td><td class='g3'>0.58</td></tr><tr><th class='left'>type_only (4)</th><td class='g4'>0.81</td><td class='g4'>0.80</td><td class='g2'>0.39</td><td class='g4'>0.78</td><td class='g2'>0.42</td><td class='hl'>0.91</td><td class='g2'>0.25</td></tr></tbody></table>
+
+<h2>5 · What GENERALIZED — durable capability laws</h2>
+<div class="grid2">
+<div class="card"><h3>① Node-type + reference-style governs graph-tool blindness</h3>
+<div class="note">The single biggest discriminator. CBM is the clean experiment: TS schemas as <code>const</code>/<code>Variable</code>
+used by member-access (paperclip Drizzle) → <b class="fail">0.08</b>; the <i>same tool</i> on Python Pydantic/SQLAlchemy
+(<code>class</code> → Class nodes w/ USAGE/IMPORTS/INHERITS edges) → <b class="win">0.95 / 0.97</b>. The blindness tracked
+the language idiom, not the tool — hence CBM's 0.63 → 0.95 → 0.85 swing.</div></div>
+<div class="card"><h3>② Safety hazards are tool-intrinsic — all 3 repos</h3>
+<div class="note"><b>graphify drops "secret"-named files</b>: on OpenHands (<code>stored_custom_secrets.py</code>→A13 <code>Org</code>)
+and DeerFlow (<code>test_mcp_config_secrets.py</code>→A7 <code>ExtensionsConfig</code>) a dropped file referenced a live
+anchor, <i>measurably corrupting recall</i>. <b>CBM git-bleeds</b> to the enclosing worktree's HEAD on all 3.
+Both are deployment risks independent of language.</div></div>
+<div class="card"><h3>③ Lexical = guaranteed recall, collision-precision collapse</h3>
+<div class="note">ast-grep &amp; repomix recall 0.88–1.00 every round, but collision precision craters (paperclip <b class="fail">P .28 / .26</b>).
+ast-grep's one structural edge is the language split (<code>-l python</code>/<code>-l tsx</code>) — it alone avoids
+cross-language name bleed (R2 A12 <code>Settings</code>: P=1.0 where graph tools mix Python &amp; TS).</div></div>
+<div class="card"><h3>④ Polymorphic / method dispatch is hard for graph tools</h3>
+<div class="note">Reproduced on both Python repos: graphify's call-graph is <b>same-file-only</b> (DeerFlow A20 F1 <b class="fail">0.12</b>),
+codegraph merges same-named methods, serena's pyright has method-resolution gaps. No graph tool resolves runtime dispatch;
+lexical over-recalls it. The method bucket is depressed for everyone, every round.</div></div>
+</div>
+
+<h2>6 · What did NOT generalize — artifacts mistaken for tool properties</h2>
+<div class="card"><b>Two of R1's most-cited "tool weaknesses" were repo/build artifacts.</b> A single-repo study would have shipped them as permanent verdicts.
+<table style="margin-top:10px"><thead><tr><th class="left">R1 claim</th><th>R1</th><th>R2</th><th>R3</th><th class="left">reality</th></tr></thead><tbody>
+<tr><th class="left">"CBM is blind to data models"</th><td class="g1">0.08</td><td class="g5">0.95</td><td class="g5">0.97</td>
+<td class="left" style="text-align:left">a TS-<code>Variable</code>/member-access artifact — best-in-class on both Python repos</td></tr>
+<tr><th class="left">"serena is barrel-blind"</th><td class="g1">0.47</td><td class="g5">1.00</td><td class="g4">0.76</td>
+<td class="left" style="text-align:left">did not reproduce; most plausibly the paperclip unbuilt-pnpm <code>dist/</code> (not A/B-proven)</td></tr>
+<tr><th class="left">serena's overall rank</th><td class="g3">0.66</td><td class="g5">0.90</td><td class="g3">0.74</td>
+<td class="left" style="text-align:left">does not transfer — serena is the most idiom-sensitive tool; high precision is its constant, recall is the variable</td></tr>
+</tbody></table></div>
+
+<h2>7 · The collision frontier — the open problem</h2>
+<div class="card"><b>Collisions are the hardest bucket every round — but how hard is repo-dependent, and no tool is reliable across collision <i>types</i>.</b>
+<ul>
+<li>The floor <b>moves with the repo</b>: OpenHands' milder collisions let CBM reach <b class="win">0.95</b> and repomix 0.73;
+DeerFlow's harder collisions hold every tool <b class="fail">≤ 0.55</b>; paperclip sits between (serena 0.78).</li>
+<li>What <b>transfers is the ranking</b>: binding/LSP tools (serena, CBM) beat name-keyed graph/lexical tools, which merge same-named symbols.</li>
+<li>The standout: <b>only serena's LSP cleanly disambiguates the hard cross-language collision</b> — DeerFlow A17 <code>Message</code>
+(local React component vs <code>@langchain/langgraph-sdk</code> import) → serena <b class="win">1.00</b>, every other tool <b class="fail">≤ 0.14</b>
+(ag .14 / cg .10 / CBM .12 / rpx .05 / UA 0).</li>
+<li>…<b>yet serena itself loses</b> DeerFlow's Python-method collisions — A5 <code>LocalSandbox.execute_command</code> and A12 <code>StreamEvent</code> → <b class="fail">0.00</b>.</li>
+</ul>
+Disambiguation is the open frontier: no tool wins every collision type, on any repo.</div>
+
+<h2>8 · Per-tool verdicts &amp; practical guidance (3-repo evidence)</h2>
+<table><thead><tr><th class="left">tool</th><th>R1·R2·R3</th><th class="left">use it for</th><th class="left">watch out for</th></tr></thead><tbody>
+<tr><th class="left">codegraph</th><td class="g4">.85·.89·.79</td><td class="left" style="text-align:left">general-purpose semantic nav default; balanced P/R; JSX</td><td class="left" style="text-align:left">merges same-named symbols (collisions)</td></tr>
+<tr><th class="left">CBM</th><td class="g3">.63·.95·.85</td><td class="left" style="text-align:left">Python codebases (Class-node models); heavy where-used</td><td class="left" style="text-align:left"><span class="fail">catastrophic on TS Drizzle/member-access (Variable) models</span>; <span class="fail">git-bleed</span> — verify worktree root</td></tr>
+<tr><th class="left">serena</th><td class="g3">.66·.90·.74</td><td class="left" style="text-align:left">precision-critical nav; LSP-resolvable React/collision + JSX disambiguation</td><td class="left" style="text-align:left">idiom-sensitive recall; <span class="fail">loses Python-method collisions</span>; abstract-method blind spot; setup-dependent</td></tr>
+<tr><th class="left">ast-grep*</th><td class="g4">.85·.81·.84</td><td class="left" style="text-align:left">fast exhaustive recall; cross-language-safe (<code>-l</code>)</td><td class="left" style="text-align:left">collision-precision collapse; no binding/barrel resolution</td></tr>
+<tr><th class="left">repomix*</th><td class="g4">.84·.75·.65</td><td class="left" style="text-align:left">context-packing whole repos for an LLM</td><td class="left" style="text-align:left">pure lexical; precision erodes with doc/polyglot density; <code>useGitignore</code> can hide a snapshot</td></tr>
+<tr><th class="left">graphify</th><td class="g3">.77·.62·.61</td><td class="left" style="text-align:left">architecture / community overview</td><td class="left" style="text-align:left"><span class="fail">drops secret-named files</span>; same-file-only method graph; weakest on Python</td></tr>
+<tr><th class="left">UA</th><td class="g2">.57·.66·.72</td><td class="left" style="text-align:left">lightweight single-root structure maps</td><td class="left" style="text-align:left">file→file granularity; <span class="fail">multi-root resolver gap</span>; fragile alias parsing</td></tr>
+</tbody></table>
+
+<h2>9 · Method, isolation &amp; honesty</h2>
+<div class="card note">
+<b>Gold.</b> 20 anchors/round across 9 buckets; a verdict requires reproduction on ≥2 anchors per bucket. Each gold is binding-resolved
+(import/re-export-closure, two-root + path-alias aware) with a zero-unaccounted invariant; method anchors (polymorphic) have inherently
+capped precision. R2/R3 golds were dual-reviewed (independent Opus auditor + Codex gpt-5.5 xhigh, converged); R1 was Codex-reviewed.<br><br>
+<b>Battery.</b> Each tool built a fresh index of each repo, ran blind (no answer key), scored independently. On R3 a session-limit interruption
+killed the first worker batch mid-run; 6 tools were re-run <b>deterministically via shell</b> (reusing each worker's adapted runner) and UA via a worker —
+isolation audit confirms every scored number came from a cleanly-isolated run (tool-local HOME, telemetry off, 0 fresh real-HOME writes).<br><br>
+<b>Honesty.</b> F1-overall flatters the lexical tools — every claim here is grounded in the per-bucket + precision/recall split. Collision absolute
+scores are repo-dependent and not cross-round comparable; the ranking transfers, the numbers do not. Every round's findings were adversarially
+Codex-reviewed and corrections applied before these figures were used. Raw data, golds, scorers live gitignored in
+<code>scratchpad/harness-&#123;paperclip,openhands,deerflow&#125;/</code>; per-round detail in the three findings docs + the synthesis.
+</div>
+
+<div class="note" style="margin-top:24px;text-align:center">Bottom line: there is no single best tool — there are <b>capability laws</b>. Graph-tool coverage tracks (extractor × language idiom);
+binding-resolution buys precision at the cost of idiom-sensitive recall; lexical buys recall at the cost of collision precision; safety hazards
+(secret-drop, git-bleed) are tool-intrinsic; and collision disambiguation is unsolved. <b>A single-repo benchmark would have mistaken at least two
+build/language artifacts for permanent tool verdicts.</b></div>
+
+</div></body></html>

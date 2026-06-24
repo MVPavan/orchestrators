@@ -31,3 +31,5 @@ __pycache__/
 graphify-out/
 external/harness_repos/
 external/deer-flow/
+# Raw per-tool capability/exploitation transcripts (machine-local paths; evidence only)
+docs/research/harness/results/

@@ -1,0 +1,90 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Robustness Findings — paperclip (R1)</title>
+<style>
+:root{--bg:#0f1117;--card:#1a1d27;--ink:#e6e8ee;--mut:#9aa3b2;--line:#2a2f3d;--acc:#7aa2f7}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);
+font:15px/1.55 -apple-system,Segoe UI,Roboto,sans-serif;padding:0 0 80px}
+.wrap{max-width:1080px;margin:0 auto;padding:0 22px}
+header{background:linear-gradient(120deg,#1a2138,#161a26);padding:34px 0;border-bottom:1px solid var(--line)}
+h1{margin:0 0 6px;font-size:25px}h2{margin:34px 0 12px;font-size:19px;border-left:3px solid var(--acc);padding-left:10px}
+.sub{color:var(--mut);font-size:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px 18px;margin:14px 0}
+table{border-collapse:collapse;width:100%;font-size:13px;margin:6px 0}
+th,td{border:1px solid var(--line);padding:5px 8px;text-align:center}
+th{background:#222736;color:var(--ink);font-weight:600}
+tbody th,tr>th:first-child{text-align:left;background:#1e2330;white-space:nowrap;font-weight:500}
+td.gold{background:#2a2f1a;color:#e8e6a0;font-weight:700}
+td.na{color:#555}
+.g5{background:#0f3d2e;color:#7ee0b0}.g4{background:#1c3a26;color:#bfe3a0}
+.g3{background:#3a341c;color:#e8d48a}.g2{background:#3d2a1a;color:#e8b07a}.g1{background:#3d1c1c;color:#f08a8a}
+.tag{display:inline-block;background:#222b44;color:#a9c2ff;border-radius:5px;padding:1px 8px;font-size:12px;margin:2px 4px 2px 0}
+.win{color:#7ee0b0;font-weight:600}.fail{color:#f08a8a;font-weight:600}
+ul{margin:6px 0}li{margin:4px 0}code{background:#222736;padding:1px 5px;border-radius:4px;font-size:12px}
+.note{color:var(--mut);font-size:13px}
+.legend span{display:inline-block;padding:1px 7px;border-radius:4px;margin-right:5px;font-size:11px}
+</style></head><body>
+<header><div class="wrap"><h1>Robustness Findings — paperclip <span class="sub">(R1 of the multi-repo battery)</span></h1>
+<div class="sub">7 static code-navigation tools × 20 anchors, graded on "where is this symbol used?" against an
+independently-computed, Codex-validated <b>binding-resolved</b> ground truth. ⛔ OpenHands/deer-flow gated on user review.</div></div></header>
+<div class="wrap">
+
+<div class="card"><b>The hard ceiling.</b> All 7 are static, pre-indexed, read-only structural tools. None runs code,
+none reads <code>.git</code> history, only repomix reads non-code files. Runtime / git-history / ownership / build-ops
+are out of reach by construction. This measures the tools hard on symbol-nav + structural edge.
+<div class="note" style="margin-top:8px">Legend (F1): <span class="legend"><span class="g5">≥.90</span><span class="g4">≥.75</span><span class="g3">≥.50</span><span class="g2">≥.25</span><span class="g1">&lt;.25</span></span>
+&nbsp; <code>*</code> = lexical baseline (recall 1.0 by construction → F1 inflated; see precision row).</div></div>
+
+<h2>1 · Per-anchor F1 — S1 "where is this symbol used?"</h2>
+<table><thead><tr><th>anchor</th><th>gold #files</th><th>ast-grep*</th><th>repomix*</th><th>serena</th><th>codegraph</th><th>CBM</th><th>graphify</th><th>UA</th></tr></thead><tbody><tr><th>A1 startServer</th><td class="gold">1</td><td class="g3">0.67</td><td class="g3">0.67</td><td class="g1">0.00</td><td class="g3">0.67</td><td class="g3">0.67</td><td class="g1">0.08</td><td class="g5">1.00</td></tr><tr><th>A2 createApp</th><td class="gold">1</td><td class="g1">0.02</td><td class="g1">0.02</td><td class="g5">1.00</td><td class="g1">0.04</td><td class="g5">1.00</td><td class="g1">0.04</td><td class="g2">0.33</td></tr><tr><th>A3 issueRoutes</th><td class="gold">14</td><td class="g5">1.00</td><td class="g5">1.00</td><td class="g2">0.25</td><td class="g5">1.00</td><td class="g5">0.96</td><td class="g3">0.60</td><td class="g5">0.96</td></tr><tr><th>A4 issueService</th><td class="gold">23</td><td class="g5">1.00</td><td class="g5">1.00</td><td class="g4">0.85</td><td class="g5">1.00</td><td class="g5">0.98</td><td class="g5">0.98</td><td class="g4">0.78</td></tr><tr><th>A5 heartbeatService</th><td class="gold">31</td><td class="g5">1.00</td><td class="g5">1.00</td><td class="g3">0.56</td><td class="g5">1.00</td><td class="g5">0.98</td><td class="g4">0.86</td><td class="g3">0.71</td></tr><tr><th>A6 createStorageServiceFromConfig</th><td class="gold">2</td><td class="g5">1.00</td><td class="g5">1.00</td><td class="g5">1.00</td><td class="g5">1.00</td><td class="g3">0.67</td><td class="g4">0.80</td><td class="g3">0.50</td></tr><tr><th>A7 issues</th><td class="gold">123</td><td class="g5">0.91</td><td class="g4">0.76</td><td class="g2">0.40</td><td class="g5">0.99</td><td class="g1">0.16</td><td class="g5">1.00</td><td class="g2">0.38</td></tr><tr><th>A8 issueReferenceMentions</th><td class="gold">5</td><td class="g5">1.00</td><td class="g5">1.00</td><td class="g3">0.57</td><td class="g5">1.00</td><td class="g1">0.00</td><td class="g5">1.00</td><td class="g1">0.00</td></tr><tr><th>A9 extractIssueReferenceMatches</th><td class="gold">2</td><td class="g5">1.00</td><td class="g5">1.00</td><td class="g3">0.67</td><td class="g5">1.00</td><td class="g3">0.67</td><td class="g5">1.00</td><td class="g1">0.00</td></tr><tr><th>A10 buildIssueReferenceHref</th><td class="gold">5</td><td class="g5">1.00</td><td class="g5">1.00</td><td class="g3">0.57</td><td class="g5">1.00</td><td class="g4">0.89</td><td class="g5">1.00</td><td class="g2">0.33</td></tr><tr><th>A11 PaperclipPluginManifestV1</th><td class="gold">49</td><td class="g5">0.99</td><td class="g5">1.00</td><td class="g1">0.08</td><td class="g5">0.99</td><td class="g3">0.60</td><td class="g4">0.77</td><td class="g1">0.00</td></tr><tr><th>A12 CatalogTeam</th><td class="gold">9</td><td class="g4">0.86</td><td class="g4">0.82</td><td class="g2">0.36</td><td class="g3">0.70</td><td class="g1">0.00</td><td class="g5">0.94</td><td class="g1">0.00</td></tr><tr><th>A13 CatalogTeam</th><td class="gold">3</td><td class="g2">0.40</td><td class="g2">0.38</td><td class="g5">1.00</td><td class="g2">0.43</td><td class="g3">0.60</td><td class="g5">1.00</td><td class="g5">1.00</td></tr><tr><th>A14 ServerAdapterModule</th><td class="gold">15</td><td class="g5">1.00</td><td class="g5">1.00</td><td class="g1">0.12</td><td class="g5">1.00</td><td class="g3">0.50</td><td class="g5">0.93</td><td class="g1">0.00</td></tr><tr><th>A15 prepareCommandManagedRuntime</th><td class="gold">3</td><td class="g5">1.00</td><td class="g5">1.00</td><td class="g5">1.00</td><td class="g5">1.00</td><td class="g5">1.00</td><td class="g4">0.75</td><td class="g4">0.75</td></tr><tr><th>A16 execute</th><td class="gold">5</td><td class="g1">0.21</td><td class="g1">0.19</td><td class="g4">0.75</td><td class="g1">0.22</td><td class="g3">0.57</td><td class="g1">0.00</td><td class="g3">0.57</td></tr><tr><th>A17 MarkdownBody</th><td class="gold">25</td><td class="g5">0.94</td><td class="g5">0.93</td><td class="g5">0.94</td><td class="g5">0.94</td><td class="g2">0.33</td><td class="g4">0.89</td><td class="g5">1.00</td></tr><tr><th>A18 ChatComposer</th><td class="gold">2</td><td class="g5">1.00</td><td class="g5">1.00</td><td class="g5">1.00</td><td class="g5">1.00</td><td class="g1">0.00</td><td class="g5">1.00</td><td class="g5">1.00</td></tr><tr><th>A19 usePaperclipIssueRuntime</th><td class="gold">3</td><td class="g5">1.00</td><td class="g5">1.00</td><td class="g5">1.00</td><td class="g5">1.00</td><td class="g5">1.00</td><td class="g5">1.00</td><td class="g5">1.00</td></tr><tr><th>A20 registerRunCommands</th><td class="gold">2</td><td class="g5">1.00</td><td class="g5">1.00</td><td class="g5">1.00</td><td class="g5">1.00</td><td class="g5">1.00</td><td class="g4">0.80</td><td class="g5">1.00</td></tr></tbody></table>
+
+<h2>2 · The precision / recall split (what F1-overall hides)</h2>
+<table><thead><tr><th>metric</th><th>ast-grep*</th><th>repomix*</th><th>serena</th><th>codegraph</th><th>CBM</th><th>graphify</th><th>UA</th></tr></thead><tbody><tr><th>macro-F1 (20)</th><td class="g4">0.85</td><td class="g4">0.84</td><td class="g3">0.66</td><td class="g4">0.85</td><td class="g3">0.63</td><td class="g4">0.77</td><td class="g3">0.57</td></tr><tr><th>macro-Precision (20)</th><td class="g4">0.82</td><td class="g4">0.80</td><td class="g5">0.94</td><td class="g4">0.82</td><td class="g4">0.79</td><td class="g3">0.75</td><td class="g3">0.64</td></tr><tr><th>macro-Recall (20)</th><td class="g5">1.00</td><td class="g5">1.00</td><td class="g3">0.59</td><td class="g5">0.98</td><td class="g3">0.61</td><td class="g5">0.92</td><td class="g3">0.58</td></tr><tr><th>collision Precision (4)</th><td class="g2">0.28</td><td class="g2">0.26</td><td class="g5">1.00</td><td class="g2">0.26</td><td class="g3">0.61</td><td class="g3">0.51</td><td class="g3">0.55</td></tr></tbody></table>
+<div class="note">ast-grep/repomix reach recall 1.0 by returning noisy supersets; their <b>collision precision craters to ~0.27</b>.
+serena trades recall for precision (0.94/0.59) — the only tool that nails collisions (P 1.00) but barrel-blind.</div>
+
+<h2>3 · Per-bucket macro-F1 (verdict rule: weakness counts only if ≥2 anchors in a bucket)</h2>
+<table><thead><tr><th>bucket</th><th>ast-grep*</th><th>repomix*</th><th>serena</th><th>codegraph</th><th>CBM</th><th>graphify</th><th>UA</th></tr></thead><tbody><tr><th>overall (20)</th><td class="g4">0.85</td><td class="g4">0.84</td><td class="g3">0.66</td><td class="g4">0.85</td><td class="g3">0.63</td><td class="g4">0.77</td><td class="g3">0.57</td></tr><tr><th>collision (4)</th><td class="g2">0.37</td><td class="g2">0.35</td><td class="g4">0.78</td><td class="g2">0.35</td><td class="g3">0.54</td><td class="g2">0.50</td><td class="g2">0.48</td></tr><tr><th>jsx_react (3)</th><td class="g5">0.98</td><td class="g5">0.98</td><td class="g5">0.98</td><td class="g5">0.98</td><td class="g2">0.44</td><td class="g5">0.96</td><td class="g5">1.00</td></tr><tr><th>barrel_xpkg (7)</th><td class="g5">1.00</td><td class="g5">1.00</td><td class="g2">0.47</td><td class="g5">1.00</td><td class="g3">0.61</td><td class="g4">0.87</td><td class="g2">0.26</td></tr><tr><th>db_schema (2)</th><td class="g5">0.96</td><td class="g4">0.88</td><td class="g2">0.49</td><td class="g5">0.99</td><td class="g1">0.08</td><td class="g5">1.00</td><td class="g1">0.19</td></tr><tr><th>factory_service (4)</th><td class="g4">0.76</td><td class="g4">0.76</td><td class="g4">0.85</td><td class="g4">0.76</td><td class="g5">0.91</td><td class="g3">0.67</td><td class="g3">0.58</td></tr><tr><th>type_only (4)</th><td class="g4">0.81</td><td class="g4">0.80</td><td class="g2">0.39</td><td class="g4">0.78</td><td class="g2">0.42</td><td class="g5">0.91</td><td class="g2">0.25</td></tr><tr><th>entrypoint (3)</th><td class="g4">0.89</td><td class="g4">0.89</td><td class="g3">0.67</td><td class="g4">0.89</td><td class="g4">0.89</td><td class="g3">0.54</td><td class="g5">0.92</td></tr></tbody></table>
+
+<h2>4 · Cost proxy — files returned for the answer (gold in yellow)</h2>
+<table><thead><tr><th>anchor</th><th>A2 createApp</th><th>A7 issues</th><th>A16 execute</th><th>A17 MarkdownBody</th></tr></thead>
+<tbody><tr><th>GOLD</th><td class="gold">1</td><td class="gold">123</td><td class="gold">5</td><td class="gold">25</td></tr><tr><th>ast-grep*</th><td>82</td><td>173</td><td>46</td><td>29</td></tr><tr><th>repomix*</th><td>83</td><td>544</td><td>175</td><td>47</td></tr><tr><th>serena</th><td>1</td><td>32</td><td>3</td><td>28</td></tr><tr><th>codegraph</th><td>50</td><td>121</td><td>43</td><td>28</td></tr><tr><th>CBM</th><td>2</td><td>14</td><td>2</td><td>5</td></tr><tr><th>graphify</th><td>49</td><td>123</td><td>8</td><td>32</td></tr><tr><th>UA</th><td>5</td><td>29</td><td>2</td><td>25</td></tr></tbody></table>
+<div class="note">repomix returns <b>175 files for the 5-file <code>execute</code> answer (35× noise)</b>; serena returns 3.
+This output-size is the real differentiator the overall-F1 hides. The heavy cost-at-equal-quality A/B is <b>deferred</b>, not run.</div>
+
+<h2>5 · Per-tool verdict</h2>
+<div class="card"><b>codegraph</b> — <span class="win">best all-round semantic tool</span> (F1 0.85 with real precision). Resolves
+barrels + cross-package, captures JSX <i>and</i> hooks (contradicting its capability card), indexes <code>secrets.ts</code>.
+Only weakness: heavy same-name collisions (name-keyed).</div>
+<div class="card"><b>serena</b> — <span class="win">best collision/disambiguation</span> (LSP, collision-P 1.00) &amp; highest
+precision (0.94), but <span class="fail">barrel-blind</span> (stops at the barrel index — shared with UA), lowest recall (0.59),
+<span class="fail">cold-cache flaky</span> (first query 0/1, warm correct). Highest setup cost (MCP daemon). Secrets visible.</div>
+<div class="card"><b>codebase-memory-mcp</b> — two catastrophic <b>reference-style-dependent</b> blind spots:
+<span class="fail">db-table references</span> (A8→0, A7→14/123) and <span class="fail">forwardRef components</span> (A18 invisible;
+A17 only 5/25 — so it does <i>not</i> "win" JSX). Wins the <code>createApp</code> collision (A2 1.00, file-scoped).
+<span class="fail">Git-bleed confirmed</span> (reports parent repo HEAD). Indexes secrets.</div>
+<div class="card"><b>graphify</b> — strong on db-schema/type/barrel via real <code>re_exports</code> edges; clean package dep
+graph (1 cycle: server↔scripts). <span class="fail">Polymorphic-dispatch blind</span> (A16 0.00).
+<span class="fail">Silently drops 34 secret files</span> (entire <code>server/src/secrets/</code>, <code>Secrets.tsx</code>,
+<code>company_secrets</code> table, <code>.env.example</code>) with no warning.</div>
+<div class="card"><b>ast-grep / repomix</b> — honest lexical baselines. Recall 1.0, precision collapses on collisions (A2 0.02),
+output up to 35× the answer. Stateless = always fresh. repomix strengths: comments survive (S12), native context-pack
+(S16: 171,608 tokens for a 3-file slice), indexes secrets.</div>
+<div class="card"><b>understand-anything</b> — weakest at symbol nav (barrel-blind on A9/A10/A11/A14, interfaces invisible,
+JSX uncaptured) but good at coarse architecture/hubs/layers. File/module-level graph, no symbol binding.</div>
+
+<h2>6 · Honesty &amp; isolation</h2>
+<div class="card"><b>Abstention (corrected after Codex review):</b> the 7 designed dimension-probes (rationale/runtime/
+data-flow/async/migration/history/failure-mode) were <b>deferred</b>, not run. What held: static tools return
+<code>file:line</code>-or-nothing (cannot fabricate); workers reported per-scenario support honestly. The one
+<span class="fail">safety</span> failure is a tool — graphify's silent secret-file drop.</div>
+<div class="card"><b>Isolation audit:</b> subject unmutated (read-only), no global installs, no result bleed, outputs contained.
+One low-severity leak — codegraph telemetry queue escaped to <code>~/.codegraph</code> (no subject content, offline,
+results valid; kill-switch fix scheduled for R2/R3).</div>
+
+<div class="card note">Ground truth: <code>harvest2.py</code> (binding-resolved, transitive re-export closure, 38-package
+dynamic map), Codex gpt-5.5 xhigh cross-checked (caught + fixed the A16 mixed-import undercount). This report itself
+was adversarially reviewed by Codex (REVISE-FIRST → 5 claims narrowed → shipped). Raw data: gitignored
+<code>scratchpad/harness/</code>. Markdown source: <code>robustness-findings-paperclip.md</code>.</div>
+
+</div></body></html>

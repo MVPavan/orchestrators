@@ -1,0 +1,184 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Robustness Findings — OpenHands (R2)</title>
+<style>
+:root{--bg:#0f1117;--card:#1a1d27;--ink:#e6e8ee;--mut:#9aa3b2;--line:#2a2f3d;--acc:#7aa2f7}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);
+font:15px/1.55 -apple-system,Segoe UI,Roboto,sans-serif;padding:0 0 80px}
+.wrap{max-width:1080px;margin:0 auto;padding:0 22px}
+header{background:linear-gradient(120deg,#1a2138,#161a26);padding:34px 0;border-bottom:1px solid var(--line)}
+h1{margin:0 0 6px;font-size:25px}h2{margin:34px 0 12px;font-size:19px;border-left:3px solid var(--acc);padding-left:10px}
+.sub{color:var(--mut);font-size:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px 18px;margin:14px 0}
+table{border-collapse:collapse;width:100%;font-size:13px;margin:6px 0}
+th,td{border:1px solid var(--line);padding:5px 8px;text-align:center}
+th{background:#222736;color:var(--ink);font-weight:600}
+tbody th,tr>th:first-child{text-align:left;background:#1e2330;white-space:nowrap;font-weight:500}
+td.gold{background:#2a2f1a;color:#e8e6a0;font-weight:700}
+td.na{color:#555}
+.g5{background:#0f3d2e;color:#7ee0b0}.g4{background:#1c3a26;color:#bfe3a0}
+.g3{background:#3a341c;color:#e8d48a}.g2{background:#3d2a1a;color:#e8b07a}.g1{background:#3d1c1c;color:#f08a8a}
+.tag{display:inline-block;background:#222b44;color:#a9c2ff;border-radius:5px;padding:1px 8px;font-size:12px;margin:2px 4px 2px 0}
+.win{color:#7ee0b0;font-weight:600}.fail{color:#f08a8a;font-weight:600}
+ul{margin:6px 0}li{margin:4px 0}code{background:#222736;padding:1px 5px;border-radius:4px;font-size:12px}
+.note{color:var(--mut);font-size:13px}
+.legend span{display:inline-block;padding:1px 7px;border-radius:4px;margin-right:5px;font-size:11px}
+.rev{display:inline-block;background:#3d1c1c;color:#f5a3a3;border:1px solid #5a2a2a;border-radius:5px;padding:1px 8px;font-size:11px;font-weight:700;letter-spacing:.3px}
+.rep{display:inline-block;background:#0f3d2e;color:#7ee0b0;border:1px solid #1c5a44;border-radius:5px;padding:1px 8px;font-size:11px;font-weight:700;letter-spacing:.3px}
+.repw{display:inline-block;background:#3a341c;color:#f0d488;border:1px solid #5a4f2a;border-radius:5px;padding:1px 8px;font-size:11px;font-weight:700;letter-spacing:.3px}
+td.up{color:#7ee0b0;font-weight:700}td.dn{color:#f08a8a;font-weight:700}
+tr>th.left{text-align:left}
+.hl{background:#0f3d2e;color:#7ee0b0;font-weight:700;border:1px solid #1c5a44}
+</style></head><body>
+<header><div class="wrap"><h1>Robustness Findings — OpenHands <span class="sub">(R2 of the multi-repo battery)</span></h1>
+<div class="sub"><b>R2 OpenHands — the Python generality test.</b> The same 7 static code-navigation tools × 20 anchors × the S1 "where is this symbol used?"
+core, replayed on a <b>Python-heavy</b> repo (845 <code>.py</code> core + <code>enterprise/</code> + 1,231 TS/TSX React frontend). One question:
+<b>were R1's paperclip tool-verdicts general, or were they TS/paperclip-specific?</b></div></div></header>
+<div class="wrap">
+
+<div class="card"><b>The hard ceiling (unchanged from R1).</b> All 7 are static, pre-indexed, read-only structural tools. None runs code,
+none reads <code>.git</code> history by design, only repomix reads non-code files. Runtime / git-history / ownership / build-ops
+are out of reach by construction. R2 holds the battery fixed and swaps the language axis to see which R1 verdicts transfer.
+<div class="note" style="margin-top:8px">Legend (F1): <span class="legend"><span class="g5">≥.90</span><span class="g4">≥.75</span><span class="g3">≥.50</span><span class="g2">≥.25</span><span class="g1">&lt;.25</span></span>
+&nbsp; <code>*</code> = lexical baseline (recall ~1.0 by construction → F1 inflated; see precision row).
+&nbsp; Status badges: <span class="rev">REVERSED</span> <span class="rep">REPRODUCED</span> <span class="repw">REPRODUCED + WORSE</span></div></div>
+
+<h2>0 · Headline — what reproduced, what reversed</h2>
+<div class="note">The surprises are the two R1 weaknesses that <b>vanished on Python</b> (red badges). The safety findings <b>held — and one got worse</b>.</div>
+<table><thead><tr><th class="left">R1 paperclip finding</th><th>R2 verdict</th><th class="left">why (verbatim from reviewed findings)</th></tr></thead>
+<tbody>
+<tr><th class="left">CBM catastrophic on db-schema (0.08)</th><td><span class="rev">REVERSED</span><div class="note" style="margin-top:4px">model_schema <b>0.95</b></div></td>
+<td class="left" style="text-align:left">CBM's own metadata labels these anchors <code>Class</code> with rich inbound <code>USAGE/IMPORTS/INHERITS</code> edges — whereas TS Drizzle tables were <code>Variable</code> nodes (no inbound edges). The blindness tracked the <b>node type</b>, not the tool. (A13/A16 = 1.00; A12 itself = 0.85 — <code>Settings</code> name-bleed FPs cap its precision.)</td></tr>
+<tr><th class="left">serena barrel-blind (0.47)</th><td><span class="rev">REVERSED</span><div class="note" style="margin-top:4px">barrel_initpy <b>1.00</b></div></td>
+<td class="left" style="text-align:left">pyright follows <code>__init__.py</code> re-exports transparently — and serena even resolved <i>through TS <code>index.ts</code> barrels here</i> (A18). R1's barrel-blindness <b>did not reproduce</b>; the most plausible R1 cause was the unbuilt pnpm-workspace <code>dist/</code> (not A/B-proven here), not an inherent serena property.</td></tr>
+<tr><th class="left">graphify silently drops secret files</th><td><span class="repw">REPRODUCED + WORSE</span></td>
+<td class="left" style="text-align:left">Drops 29 OpenHands source files (whole <code>openhands/app_server/secrets/</code> pkg + enterprise token stores). Unlike paperclip, <b>a dropped file (<code>stored_custom_secrets.py</code>) references an anchor (A13 <code>Org</code>)</b>, so it measurably <b>corrupts</b> A13 <b>recall to 0.76</b> (F1 0.84), missing the dropped file — not just metadata.</td></tr>
+<tr><th class="left">CBM git-bleed (reads parent repo HEAD)</th><td><span class="rep">REPRODUCED</span></td>
+<td class="left" style="text-align:left">OpenHands snapshot has no own <code>.git</code>; CBM walked up to the parent <code>orchestrators/.git</code>, baked HEAD <code>9fd20c9</code> + a Branch node into the graph; <code>detect_changes</code> ran on the <b>wrong repo</b>.</td></tr>
+<tr><th class="left">lexical: perfect recall, collision precision collapse</th><td><span class="rep">REPRODUCED</span></td>
+<td class="left" style="text-align:left">ast-grep/repomix recall ~0.9, but A5/A11 <code>start_job</code> collapse to identical sets; short Python names (<code>app</code>, <code>Settings</code>, <code>Org</code>) are noisy.</td></tr>
+<tr><th class="left">codegraph strong all-round, captures JSX</th><td><span class="rep">REPRODUCED</span><div class="note" style="margin-top:4px">0.85 → <b>0.89</b></div></td>
+<td class="left" style="text-align:left">Barrel-transparent on Python too; JSX <code>&lt;X/&gt;</code> found; only same-name collisions and <code>callers</code>-merging limit it.</td></tr>
+</tbody></table>
+<div class="card"><b>Net:</b> two of R1's most-cited tool weaknesses (CBM db-schema, serena barrels) <b>did not reproduce on Python</b> —
+CBM's was a TS-<code>Variable</code>-node artifact (confirmed by node type), serena's most plausibly the paperclip build (not A/B-proven).
+Two safety/robustness findings (graphify secret-drop, CBM git-bleed) <b>are general, and the secret-drop is worse on Python.</b>
+This is the entire value of replication.</div>
+
+<h2>1 · The 7-tool matrix — S1 "where is this symbol used?" macro-F1</h2>
+<div class="note">Best cell per row highlighted. <code>UA</code> = understand-anything. Ties on a row are all highlighted.</div>
+<table><thead><tr><th>scope</th><th>ast-grep*</th><th>repomix*</th><th>serena</th><th>codegraph</th><th>CBM</th><th>graphify</th><th>UA</th></tr></thead><tbody>
+<tr><th>overall (20)</th><td class="g4">0.81</td><td class="g4">0.75</td><td class="g5">0.90</td><td class="g4">0.89</td><td class="g5 hl">0.95</td><td class="g3">0.62</td><td class="g3">0.66</td></tr>
+<tr><th>entrypoint (2)</th><td class="g3">0.71</td><td class="g3">0.64</td><td class="g4">0.80</td><td class="g4">0.87</td><td class="g5 hl">0.90</td><td class="g2">0.40</td><td class="g5 hl">0.90</td></tr>
+<tr><th>service_method (4)</th><td class="g3">0.55</td><td class="g3">0.62</td><td class="g4">0.83</td><td class="g4">0.80</td><td class="g5 hl">0.92</td><td class="g2">0.35</td><td class="g2">0.49</td></tr>
+<tr><th>barrel_initpy (3)</th><td class="g5">0.95</td><td class="g5">0.97</td><td class="g5 hl">1.00</td><td class="g5 hl">1.00</td><td class="g5 hl">1.00</td><td class="g4">0.82</td><td class="g3">0.72</td></tr>
+<tr><th>cross_package (5)</th><td class="g5">0.94</td><td class="g5 hl">1.00</td><td class="g5">0.93</td><td class="g5 hl">1.00</td><td class="g5">0.98</td><td class="g5">0.90</td><td class="g4">0.81</td></tr>
+<tr><th>collision (4)</th><td class="g3">0.56</td><td class="g3">0.73</td><td class="g3">0.67</td><td class="g3">0.64</td><td class="g5 hl">0.95</td><td class="g2">0.42</td><td class="g2">0.46</td></tr>
+<tr><th>model_schema (3)</th><td class="g5">0.90</td><td class="g3">0.72</td><td class="g5 hl">1.00</td><td class="g5">0.92</td><td class="g5">0.95</td><td class="g5">0.93</td><td class="g3">0.74</td></tr>
+<tr><th>type_protocol (4)</th><td class="g5">0.93</td><td class="g3">0.66</td><td class="g4">0.75</td><td class="g4">0.89</td><td class="g5 hl">0.99</td><td class="g3">0.73</td><td class="g3">0.60</td></tr>
+<tr><th>react_jsx (3)</th><td class="g4">0.76</td><td class="g4">0.86</td><td class="g5 hl">1.00</td><td class="g4">0.88</td><td class="g5">0.92</td><td class="g2">0.43</td><td class="g2">0.48</td></tr>
+<tr><th>dynamic_dispatch (2)</th><td class="g3">0.66</td><td class="g3">0.61</td><td class="g5 hl">1.00</td><td class="g5 hl">1.00</td><td class="g5 hl">1.00</td><td class="g2">0.25</td><td class="g3">0.53</td></tr>
+</tbody></table>
+<div class="card"><b>Precision / recall split (S1)</b> — F1-overall flatters the lexical tools; read precision.
+<table style="margin-top:8px"><thead><tr><th>metric</th><th>ast-grep*</th><th>repomix*</th><th>serena</th><th>codegraph</th><th>CBM</th><th>graphify</th><th>UA</th></tr></thead><tbody>
+<tr><th>precision</th><td class="g4">0.83</td><td class="g3">0.68</td><td class="g5 hl">0.95</td><td class="g4">0.87</td><td class="g5">0.96</td><td class="g3">0.70</td><td class="g3">0.66</td></tr>
+<tr><th>recall</th><td class="g4">0.88</td><td class="g5 hl">0.94</td><td class="g4">0.87</td><td class="g5 hl">0.97</td><td class="g5">0.94</td><td class="g3">0.67</td><td class="g4">0.80</td></tr>
+</tbody></table>
+<div class="note" style="margin-top:6px"><code>*</code> lexical baselines (recall-inflated; see R1 §2 caveat — same here). The <code>dynamic_dispatch</code> bucket = A3/A4; <code>service_method</code> = A3/A4/A5/A20.</div></div>
+
+<h2>2 · R1 → R2 deltas (overall S1 macro-F1)</h2>
+<div class="note">The language swap re-ranks the field. Green = improved on Python, red = regressed.</div>
+<table><thead><tr><th class="left">tool</th><th>paperclip (R1)</th><th>OpenHands (R2)</th><th>Δ</th><th class="left">reading</th></tr></thead><tbody>
+<tr><th class="left">CBM</th><td class="g3">0.63</td><td class="g5">0.95</td><td class="up">+0.32</td><td class="left" style="text-align:left">Python models fixed the db-schema blindness; <b>best on OpenHands</b></td></tr>
+<tr><th class="left">serena</th><td class="g3">0.66</td><td class="g5">0.90</td><td class="up">+0.24</td><td class="left" style="text-align:left">barrel-blindness gone; pyright forward-nav excellent</td></tr>
+<tr><th class="left">UA</th><td class="g3">0.57</td><td class="g3">0.66</td><td class="up">+0.09</td><td class="left" style="text-align:left">better Python import resolution (70% vs TS 31%)</td></tr>
+<tr><th class="left">codegraph</th><td class="g4">0.85</td><td class="g4">0.89</td><td class="up">+0.04</td><td class="left" style="text-align:left">consistent, strong on both</td></tr>
+<tr><th class="left">ast-grep</th><td class="g4">0.85</td><td class="g4">0.81</td><td class="dn">−0.04</td><td class="left" style="text-align:left">lexical; Python short-name noise</td></tr>
+<tr><th class="left">repomix</th><td class="g4">0.84</td><td class="g4">0.75</td><td class="dn">−0.09</td><td class="left" style="text-align:left">lexical; cross-language bleed lowers precision</td></tr>
+<tr><th class="left">graphify</th><td class="g4">0.77</td><td class="g3">0.62</td><td class="dn">−0.15</td><td class="left" style="text-align:left">method call-graph is <b>same-file-only</b> on Python; secret-drop corrupts A13</td></tr>
+</tbody></table>
+
+<h2>3 · New findings, OpenHands-specific (invisible on a single TS repo)</h2>
+<div class="card"><b>Cross-language name bleed (polyglot hazard).</b> CBM and codegraph mix Python <code>Settings</code> (A12) where-used
+with frontend <code>.tsx</code>; CBM, repomix, UA mix <code>capture</code> (A20) with JS <code>posthog.capture</code>. On A12 the two
+bleeding tools land at <b>P=0.73 (CBM)</b> and <b>0.63 (codegraph)</b>. <span class="win">ast-grep avoids it</span> — its
+<code>-l python</code> / <code>-l tsx</code> split keeps A12 at <b>P=1.0</b>. A single-language repo hides the hazard entirely.</div>
+<div class="card"><b>graphify method call-graph is local-only.</b> <code>calls</code> edges link caller→callee only within the
+<b>same file</b>, so cross-file method callers for A3/A20 = 0. This drags the method buckets — service_method (A3/A4/A5/A20)
+= <b>0.35</b> and dynamic_dispatch (A3/A4) = <b>0.25</b> — though both buckets <i>also</i> include the non-method anchor
+A4 (<code>get_impl</code> = 0), so the call-graph locality is a major <i>but not sole</i> cause. New and severe on Python's method-heavy code.</div>
+<div class="card"><b>serena abstract-method blind spot.</b> A11 <code>Manager.start_job</code> (abstract) → <code>{}</code> — pyright binds
+<code>self.start_job()</code> to the concrete subclass, so the ABC method shows no callers; <code>find_implementations</code>
+is unsupported by pyright. <span class="fail">Polymorphic call-site discovery is weak.</span></div>
+<div class="card"><b>Truncation reliability traps (two failure shapes, one trap).</b> serena <code>max_answer_chars</code> silently
+truncated A9 <code>ProviderType</code> to <i>empty</i> (actually 103 files / 686 refs) until the limit was raised — looks like
+"0 results". codegraph's default <code>callers</code> limit (20) silently <b>caps to a partial set</b> (true counts
+107/135/189/102 for A9/A12/A13/A19) — not empty, but confidently incomplete. Different shapes (zero vs truncated), <b>same trap</b>:
+an agent that trusts the returned count is misled either way.</div>
+<div class="card"><b>graphify barrels weaker on Python.</b> It emits <code>re_exports</code> edges for <code>__init__.py</code> but
+<b>file-granular</b> (file→file, 0 symbol targets); on TS <code>index.ts</code> it resolved re_exports to symbol nodes. The
+barrel bucket still scores <b>0.82</b> — A6/A7 resolve fine; A8 <code>GitHubReposMixin</code> is the one that drops (extra files).
+The file-granular mechanism is real but not uniform across all three barrel anchors.</div>
+
+<h2>4 · Per-anchor F1 — the full 20 (audit detail)</h2>
+<div class="note"><code>—</code> = anchor not measured for that tool. Source: <code>scratchpad/harness-openhands/_gt/scores_matrix.md</code>.</div>
+<table><thead><tr><th>anchor</th><th>ast-grep*</th><th>repomix*</th><th>serena</th><th>codegraph</th><th>CBM</th><th>graphify</th><th>UA</th></tr></thead><tbody>
+<tr><th>A1</th><td class="g2">0.43</td><td class="g2">0.28</td><td class="g5">0.94</td><td class="g3">0.74</td><td class="g4">0.80</td><td class="g1">0.00</td><td class="g4">0.80</td></tr>
+<tr><th>A2</th><td class="g5">1.00</td><td class="g5">1.00</td><td class="g3">0.67</td><td class="g5">1.00</td><td class="g5">1.00</td><td class="g4">0.80</td><td class="g5">1.00</td></tr>
+<tr><th>A3</th><td class="g2">0.35</td><td class="g2">0.26</td><td class="g5">1.00</td><td class="g5">1.00</td><td class="g5">1.00</td><td class="g3">0.50</td><td class="g1">0.07</td></tr>
+<tr><th>A4</th><td class="g5">0.96</td><td class="g5">0.96</td><td class="g5">1.00</td><td class="g5">1.00</td><td class="g5">1.00</td><td class="g1">0.00</td><td class="g5">1.00</td></tr>
+<tr><th>A5</th><td class="g2">0.31</td><td class="g3">0.57</td><td class="g3">0.67</td><td class="g2">0.33</td><td class="g5">1.00</td><td class="g3">0.50</td><td class="g1">0.15</td></tr>
+<tr><th>A6</th><td class="g5">0.94</td><td class="g5">1.00</td><td class="g5">1.00</td><td class="g5">1.00</td><td class="g5">1.00</td><td class="g5">0.94</td><td class="g5">0.90</td></tr>
+<tr><th>A7</th><td class="g5">0.92</td><td class="g5">0.92</td><td class="g5">1.00</td><td class="g5">1.00</td><td class="g5">1.00</td><td class="g5">0.96</td><td class="g3">0.60</td></tr>
+<tr><th>A8</th><td class="g5">1.00</td><td class="g5">1.00</td><td class="g5">1.00</td><td class="g5">1.00</td><td class="g5">1.00</td><td class="g3">0.57</td><td class="g3">0.67</td></tr>
+<tr><th>A9</th><td class="g4">0.89</td><td class="g5">0.99</td><td class="g5">1.00</td><td class="g5">0.99</td><td class="g5">0.91</td><td class="g4">0.76</td><td class="g3">0.71</td></tr>
+<tr><th>A10</th><td class="g5">1.00</td><td class="g5">1.00</td><td class="g5">1.00</td><td class="g5">1.00</td><td class="g5">1.00</td><td class="g5">1.00</td><td class="g5">1.00</td></tr>
+<tr><th>A11</th><td class="g4">0.84</td><td class="g4">0.78</td><td class="g1">0.00</td><td class="g4">0.78</td><td class="g5">0.94</td><td class="g1">0.22</td><td class="g4">0.78</td></tr>
+<tr><th>A12</th><td class="g4">0.82</td><td class="g4">0.83</td><td class="g5">1.00</td><td class="g4">0.77</td><td class="g4">0.84</td><td class="g5">0.95</td><td class="g5">0.92</td></tr>
+<tr><th>A13</th><td class="g5">1.00</td><td class="g3">0.61</td><td class="g5">1.00</td><td class="g5">1.00</td><td class="g5">1.00</td><td class="g4">0.84</td><td class="g4">0.86</td></tr>
+<tr><th>A14</th><td class="g5">0.94</td><td class="g2">0.44</td><td class="g5">1.00</td><td class="g4">0.78</td><td class="g5">1.00</td><td class="g5">1.00</td><td class="g1">0.12</td></tr>
+<tr><th>A15</th><td class="g5">1.00</td><td class="g3">0.50</td><td class="g5">1.00</td><td class="g5">1.00</td><td class="g5">1.00</td><td class="g3">0.73</td><td class="g4">0.89</td></tr>
+<tr><th>A16</th><td class="g4">0.89</td><td class="na">—</td><td class="g5">1.00</td><td class="g5">1.00</td><td class="g5">1.00</td><td class="g5">0.98</td><td class="g2">0.43</td></tr>
+<tr><th>A17</th><td class="g5">1.00</td><td class="g4">0.86</td><td class="g5">1.00</td><td class="g5">1.00</td><td class="g4">0.80</td><td class="g2">0.32</td><td class="g3">0.50</td></tr>
+<tr><th>A18</th><td class="g2">0.29</td><td class="na">—</td><td class="g5">1.00</td><td class="g3">0.67</td><td class="g5">1.00</td><td class="g1">0.00</td><td class="g1">0.00</td></tr>
+<tr><th>A19</th><td class="g5">0.98</td><td class="na">—</td><td class="g5">1.00</td><td class="g5">0.98</td><td class="g5">0.95</td><td class="g5">0.96</td><td class="g5">0.95</td></tr>
+<tr><th>A20</th><td class="g3">0.57</td><td class="g3">0.67</td><td class="g3">0.67</td><td class="g4">0.86</td><td class="g3">0.67</td><td class="g2">0.40</td><td class="g4">0.75</td></tr>
+</tbody></table>
+
+<h2>5 · Caveats</h2>
+<div class="card"><ul>
+<li><b>Method anchors (A3/A5/A11/A20)</b> are polymorphic dispatch — gold = call-site set (single-def) or class-scoped
+(collision); precision is inherently capped. A5's <code>method_def_sites</code> lists all 8 same-named overrides (the
+method-<i>name</i> find_implementations answer); a tool returning only the JiraManager def is not penalized.</li>
+<li><b>Milder collisions than paperclip.</b> OpenHands has fewer extreme same-name top-level symbols, so the collision
+bucket is easier here for everyone — the absolute collision scores are <b>not directly comparable to R1</b>; the
+<i>ranking</i> (serena/CBM handle collisions, lexical/graph-name-keyed collapse) is what transfers.</li>
+<li><b>F1-overall still flatters the lexical tools</b> (recall-inflated); read per-bucket + precision.</li>
+</ul></div>
+
+<h2>6 · Methodology, freshness &amp; isolation</h2>
+<div class="card"><b>Evidence base.</b> Every F1/P/R is a real fresh-index tool run scored against an
+<b>independently-computed, dual-reviewed binding-resolved gold</b> (Codex gpt-5.5 xhigh <b>and</b> an independent Opus
+auditor both audited it; they converged; the zero-unaccounted invariant holds exactly on the hard anchors). The gold's
+Python resolver (two roots <code>openhands</code> + <code>enterprise</code>, transitive <code>__init__.py</code> re-export
+closure, <code>#/</code> TS alias) was itself validated over 2 review rounds.</div>
+<div class="card"><b>Fresh indexes built per tool.</b> CBM 1.76s · codegraph ~12s · graphify ~41s · UA ~6s · repomix 1.96s ·
+serena ~12s Python-LSP cold (pyright auto-installed) +~13s TS-LS · ast-grep stateless. All confirmed <code>.py</code>
+indexed, <code>.venv</code>/<code>__pycache__</code>/<code>node_modules</code> excluded (0 leaks).
+<span class="win">serena Python-LSP setup was fully automated</span> (pyright 1.1.403 + cpython via uvx, zero manual steps) —
+contradicts any worry that Python support is high-friction.</div>
+<div class="card"><b>Isolation audit — clean, cleaner than R1</b> (<code>results/_isolation_audit_R2.md</code>). Subject
+<code>_openhands_src</code> unmutated (read-only, write denied). The codegraph telemetry kill-switch (R1 leak) held this
+round — <b>0 fresh <code>~/.codegraph</code> writes</b>; only a benign empty <code>~/.serena</code> dir (no content; all 26M
+of LSP/cache data stayed tool-local). No result bleed — each worker ran blind. CBM git-bleed (§0) is recorded there as a
+<span class="fail">freshness/worktree hazard</span>, not a sandbox leak.</div>
+
+<div class="card note"><b>Status:</b> gold dual-reviewed (Codex gpt-5.5 xhigh + independent Opus, converged); battery scored;
+isolation audit clean. <b>Codex adversarially reviewed these findings — verdict applied</b> (softened the serena-cause and
+cross-language-bleed claims, corrected the <code>dynamic_dispatch</code> anchor list and the A13 recall figure, distinguished
+serena's empty-truncation from codegraph's partial-cap). Raw data, gold, scorers: gitignored
+<code>scratchpad/harness-openhands/</code>. Matrix: <code>scratchpad/harness-openhands/_gt/scores_matrix.md</code>. Markdown
+source: <code>robustness-findings-openhands.md</code>. The cross-repo synthesis (paperclip + OpenHands) is the final
+deliverable — next: <b>R3 deer-flow</b>.</div>
+
+</div></body></html>

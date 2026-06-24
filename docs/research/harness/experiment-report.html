@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Code-Understanding Tools — Experiment Report</title>
+<style>
+  :root{
+    --bg:#f6f6f4; --surface:#ffffff; --surface-2:#fbfbfa; --text:#1b1b1d; --muted:#6c6c70;
+    --border:#e4e4e0; --accent:#3a5bd9; --accent-soft:#eaeefb;
+    --hi-bg:#fbe9e7; --hi-fg:#b3261e; --med-bg:#fdf3e2; --med-fg:#9a6700;
+    --low-bg:#e7f4ec; --low-fg:#1f7a44; --info-bg:#eaeefb; --info-fg:#3a5bd9;
+    --s4:4px; --s8:8px; --s12:12px; --s16:16px; --s24:24px; --s32:32px; --s48:48px; --s64:64px;
+    --maxw:940px; --radius:10px;
+    --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+    --sans:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --bg:#0f0f11; --surface:#18181b; --surface-2:#1d1d20; --text:#e9e9ea; --muted:#9a9aa0;
+      --border:#2c2c30; --accent:#8aa4ff; --accent-soft:#1b2240;
+      --hi-bg:#3a1f1d; --hi-fg:#ff938a; --med-bg:#352a16; --med-fg:#ffcd6b;
+      --low-bg:#16301f; --low-fg:#7fd8a0; --info-bg:#1b2240; --info-fg:#8aa4ff;
+    }
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans);
+    font-size:15.5px;line-height:1.62;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:var(--s48) var(--s24) var(--s64)}
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline}
+  h1{font-size:30px;line-height:1.2;margin:0 0 var(--s8);letter-spacing:-.01em}
+  .sub{color:var(--muted);font-size:16px;margin:0 0 var(--s24)}
+  .meta{color:var(--muted);font-size:13px;margin:0 0 var(--s32)}
+  .num{font-variant-numeric:tabular-nums}
+  /* KPI */
+  .kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:var(--s12);margin:var(--s24) 0 var(--s48)}
+  .kpi{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:var(--s16)}
+  .kpi .v{font-size:25px;font-weight:650;letter-spacing:-.01em;font-variant-numeric:tabular-nums}
+  .kpi .l{font-size:12.5px;color:var(--muted);margin-top:var(--s4)}
+  .kpi.hero .v{color:var(--accent)}
+  /* sections */
+  section{margin:var(--s48) 0 0}
+  .sh{display:flex;align-items:baseline;gap:var(--s12);margin-bottom:var(--s12)}
+  .sh .n{font-size:34px;font-weight:700;color:var(--border);font-variant-numeric:tabular-nums;line-height:1}
+  @media (prefers-color-scheme:dark){.sh .n{color:#3a3a40}}
+  .sh h2{font-size:21px;margin:0;letter-spacing:-.01em}
+  .rule{height:1px;background:var(--border);margin:0 0 var(--s24)}
+  p{margin:0 0 var(--s16)}
+  .lead{font-size:16.5px}
+  .callout{background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--accent);
+    border-radius:8px;padding:var(--s16) var(--s16);margin:var(--s16) 0}
+  .callout.warn{border-left-color:var(--med-fg)}
+  .callout.good{border-left-color:var(--low-fg)}
+  .muted{color:var(--muted)}
+  /* cards */
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+    padding:var(--s24);margin:var(--s16) 0}
+  .card h3{margin:0 0 var(--s4);font-size:18px}
+  .card .tag{font-size:12.5px;color:var(--muted);font-weight:500}
+  .kv{margin:var(--s12) 0 0}
+  .kv dt{font-size:12.5px;letter-spacing:.02em;text-transform:uppercase;color:var(--muted);margin-top:var(--s12)}
+  .kv dd{margin:var(--s4) 0 0}
+  /* pills */
+  .pill{display:inline-block;font-size:12px;font-weight:600;padding:2px 8px;border-radius:999px;
+    line-height:1.5;white-space:nowrap}
+  .p-hi{background:var(--hi-bg);color:var(--hi-fg)}
+  .p-med{background:var(--med-bg);color:var(--med-fg)}
+  .p-low{background:var(--low-bg);color:var(--low-fg)}
+  .p-info{background:var(--info-bg);color:var(--info-fg)}
+  /* tables */
+  .tw{overflow-x:auto;margin:var(--s16) 0}
+  table{border-collapse:collapse;width:100%;font-size:14px}
+  th,td{text-align:left;padding:9px 11px;border-bottom:1px solid var(--border);vertical-align:top}
+  th{font-size:12.5px;text-transform:uppercase;letter-spacing:.02em;color:var(--muted);font-weight:600}
+  td.num,th.num{text-align:center;font-variant-numeric:tabular-nums}
+  tbody tr:hover{background:var(--surface-2)}
+  .mx td.c{text-align:center;font-weight:600}
+  .legend{font-size:13px;color:var(--muted);margin-top:var(--s8)}
+  .dot{font-weight:700}
+  .d2{color:var(--low-fg)} .d1{color:var(--accent)} .d0{color:var(--med-fg)} .dx{color:var(--muted)}
+  details{background:var(--surface-2);border:1px solid var(--border);border-radius:8px;
+    padding:var(--s12) var(--s16);margin:var(--s12) 0}
+  summary{cursor:pointer;font-weight:600;font-size:14px}
+  details[open] summary{margin-bottom:var(--s8)}
+  code{font-family:var(--mono);font-size:.88em;background:var(--surface-2);border:1px solid var(--border);
+    padding:1px 5px;border-radius:5px}
+  ul{margin:var(--s8) 0 var(--s16);padding-left:var(--s24)}
+  li{margin:var(--s4) 0}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:var(--s16)}
+  .foot{margin-top:var(--s64);padding-top:var(--s24);border-top:1px solid var(--border);
+    color:var(--muted);font-size:13px}
+  svg{max-width:100%;height:auto}
+  @media (max-width:720px){
+    .wrap{padding:var(--s32) var(--s16) var(--s48)}
+    .kpis{grid-template-columns:repeat(2,1fr)}
+    .grid2{grid-template-columns:1fr}
+    h1{font-size:25px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>Code-Understanding Tools — what I did, in plain terms</h1>
+  <p class="sub">An experiment using 8 separate tools as different "lenses" to understand one real codebase, then comparing them fairly — only where they actually do the same job.</p>
+  <p class="meta">Subject codebase: <strong>paperclip</strong> (a real TypeScript app, ~2,961 source files) · Run on 2026-06-22 · Every number here traces to a saved result file in <code>docs/research/harness/</code>.</p>
+
+  <div class="kpis">
+    <div class="kpi"><div class="v num">8</div><div class="l">tools tested</div></div>
+    <div class="kpi"><div class="v num">2,961</div><div class="l">files in the codebase</div></div>
+    <div class="kpi"><div class="v num">18 + 5</div><div class="l">AI worker runs + critic reviews</div></div>
+    <div class="kpi"><div class="v num">3 → 0</div><div class="l">stray files caught &amp; cleaned</div></div>
+    <div class="kpi hero"><div class="v">CBM</div><div class="l">winner on the key test</div></div>
+  </div>
+
+  <!-- 01 -->
+  <section id="goal">
+    <div class="sh"><span class="n">01</span><h2>What I set out to do</h2></div>
+    <div class="rule"></div>
+    <p class="lead">There are many tools that claim to help an AI assistant "understand a codebase" — by mapping it, searching it smartly, or compressing it. They don't all do the same thing, so a single head-to-head score would be unfair. The plan was:</p>
+    <ul>
+      <li><strong>Discover</strong> what each tool is genuinely built to do (read its docs and try it).</li>
+      <li><strong>Use</strong> each one to its full strength against the same real codebase, and save the results.</li>
+      <li><strong>Compare</strong> only where two or more tools genuinely overlap — and where <em>all</em> of them attempt the same thing, draw a firm conclusion.</li>
+    </ul>
+    <p>The codebase under test, <strong>paperclip</strong>, is a real, large TypeScript project split into many packages (a "monorepo"). That's a realistic, hard target — the kind of project where naive file-by-file reading falls apart.</p>
+    <div class="callout">
+      <strong>The one trap that made the whole thing rigorous.</strong> I picked a specific function in the code, <code>isUuidLike</code> (it checks whether a string looks like an ID), and asked every tool the same question: <em>"Which files actually use this function?"</em> I already knew the truthful answer by hand (16 files use the real shared one). That gave every tool a fair, gradeable exam — and it hid a surprise: the codebase actually contains <strong>three</strong> different functions all named <code>isUuidLike</code>, so a tool that just matches the name gets fooled.
+    </div>
+  </section>
+
+  <!-- 02 -->
+  <section id="how">
+    <div class="sh"><span class="n">02</span><h2>How it was run — the team and the four phases</h2></div>
+    <div class="rule"></div>
+    <p>I acted as the <strong>orchestrator</strong>: I never did the heavy reading myself. Instead I dispatched <strong>AI workers</strong> (one per tool, working in parallel so they couldn't influence each other) to do the hands-on testing, and I used a <strong>second, independent AI critic</strong> (a different model family) to challenge the conclusions before accepting them.</p>
+
+    <svg viewBox="0 0 880 200" role="img" aria-label="Four-phase pipeline: Setup, Discover, Use, Compare, with an independent critic checking the last two.">
+      <defs>
+        <marker id="ar" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+          <path d="M0,0 L7,3 L0,6 Z" fill="var(--muted)"/>
+        </marker>
+      </defs>
+      <!-- orchestrator -->
+      <rect x="320" y="8" width="240" height="34" rx="8" fill="var(--accent-soft)" stroke="var(--accent)"/>
+      <text x="440" y="30" text-anchor="middle" font-size="13" fill="var(--text)" font-family="system-ui">Orchestrator (me) — dispatches &amp; reviews</text>
+      <!-- phase boxes -->
+      <g font-family="system-ui">
+        <rect x="14"  y="92" width="180" height="60" rx="8" fill="var(--surface)" stroke="var(--border)"/>
+        <text x="104" y="116" text-anchor="middle" font-size="13" font-weight="600" fill="var(--text)">Phase 0 · Setup</text>
+        <text x="104" y="134" text-anchor="middle" font-size="11.5" fill="var(--muted)">clone tools, freeze a</text>
+        <text x="104" y="148" text-anchor="middle" font-size="11.5" fill="var(--muted)">read-only copy</text>
+
+        <rect x="234" y="92" width="180" height="60" rx="8" fill="var(--surface)" stroke="var(--border)"/>
+        <text x="324" y="116" text-anchor="middle" font-size="13" font-weight="600" fill="var(--text)">Phase A · Discover</text>
+        <text x="324" y="134" text-anchor="middle" font-size="11.5" fill="var(--muted)">8 workers learn each</text>
+        <text x="324" y="148" text-anchor="middle" font-size="11.5" fill="var(--muted)">tool's strengths</text>
+
+        <rect x="454" y="92" width="180" height="60" rx="8" fill="var(--surface)" stroke="var(--border)"/>
+        <text x="544" y="116" text-anchor="middle" font-size="13" font-weight="600" fill="var(--text)">Phase B · Use</text>
+        <text x="544" y="134" text-anchor="middle" font-size="11.5" fill="var(--muted)">8 workers exploit each</text>
+        <text x="544" y="148" text-anchor="middle" font-size="11.5" fill="var(--muted)">tool on the codebase</text>
+
+        <rect x="674" y="92" width="180" height="60" rx="8" fill="var(--surface)" stroke="var(--border)"/>
+        <text x="764" y="116" text-anchor="middle" font-size="13" font-weight="600" fill="var(--text)">Phase C · Compare</text>
+        <text x="764" y="134" text-anchor="middle" font-size="11.5" fill="var(--muted)">build the matrix,</text>
+        <text x="764" y="148" text-anchor="middle" font-size="11.5" fill="var(--muted)">draw conclusions</text>
+      </g>
+      <!-- arrows between phases -->
+      <line x1="194" y1="122" x2="232" y2="122" stroke="var(--muted)" marker-end="url(#ar)"/>
+      <line x1="414" y1="122" x2="452" y2="122" stroke="var(--muted)" marker-end="url(#ar)"/>
+      <line x1="634" y1="122" x2="672" y2="122" stroke="var(--muted)" marker-end="url(#ar)"/>
+      <!-- orchestrator down arrows -->
+      <line x1="440" y1="42" x2="440" y2="88" stroke="var(--muted)" stroke-dasharray="3 3" marker-end="url(#ar)"/>
+      <!-- critic -->
+      <rect x="454" y="172" width="400" height="24" rx="6" fill="none" stroke="var(--med-fg)" stroke-dasharray="4 3"/>
+      <text x="654" y="188" text-anchor="middle" font-size="11.5" fill="var(--med-fg)" font-family="system-ui">Independent critic (different AI) challenges Phase A &amp; C before I accept them</text>
+    </svg>
+
+    <p class="muted" style="font-size:13px">Counts: 8 discovery workers + 8 usage workers + 1 final synthesis worker + 1 follow-up re-test = <strong>18 worker runs</strong>; plus <strong>5 critic reviews</strong>. All workers ran in the background, in parallel where possible.</p>
+  </section>
+
+  <!-- 03 -->
+  <section id="scenarios">
+    <div class="sh"><span class="n">03</span><h2>The test scenarios — the same questions for everyone</h2></div>
+    <div class="rule"></div>
+    <p>So the tools could be compared, every "understanding" tool was asked the same set of plain questions about paperclip. Each tool answered the ones it was capable of; the rest were recorded as "out of scope by design" (which is itself a finding).</p>
+    <div class="tw">
+    <table>
+      <thead><tr><th style="width:74px">Scenario</th><th>The question, in plain terms</th><th>Why it matters</th></tr></thead>
+      <tbody>
+        <tr><td><strong>The anchor</strong></td><td>"Which files use the shared <code>isUuidLike</code> function, and what breaks if I change it?"</td><td>The graded exam. Truth = 16 files (11 in the server, 5 in the UI).</td></tr>
+        <tr><td>T1</td><td>"Map the project: what are the packages and how do they depend on each other?"</td><td>Orientation for a newcomer.</td></tr>
+        <tr><td>T2</td><td>"Start at the command-line entry point and trace what it calls."</td><td>Following a flow through the code.</td></tr>
+        <tr><td>T3</td><td>"Who references this function?" (the anchor)</td><td>Impact / blast-radius analysis.</td></tr>
+        <tr><td>T4</td><td>"Can you follow an import across package boundaries back to its source?"</td><td>The hard part of a multi-package project.</td></tr>
+        <tr><td>T5</td><td>"Which files should a new developer read first?"</td><td>Onboarding.</td></tr>
+        <tr><td>T6</td><td>"Find all code shaped a certain way" (e.g. every UI hook, every route).</td><td>Pattern sweeps.</td></tr>
+      </tbody>
+    </table>
+    </div>
+  </section>
+
+  <!-- 04 -->
+  <section id="tools">
+    <div class="sh"><span class="n">04</span><h2>The 8 tools — what each is, what I found, how I used it</h2></div>
+    <div class="rule"></div>
+    <p>Each card below covers, in order: <strong>what the tool is</strong> (plain), <strong>the capabilities I discovered and then actually used</strong>, <strong>how I tested it</strong>, <strong>what it told us about paperclip</strong>, and <strong>where it fell short</strong>.</p>
+
+    <!-- ast-grep -->
+    <div class="card">
+      <h3>1 · ast-grep <span class="tag">— "search by code shape"</span></h3>
+      <dl class="kv">
+        <dt>What it is</dt><dd>Like find-and-replace, but it understands code <em>structure</em>, not just text. You write a pattern that looks like code with blanks in it (e.g. <code>isUuidLike($$$)</code>) and it finds every place shaped like that.</dd>
+        <dt>Capabilities I used</dt><dd>Structural search · structure-aware lint rules · a per-file outline · machine-readable output. (I deliberately did <em>not</em> use its code-rewrite power, since the copy was read-only.)</dd>
+        <dt>How I tested it</dt><dd>Searched for every use of the anchor; counted UI patterns across the whole app; listed a file's structure.</dd>
+        <dt>What it found</dt><dd>It cleanly separated the <strong>24 real calls</strong> of <code>isUuidLike</code> from the 44 plain-text matches — it ignored the import lines and definitions that ordinary search lumps in. It also counted, in one shot: <strong>512</strong> UI effects, <strong>601</strong> UI state hooks, <strong>412</strong> server routes. Fastest tool of all (sub-second).</dd>
+        <dt>Where it fell short</dt><dd>It only matches <em>shapes</em>. It can't follow an import or tell which of the three same-named functions you mean. That's a boundary, not a bug.</dd>
+      </dl>
+    </div>
+
+    <!-- repomix -->
+    <div class="card">
+      <h3>2 · repomix <span class="tag">— "pack the whole repo into one file for an AI, on a token budget"</span></h3>
+      <dl class="kv">
+        <dt>What it is</dt><dd>Flattens a codebase into a single digest you can hand to an AI, and counts how many "tokens" (the units an AI reads and is billed for) each part costs.</dd>
+        <dt>Capabilities I used</dt><dd>Whole-repo pack · per-file/per-folder token counting · a compression mode · a metadata "manifest" of all files · a dependency map built from the project's package files.</dd>
+        <dt>How I tested it</dt><dd>Built a triage manifest of all 2,961 files; measured token cost; compressed one package and measured the saving.</dd>
+        <dt>What it found</dt><dd>A genuinely useful triage fact: <strong>one folder (the database package) is 77% of the entire code's token cost</strong> — and it's almost all auto-generated snapshots, i.e. "never feed that to an AI". The whole repo is ~10.9 million tokens raw — far too big for any single AI to read at once, so you must slice it. Compression saved ~58% on a code-heavy package.</dd>
+        <dt>Where it fell short</dt><dd>It prepares context; it doesn't answer questions or follow code. And its compression drops function bodies, which silently halves the accuracy of any "find usages" done on the compressed version.</dd>
+      </dl>
+    </div>
+
+    <!-- serena -->
+    <div class="card">
+      <h3>3 · serena <span class="tag">— "editor-grade go-to-definition for an AI"</span></h3>
+      <dl class="kv">
+        <dt>What it is</dt><dd>Drives the very same engine your code editor uses for "go to definition" and "find all references", so an AI can navigate symbols precisely instead of guessing from text.</dd>
+        <dt>Capabilities I used</dt><dd>File symbol outline · find a symbol's definition · find references to it · go-to-definition from a usage · error diagnostics.</dd>
+        <dt>How I tested it</dt><dd>Traced the command-line entry 3 steps deep; asked "who uses the anchor?"; asked "jump from this usage to the definition".</dd>
+        <dt>What it found</dt><dd>It was the one tool that <strong>correctly noticed the anchor exists three times and refused to merge them</strong> — a precision a text search can't match. In-package navigation was clean and sub-second.</dd>
+        <dt>Where it fell short</dt><dd>"Who uses this?" returned almost nothing (1 of 16). I ran a dedicated <a href="#retest">follow-up re-test</a> to find out why — and the cause turned out to be subtle and interesting (a "hub file" pattern), not a simple setup mistake.</dd>
+      </dl>
+    </div>
+
+    <!-- codegraph -->
+    <div class="card">
+      <h3>4 · codegraph <span class="tag">— "build a local map, then hand back the exact source + impact"</span></h3>
+      <dl class="kv">
+        <dt>What it is</dt><dd>Scans the repo into a local database of "which function calls which", then answers a question by returning the real source lines plus what they touch — so an AI doesn't have to open 20 files.</dd>
+        <dt>Capabilities I used</dt><dd>Build the index · "explore" a topic · who-calls / who's-called · impact radius (1 hop and 3 hops) · file &amp; index statistics.</dd>
+        <dt>How I tested it</dt><dd>Indexed 2,259 files (20 seconds); asked for the anchor's callers and its impact; explored the architecture.</dd>
+        <dt>What it found</dt><dd>It separated the three copies, followed the cross-package link with <strong>zero setup</strong>, and returned editable source plus a tiered "blast radius": changing the anchor touches <strong>85 files</strong> at one hop, <strong>138</strong> at three hops. Strong at "answer me without making me read everything".</dd>
+        <dt>Where it fell short</dt><dd>It <strong>missed all 5 of the React UI usages</strong> — those live inside UI component bodies, a well-known hard case for this kind of scanner. It also indexes code only (no docs or config).</dd>
+      </dl>
+    </div>
+
+    <!-- CBM -->
+    <div class="card">
+      <h3>5 · codebase-memory-mcp (CBM) <span class="tag">— "a queryable knowledge graph of the code"</span></h3>
+      <dl class="kv">
+        <dt>What it is</dt><dd>Builds a graph of the whole codebase and lets you query it like a database: who-calls, call chains, impact, dead code, near-duplicates.</dd>
+        <dt>Capabilities I used</dt><dd>Index the repo · architecture overview · search · trace call paths · a read-only query language · fetch a code snippet · change-impact · near-duplicate detection.</dd>
+        <dt>How I tested it</dt><dd>Indexed 2,833 code files in 3.3 seconds; asked "who calls the shared anchor?"; ran whole-repo inventories.</dd>
+        <dt>What it found</dt><dd><span class="pill p-low">best result</span> It found <strong>all 16 cross-package callers — 100% correct — including the 5 UI usages codegraph missed</strong>, followed the workspace link with no setup, and correctly <em>excluded</em> the two lookalike copies. It also inventoried 1,177 routes and 15,602 functions in under a tenth of a second.</dd>
+        <dt>Where it fell short</dt><dd>Its "packages / architecture" summary is weak (it uses folder names, not real package names). Its big "10×/120× fewer tokens" marketing claims couldn't be measured from its output. And it matches <em>by name</em> — it would confuse two identically-named functions if their callers happened to overlap (they didn't here).</dd>
+      </dl>
+    </div>
+
+    <!-- graphify -->
+    <div class="card">
+      <h3>6 · graphify <span class="tag">— "free, offline, whole-repo structure map you can query"</span></h3>
+      <dl class="kv">
+        <dt>What it is</dt><dd>Builds a code graph entirely offline — no AI model, no API key, <strong>zero cost</strong> — and lets you query connections, shortest paths, and clusters.</dd>
+        <dt>Capabilities I used</dt><dd>Extract the graph · detect clusters/communities · query connections / paths / neighbours · detect import cycles.</dd>
+        <dt>How I tested it</dt><dd>Extracted 2,330 files (~40 seconds, 0 cost); asked for the anchor's connections; pulled the architecture map.</dd>
+        <dt>What it found</dt><dd><strong>94% of the callers (15 of 16) for free</strong>, plus a weight-labelled dependency map (server→database 1,731 links, UI→shared 1,423) and real <strong>import cycles</strong> surfaced for free.</dd>
+        <dt>Where it fell short</dt><dd><span class="pill p-med">real defect</span> It <strong>silently skips any file named <code>secrets.ts</code></strong> (or <code>credential*</code>, <code>password*</code>) — a built-in filter that cost it 1 of the 16 callers and is a hidden blind spot it never warns about. Offline, its clusters are left unnamed.</dd>
+      </dl>
+    </div>
+
+    <!-- understand-anything -->
+    <div class="card">
+      <h3>7 · understand-anything <span class="tag">— "onboarding: a guided tour of an unfamiliar codebase"</span></h3>
+      <dl class="kv">
+        <dt>What it is</dt><dd>Meant to <em>teach</em> you a new codebase with tours, a visual dashboard, and a knowledge graph.</dd>
+        <dt>Capabilities I used</dt><dd>Only the <strong>free, no-AI structural part</strong>: a file/structure scan and a call graph. The rich product (tours, dashboard, domain views) needs a paid AI model running it and a global install, which our isolation rules forbade — so it was honestly recorded as "not run".</dd>
+        <dt>How I tested it</dt><dd>Ran the free structural scan: 2,236 files in ~10 seconds, producing 9,659 functions and a call graph.</dd>
+        <dt>What it found</dt><dd>Its call graph recovered <strong>16 of 18 callers by name (89%) for free</strong> — but its import-follower scored <strong>0</strong>, because it ignores the workspace-link style that paperclip uses.</dd>
+        <dt>Where it fell short</dt><dd>The headline product (the interesting part) couldn't be run under isolation. We measured only its plumbing, not its promised value — and said so plainly.</dd>
+      </dl>
+    </div>
+
+    <!-- headroom -->
+    <div class="card">
+      <h3>8 · headroom <span class="tag">— "shrink big tool outputs before the AI reads them"</span></h3>
+      <dl class="kv">
+        <dt>What it is</dt><dd><strong>Not a code-understanding tool at all.</strong> It's a compressor that sits in front of an AI and shrinks verbose text (logs, search dumps, JSON) to save tokens. I tested it differently and never asked it about the code.</dd>
+        <dt>Capabilities I used</dt><dd>Its compress function on four kinds of verbose text · its content-type routing · its code-aware compression.</dd>
+        <dt>How I tested it</dt><dd>Fed it four representative outputs (search results, a file listing, a source dump, a JSON array) and measured the shrinkage and whether information was lost.</dd>
+        <dt>What it found</dt><dd>JSON shrinks ~<strong>59% safely</strong> (its one trustworthy win). Search results shrink ~99% — but by <strong>throwing most matches away</strong> and keeping a sample, which would wreck a "find all usages" task. Plain source code shrinks ~0% through its normal path.</dd>
+        <dt>Where it fell short</dt><dd>On a precision task it can only <em>lose</em> information. It's a useful add-on for shrinking bulky structured output — not an analysis tool.</dd>
+      </dl>
+    </div>
+  </section>
+
+  <!-- 05 -->
+  <section id="compare">
+    <div class="sh"><span class="n">05</span><h2>The head-to-head — where they actually overlap</h2></div>
+    <div class="rule"></div>
+    <p>Comparison is only fair where tools attempt the same job. Here's the capability map (read down a column to see one tool's shape; read across a row to compare a capability).</p>
+    <div class="tw">
+    <table class="mx">
+      <thead><tr>
+        <th>Capability</th><th class="c">ast-grep</th><th class="c">repomix</th><th class="c">serena</th><th class="c">codegraph</th><th class="c">CBM</th><th class="c">graphify</th><th class="c">und-any</th><th class="c">headroom</th>
+      </tr></thead>
+      <tbody>
+        <tr><td>Smart text/shape search</td><td class="c"><span class="dot d2">●●</span></td><td class="c"><span class="dot d2">●●</span></td><td class="c"><span class="dot d0">◐</span></td><td class="c"><span class="dot d1">●</span></td><td class="c"><span class="dot d1">●</span></td><td class="c"><span class="dot d1">●</span></td><td class="c"><span class="dot d1">●</span></td><td class="c"><span class="dot dx">○</span></td></tr>
+        <tr><td>Find real usages across packages</td><td class="c"><span class="dot dx">○</span></td><td class="c"><span class="dot dx">○</span></td><td class="c"><span class="dot d0">◐</span></td><td class="c"><span class="dot d2">●●</span></td><td class="c"><span class="dot d2">●●</span></td><td class="c"><span class="dot d2">●●</span></td><td class="c"><span class="dot d1">●</span></td><td class="c"><span class="dot dx">○</span></td></tr>
+        <tr><td>Tell apart same-named copies</td><td class="c"><span class="dot d0">◐</span></td><td class="c"><span class="dot dx">○</span></td><td class="c"><span class="dot d2">●●</span></td><td class="c"><span class="dot d2">●●</span></td><td class="c"><span class="dot d2">●●</span></td><td class="c"><span class="dot d2">●●</span></td><td class="c"><span class="dot d0">◐</span></td><td class="c"><span class="dot dx">○</span></td></tr>
+        <tr><td>Impact / blast-radius</td><td class="c"><span class="dot dx">○</span></td><td class="c"><span class="dot dx">○</span></td><td class="c"><span class="dot d0">◐</span></td><td class="c"><span class="dot d2">●●</span></td><td class="c"><span class="dot d2">●●</span></td><td class="c"><span class="dot d1">●</span></td><td class="c"><span class="dot d0">◐</span></td><td class="c"><span class="dot dx">○</span></td></tr>
+        <tr><td>Whole-repo architecture map</td><td class="c"><span class="dot dx">○</span></td><td class="c"><span class="dot d1">●</span></td><td class="c"><span class="dot dx">○</span></td><td class="c"><span class="dot d1">●</span></td><td class="c"><span class="dot d1">●</span></td><td class="c"><span class="dot d2">●●</span></td><td class="c"><span class="dot d1">●</span></td><td class="c"><span class="dot dx">○</span></td></tr>
+        <tr><td>Hand back exact source on demand</td><td class="c"><span class="dot d0">◐</span></td><td class="c"><span class="dot d1">●</span></td><td class="c"><span class="dot d1">●</span></td><td class="c"><span class="dot d2">●●</span></td><td class="c"><span class="dot d1">●</span></td><td class="c"><span class="dot d0">◐</span></td><td class="c"><span class="dot dx">○</span></td><td class="c"><span class="dot dx">○</span></td></tr>
+        <tr><td>Pack repo / count token cost</td><td class="c"><span class="dot dx">○</span></td><td class="c"><span class="dot d2">●●</span></td><td class="c"><span class="dot dx">○</span></td><td class="c"><span class="dot dx">○</span></td><td class="c"><span class="dot dx">○</span></td><td class="c"><span class="dot d0">◐</span></td><td class="c"><span class="dot d1">●</span></td><td class="c"><span class="dot dx">○</span></td></tr>
+        <tr><td>Rewrite code / lint rules</td><td class="c"><span class="dot d2">●●</span></td><td class="c"><span class="dot dx">○</span></td><td class="c"><span class="dot d1">●</span></td><td class="c"><span class="dot dx">○</span></td><td class="c"><span class="dot dx">○</span></td><td class="c"><span class="dot d0">◐</span></td><td class="c"><span class="dot dx">○</span></td><td class="c"><span class="dot dx">○</span></td></tr>
+        <tr><td>Shrink output to save tokens</td><td class="c"><span class="dot dx">○</span></td><td class="c"><span class="dot d1">●</span></td><td class="c"><span class="dot dx">○</span></td><td class="c"><span class="dot dx">○</span></td><td class="c"><span class="dot dx">○</span></td><td class="c"><span class="dot dx">○</span></td><td class="c"><span class="dot dx">○</span></td><td class="c"><span class="dot d2">●●</span></td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p class="legend"><span class="dot d2">●●</span> strong · <span class="dot d1">●</span> works · <span class="dot d0">◐</span> weak / fallback only · <span class="dot dx">○</span> not built for this. "und-any" = understand-anything; "CBM" = codebase-memory-mcp.</p>
+
+    <h3 style="margin-top:var(--s32);font-size:17px">The graded exam — "who uses the shared <code>isUuidLike</code>?" (truth: 16 files)</h3>
+    <div class="tw">
+    <table>
+      <thead><tr><th>Rank</th><th>Tool</th><th class="num">Found</th><th>Plain verdict</th></tr></thead>
+      <tbody>
+        <tr><td><span class="pill p-low">1st</span></td><td><strong>CBM</strong></td><td class="num">16 / 16</td><td>Perfect, including the hard UI usages. Zero setup.</td></tr>
+        <tr><td><span class="pill p-info">2nd</span></td><td><strong>graphify</strong></td><td class="num">15 / 16</td><td>Free and offline; the one miss is its <code>secrets.ts</code> filter bug.</td></tr>
+        <tr><td><span class="pill p-info">3rd</span></td><td>understand-anything</td><td class="num">16 / 18*</td><td>By name-matching (not true resolution); *counts call-sites slightly differently.</td></tr>
+        <tr><td><span class="pill p-med">4th</span></td><td>codegraph</td><td class="num">~11 / 16</td><td>Strong, but missed all 5 React UI usages.</td></tr>
+        <tr><td><span class="pill p-med">5th</span></td><td>ast-grep / repomix</td><td class="num">text only</td><td>Exact text matches, but they don't truly resolve "who calls what".</td></tr>
+        <tr><td><span class="pill p-hi">last</span></td><td>serena</td><td class="num">1 / 16</td><td>Blind to usages via a "hub file" — see the re-test below.</td></tr>
+        <tr><td>—</td><td>headroom</td><td class="num">n/a</td><td>A compressor; not a search tool.</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <div class="callout good"><strong>The bonus finding.</strong> Every "smart" tool independently discovered that <code>isUuidLike</code> is written <strong>three times</strong> in this codebase — one shared version and two near-duplicate copies in the command-line tool that quietly drop a safety check. Plain text search's "45 matches" hides this entirely. That's a real maintenance hazard the experiment surfaced as a by-product.</div>
+  </section>
+
+  <!-- 06 retest -->
+  <section id="retest">
+    <div class="sh"><span class="n">06</span><h2>The re-test that corrected a conclusion (serena)</h2></div>
+    <div class="rule"></div>
+    <p>My first write-up guessed that serena scored 1-of-16 only because the test copy was stripped of its installed dependencies, and that a proper install would rescue it. Rather than leave a guess in the report, I <strong>actually ran that test</strong>: I made a fully installed copy and re-ran serena. The result was more interesting than the guess.</p>
+    <div class="grid2">
+      <div class="card" style="margin:0">
+        <h3 style="font-size:15px">Forward — "where is this defined?"</h3>
+        <p style="margin:0"><span class="pill p-low">fixed</span> Broken before → <strong>now works</strong>. Once dependencies were installed, serena jumped correctly from a usage to the definition across packages.</p>
+      </div>
+      <div class="card" style="margin:0">
+        <h3 style="font-size:15px">Reverse — "who uses this?"</h3>
+        <p style="margin:0"><span class="pill p-hi">still 1/16</span> <strong>Unchanged.</strong> Installing dependencies did <em>not</em> help.</p>
+      </div>
+    </div>
+    <p style="margin-top:var(--s16)">The real reason: paperclip exposes its shared code through a single <strong>"hub" file</strong> that re-exports everything. Serena's "find references" walks back from the definition to that hub file and <em>stops there</em> — it never steps out to the real users on the other side of the hub. So my original guess was only half right, and I corrected the report to say so. The honest conclusion: <strong>serena is excellent at "where is this defined?" and weak at "who uses this?" on a codebase built around hub files.</strong></p>
+    <p class="muted" style="font-size:13px">This correction was itself challenged by the independent critic and only accepted after it signed off.</p>
+  </section>
+
+  <!-- 07 isolation -->
+  <section id="isolation">
+    <div class="sh"><span class="n">07</span><h2>Keeping the tools from contaminating each other</h2></div>
+    <div class="rule"></div>
+    <p>A core requirement was that <strong>installing or running one tool must not affect another</strong>, and one tool's results must never feed another's. With no containers available, I enforced this three ways:</p>
+    <ul>
+      <li><strong>Separate folders.</strong> Each tool got its own copy of the code and its own results folder. The original code was made <strong>read-only</strong> so nothing could alter it.</li>
+      <li><strong>No shared installs.</strong> Every tool was installed only inside its own folder and run by its full path — never installed "globally" where another tool's worker could accidentally pick it up.</li>
+      <li><strong>Private home folder.</strong> Each worker ran with its own private home directory, so anything a tool tried to write to "your account" (caches, logs, settings) landed in its own sandbox instead.</li>
+    </ul>
+    <p>Crucially, I didn't trust the workers' own "all clean" reports — I ran an <strong>independent audit</strong> afterwards. It caught three small leaks the workers' self-reports missed, and I cleaned all three:</p>
+    <div class="tw">
+    <table>
+      <thead><tr><th>Tool</th><th>What leaked into your real account</th><th class="num">Severity</th><th>Outcome</th></tr></thead>
+      <tbody>
+        <tr><td>codegraph</td><td>A tiny telemetry file (a random machine ID + one "ran once" event)</td><td class="num"><span class="pill p-med">low</span></td><td>Removed; verified gone.</td></tr>
+        <tr><td>graphify</td><td>One line in a query log (a question + a file path)</td><td class="num"><span class="pill p-med">low</span></td><td>Removed; verified gone.</td></tr>
+        <tr><td>serena</td><td>146 setup files (during the later re-test, a background process didn't inherit the private home)</td><td class="num"><span class="pill p-med">low</span></td><td>Quarantined into the sandbox; verified gone.</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <div class="callout"><strong>None of these was a true cross-contamination</strong> — no tool became available to another, and no tool's results fed another. They were stray files in your home folder, all removed. The lesson, now recorded: the "private home" protection has to be applied from the very first time a tool is <em>run</em> (not just during the main phase), and it has to be passed in a way that survives background processes.</div>
+  </section>
+
+  <!-- 08 -->
+  <section id="limits">
+    <div class="sh"><span class="n">08</span><h2>Honest limits &amp; what's left to test</h2></div>
+    <div class="rule"></div>
+    <p>For your critical review, here is what this experiment does <em>not</em> prove:</p>
+    <div class="tw">
+    <table>
+      <thead><tr><th>Open question</th><th class="num">Status</th><th>Detail</th></tr></thead>
+      <tbody>
+        <tr><td>Did we measure the vendors' "10× fewer tokens" claims?</td><td class="num"><span class="pill p-med">no</span></td><td>Those are workflow claims vs a naive read/search loop; they aren't shown in any tool's output, so they couldn't be confirmed. This is the single most valuable un-run test.</td></tr>
+        <tr><td>Did we run the AI-powered products of understand-anything &amp; graphify?</td><td class="num"><span class="pill p-med">no</span></td><td>Their headline value (tours, dashboards, named clusters) needs a paid model + global install — against the isolation rules. Only the free parts were measured.</td></tr>
+        <tr><td>Is the comparison "tokens at equal answer quality"?</td><td class="num"><span class="pill p-med">no</span></td><td>It's accuracy-based (precision/recall on one well-understood example), not a cost-at-equal-quality benchmark across all 6 tasks.</td></tr>
+        <tr><td>Are codegraph's UI miss &amp; graphify's <code>secrets.ts</code> bug one-offs or systemic?</td><td class="num"><span class="pill p-info">partly</span></td><td>Each is shown on one example; how often they bite across the whole repo isn't quantified.</td></tr>
+        <tr><td>Would serena do better on a codebase <em>without</em> hub files?</td><td class="num"><span class="pill p-info">likely</span></td><td>Plausible but untested — paperclip's public surface is entirely hub-exported.</td></tr>
+      </tbody>
+    </table>
+    </div>
+
+    <h3 style="font-size:17px;margin-top:var(--s24)">One-line takeaways</h3>
+    <ul>
+      <li><strong>Best all-round "understand the code" tool here: codebase-memory-mcp</strong> — most accurate cross-package answers, including the hard UI cases, at almost no cost.</li>
+      <li><strong>Best free/offline option: graphify</strong> — 94% accuracy and a whole architecture map for zero tokens (mind the <code>secrets.ts</code> bug).</li>
+      <li><strong>Best for "show me the exact code + what it touches": codegraph.</strong></li>
+      <li><strong>Best precise pattern search &amp; safe rewrites: ast-grep.</strong></li>
+      <li><strong>Best context-prep &amp; token triage: repomix.</strong></li>
+      <li><strong>serena</strong> — superb for "where is this defined?", weak for "who uses this?" on hub-file codebases.</li>
+      <li><strong>headroom</strong> is a token-saver for bulky structured output, not an analyzer.</li>
+    </ul>
+  </section>
+
+  <div class="foot">
+    <p>Generated 2026-06-22 from the saved experiment artifacts. Full technical detail (every command, count, and the critic's reviews) lives alongside this file:</p>
+    <ul style="margin-top:var(--s4)">
+      <li><code>docs/research/harness/findings.md</code> — the full technical synthesis (critic-approved).</li>
+      <li><code>docs/research/harness/results/&lt;tool&gt;/capabilities.md</code> &amp; <code>exploitation.md</code> — per-tool: what was discovered, then how it was used.</li>
+      <li><code>docs/research/harness/results/serena/retest-installed-workspace.md</code> — the serena re-test.</li>
+      <li><code>docs/research/harness/results/_isolation_audit.md</code> — the independent isolation audit &amp; the three leaks.</li>
+      <li><code>docs/research/harness/isolation-contract.md</code> — the isolation rules every worker followed.</li>
+    </ul>
+  </div>
+
+</div>
+</body>
+</html>
