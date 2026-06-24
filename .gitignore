@@ -33,3 +33,7 @@ external/harness_repos/
 external/deer-flow/
 # Raw per-tool capability/exploitation transcripts (machine-local paths; evidence only)
 docs/research/harness/results/
+
+# code-intel plugin runtime artifacts (serena project state, CBM team-graph) — regenerated, never committed
+.serena/
+.codebase-memory/
