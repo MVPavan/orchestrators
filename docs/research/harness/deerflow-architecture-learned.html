@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Learning DeerFlow 2.0 — via graphify + understand-anything</title>
+<style>
+  :root{
+    --bg:#0f1115; --panel:#171a21; --panel2:#1d212b; --ink:#e6e9ef; --mut:#9aa4b2;
+    --line:#2a2f3a; --accent:#6ea8fe; --accent2:#7ee0c0; --warn:#f0b860; --bad:#f08a8a;
+    --chip:#222735;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;}
+  .wrap{max-width:1080px;margin:0 auto;padding:32px 22px 80px;}
+  h1{font-size:30px;margin:0 0 6px;letter-spacing:-.4px;}
+  h2{font-size:21px;margin:38px 0 12px;padding-bottom:7px;border-bottom:1px solid var(--line);}
+  h3{font-size:16px;margin:18px 0 6px;color:var(--accent2);}
+  .sub{color:var(--mut);font-size:14px;margin:0 0 4px;}
+  p{margin:8px 0;}
+  code{background:#0c0e12;border:1px solid var(--line);border-radius:4px;padding:1px 5px;font:13px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace;color:#cfe1ff;}
+  .lead{font-size:16px;color:#d6dbe6;background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:8px;padding:14px 16px;margin:16px 0;}
+  table{border-collapse:collapse;width:100%;margin:12px 0;font-size:13.5px;}
+  th,td{border:1px solid var(--line);padding:7px 9px;text-align:left;vertical-align:top;}
+  th{background:var(--panel2);color:#cdd5e0;font-weight:600;}
+  tr:nth-child(even) td{background:#14171e;}
+  .mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px;color:#cfe1ff;}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:14px;margin:14px 0;}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:14px 16px;}
+  .card h3{margin-top:0;}
+  .card .k{color:var(--mut);font-size:12px;text-transform:uppercase;letter-spacing:.5px;}
+  ol.tour{counter-reset:s;list-style:none;padding-left:0;margin:10px 0;}
+  ol.tour li{counter-increment:s;position:relative;padding:9px 12px 9px 46px;border:1px solid var(--line);border-radius:8px;margin:7px 0;background:var(--panel);}
+  ol.tour li::before{content:counter(s);position:absolute;left:10px;top:9px;width:26px;height:26px;border-radius:50%;background:var(--accent);color:#0b0d12;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;}
+  ol.tour b{color:#e6e9ef;}
+  ol.tour .f{font-family:ui-monospace,Menlo,monospace;font-size:12px;color:#7ee0c0;}
+  .flow{background:#0c0e12;border:1px solid var(--line);border-radius:8px;padding:14px 16px;margin:14px 0;font-family:ui-monospace,Menlo,monospace;font-size:12.5px;color:#cfe1ff;white-space:pre;overflow-x:auto;line-height:1.5;}
+  .chip{display:inline-block;background:var(--chip);border:1px solid var(--line);border-radius:20px;padding:2px 10px;margin:3px 4px 3px 0;font-size:12px;color:#cdd5e0;}
+  .tag-a{color:var(--accent)} .tag-b{color:var(--accent2)} .warn{color:var(--warn)} .bad{color:var(--bad)}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  @media(max-width:760px){.two{grid-template-columns:1fr}}
+  .foot{color:var(--mut);font-size:12.5px;margin-top:40px;border-top:1px solid var(--line);padding-top:14px;}
+  .pill{font-size:11px;padding:1px 7px;border-radius:10px;border:1px solid var(--line);}
+  .g{background:#15301f;color:#9ff0c4;border-color:#1f5a39;}
+  .u{background:#16263f;color:#a8c8ff;border-color:#244875;}
+  ul.tight{margin:6px 0;padding-left:20px;} ul.tight li{margin:3px 0;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>Learning DeerFlow 2.0</h1>
+<p class="sub">A working understanding of the codebase, produced by actually <em>running</em> two AI code-understanding tools in their intended modes — <b>graphify</b> (offline symbol graph + docstring extraction + graph queries) and <b>understand&#8209;anything</b> (multi-agent file-analysis &rarr; layered architecture &rarr; guided tour). Not a parse benchmark — this is what the tools <em>teach</em>.</p>
+
+<div class="lead">
+<b>TL;DR — what DeerFlow is.</b> DeerFlow 2.0 is a <b>multi-channel, agentic assistant platform</b>. Users talk to it from ordinary IM apps — <b>WeChat, DingTalk, Feishu, Telegram, Slack, Discord, WeCom</b> — and each message flows through an in-process <b>MessageBus</b> (async pub/sub) into a <b>LangGraph-based agent harness</b> that looks a lot like an open-source Claude&#8209;Code: a deep middleware stack, recursive sub-agents, installable skills (slash-commands), a code-execution sandbox, durable memory, MCP tools, and a dozen web-search providers. A <b>FastAPI gateway</b> exposes the harness over HTTP/SSE (LangGraph-Platform-compatible), and a <b>Next.js/React</b> frontend renders the streaming, "show-your-work" agent UI. The real engineering mass lives in the harness; channels and UI are comparatively thin edges.</p>
+</div>
+
+<h2>1 · The request lifecycle (the spine)</h2>
+<p>Every interaction — whether from a browser or a WeChat message — converges on the same path through the harness:</p>
+<div class="flow">IM app (WeChat / Telegram / Slack / …)        Browser (Next.js UI)
+        │                                            │
+   ChannelManager + Channel adapter            @langchain/langgraph-sdk client
+        │   (webhook in / outbound out)              │   (SSE, CSRF-injected)
+        └───────────────►  MessageBus  ◄─────────────┘
+                  (async pub/sub: InboundMessage → OutboundMessage)
+                              │
+                   FastAPI gateway  app.py:create_app()
+                   AuthMiddleware (fail-closed JWT / internal-auth) → CSRF
+                              │  services.start_run()  →  run_agent (worker)
+                              ▼
+        ╔══════════════ LangGraph agent harness ══════════════╗
+        ║  create_agent + ~19-stage middleware chain           ║
+        ║  ThreadState (typed, reducer-merged) flows through    ║
+        ║   ├─ skills / slash-commands   ├─ sub-agents (task)   ║
+        ║   ├─ sandbox (bash/files)      ├─ MCP + web tools     ║
+        ║   └─ memory (debounced write-back)                    ║
+        ╚═══════════════════════════════════════════════════════╝
+                              │  graph.astream(...)
+                       StreamBridge  (resumable SSE, per-run buffer)
+                              │
+                 RunStore / RunEventStore / Checkpointer  (SQLite/Postgres/memory)
+                              │
+              streamed back out → UI artifacts panel  /  channel outbound card</div>
+
+<h2>2 · The architecture, in 8 layers</h2>
+<p class="sub">Derived by understand-anything's architecture-analyzer over the assembled knowledge graph (304 core files). Dependency-direction analysis shows the system <b>radiating outward from Configuration</b> (the single most-imported group) up through Persistence/Runtime into a large capability surface and a <em>thin</em> orchestration core.</p>
+<table>
+<tr><th>#</th><th>Layer</th><th>What lives here</th><th>Files</th></tr>
+<tr><td>1</td><td><b>Channel &amp; Gateway</b></td><td>FastAPI routers + auth, and the 7 IM-channel adapters in front of the platform</td><td class="mono">28</td></tr>
+<tr><td>2</td><td><b>Agent Orchestration</b></td><td>LangGraph lead agent, the middleware stack, sub-agents, reflection — the agentic loop</td><td class="mono">47</td></tr>
+<tr><td>3</td><td><b>Agent Capabilities</b></td><td>Tools, skills, sandbox execution, MCP, and community web-search providers</td><td class="mono">76</td></tr>
+<tr><td>4</td><td><b>Runtime &amp; Execution</b></td><td>Run lifecycle, event/stream bridging, checkpointing, tracing, uploads</td><td class="mono">33</td></tr>
+<tr><td>5</td><td><b>Persistence &amp; Models</b></td><td>ORM stores (threads / users / memory / runs) + the LangChain chat-model factory</td><td class="mono">23</td></tr>
+<tr><td>6</td><td><b>Configuration</b></td><td>Pydantic config loaders + path resolvers imported across the whole harness</td><td class="mono">33</td></tr>
+<tr><td>7</td><td><b>Shared Utilities</b></td><td>Cross-cutting helpers (time, messages, file conversion, networking) + harness client</td><td class="mono">6</td></tr>
+<tr><td>8</td><td><b>Frontend</b></td><td>Next.js/React/TanStack-Query UI — client logic + workspace/ai-elements/ui components</td><td class="mono">58</td></tr>
+</table>
+
+<h2>3 · Guided onboarding tour — read DeerFlow in this order</h2>
+<p class="sub">understand-anything's tour-builder walked the real dependency graph (BFS from the gateway entry point, foundation-first) to produce a 14-step reading order. Start at the top:</p>
+<ol class="tour">
+<li><b>Gateway entry point</b> — <span class="f">backend/app/gateway/app.py</span><br/>The FastAPI factory that mounts every router and boots the LangGraph runtime singletons. The system's front door.</li>
+<li><b>Auth &amp; request identity</b> — <span class="f">gateway/auth_middleware.py · authz.py</span><br/>Fail-closed JWT auth + permission/ownership decorators that gate every route (cross-user access returns anti-enumeration 404s).</li>
+<li><b>Dependency-injection hub</b> — <span class="f">gateway/deps.py</span><br/>How a stateless HTTP request is wired to the stateful runtime singletons on <code>app.state</code>.</li>
+<li><b>Configuration foundation</b> — <span class="f">config/app_config.py</span><br/>The most depended-upon module: <code>AppConfig</code> aggregates ~30 domain sections from one <code>config.yaml</code>, with content-signature hot-reload.</li>
+<li><b>Per-user scoping</b> — <span class="f">runtime/user_context.py</span><br/>The ContextVar identity that scopes every sandbox, storage path, and DB query per user.</li>
+<li><b>In-process client &amp; lead agent</b> — <span class="f">client.py · agents/lead_agent/agent.py</span><br/>The agent core: a config-driven factory that stacks the middleware chain on langchain's <code>create_agent</code>. <code>DeerFlowClient</code> is the no-HTTP, gateway-equivalent surface.</li>
+<li><b>Agent state model</b> — <span class="f">agents/thread_state.py</span><br/>The typed <code>ThreadState</code> (sandbox/title/artifacts/todos/uploads/…) with LangGraph reducers — the channel through which middlewares communicate.</li>
+<li><b>Skills: activation &amp; storage</b> — <span class="f">skills/types.py · skills/storage · skill_activation_middleware.py</span><br/><code>/skill-name</code> activation injects a SKILL.md as hidden context; skills also gate which tools an agent may call.</li>
+<li><b>Sub-agents &amp; delegation</b> — <span class="f">tools/builtins/task_tool.py · subagents/executor.py</span><br/>Recursive multi-agent delegation runs on isolated event-loop threads; the backend polls every 5s and streams <code>task_started/running/completed</code>. Sub-agents can't nest.</li>
+<li><b>Sandbox &amp; MCP tools</b> — <span class="f">sandbox/sandbox.py · sandbox/tools.py · mcp/tools.py</span><br/>The capability surface: per-thread virtual-path translation (<code>/mnt/user-data/…</code>), traversal/bash-allowlist defense, and session-pooled MCP tools.</li>
+<li><b>Memory subsystem</b> — <span class="f">agents/memory/updater.py · storage.py</span><br/>LLM-driven, debounced write-back of durable facts; atomic per-user JSON; token-budgeted injection that reserves room for user corrections.</li>
+<li><b>Run execution &amp; streaming</b> — <span class="f">runtime/runs/worker.py · gateway/services.py · routers/thread_runs.py</span><br/>Where an HTTP request becomes a live SSE-streaming agent run via the resumable <code>StreamBridge</code>.</li>
+<li><b>Persistence &amp; thread metadata</b> — <span class="f">persistence/base.py · thread_meta · run/sql.py</span><br/>The SQLAlchemy backbone (runs/threads/events) that re-enforces ownership at the data layer.</li>
+<li><b>Frontend client</b> — <span class="f">frontend/src/core/api · workspace/chats/chat-box.tsx</span><br/>The Next.js end of the same request path that began at <code>app.py</code> — closing the loop.</li>
+</ol>
+
+<h2>4 · Subsystem deep-dives</h2>
+<p class="sub">Grounded summaries from understand-anything's per-file analysis (12 core batches, 304 files) and graphify's docstring "rationale" extraction.</p>
+<div class="grid">
+
+  <div class="card"><div class="k">Layer 2 · the heart</div><h3>Agent core &amp; middleware stack</h3>
+  <p>Two-layer factory: <code>create_deerflow_agent</code> (config-free SDK entry, flags &rarr; ordered middleware via <code>@Next/@Prev</code> anchors) and <code>make_lead_agent</code> (config-driven app factory) stack a <b>~19-stage chain</b> on langchain's <code>create_agent</code>. Almost all agent behavior is cross-cutting LangGraph hooks, not agent logic:</p>
+  <p><span class="chip">loop-detection (P0 hard-stop)</span><span class="chip">input-sanitization (prompt-injection)</span><span class="chip">sandbox-audit (bash)</span><span class="chip">safety-termination detectors</span><span class="chip">summarization</span><span class="chip">token-budget / token-usage</span><span class="chip">subagent-limit [2,4]</span><span class="chip">skill-activation</span><span class="chip">todo / plan-mode</span><span class="chip">dynamic-context (date+memory)</span><span class="chip">auto-title</span><span class="chip">LLM-error retry/backoff</span></p></div>
+
+  <div class="card"><div class="k">Layer 2/3 · delegation</div><h3>Sub-agents &amp; tools</h3>
+  <p><code>get_available_tools</code> centralizes assembly: config tools (reflection) + builtins (<code>present_files</code>, <code>ask_clarification</code>, <code>view_image</code>, <code>setup_agent</code>) + MCP + ACP agents + the <code>task</code> sub-agent tool. <code>task_tool</code> &rarr; <code>SubagentExecutor.execute_async</code> builds a fresh LangGraph agent on a <b>dedicated daemon-thread event loop</b> (<code>run_coroutine_threadsafe</code>), so delegation never blocks the parent. Sub-agents run with <code>checkpointer=False</code> and cannot nest.</p></div>
+
+  <div class="card"><div class="k">Layer 3 · safety surface</div><h3>Sandbox</h3>
+  <p>One abstract <code>Sandbox</code> ABC (execute_command / read·write·glob·grep), two interchangeable backends chosen by config: host-fs <code>LocalSandboxProvider</code> and Docker <code>AioSandboxProvider</code>. The agent always sees stable <b>virtual paths</b> (<code>/mnt/user-data/{workspace,uploads,outputs}</code>, <code>/mnt/skills</code>) mapped to per-(user,thread) physical dirs. Defense-in-depth in <code>sandbox/tools.py</code>: traversal validation, bash allowlist, host-path masking in output. The AIO provider is a <b>stateful container pool</b> with cross-process file locks, health-gated adoption, and idle reaping.</p></div>
+
+  <div class="card"><div class="k">Layer 2 · durable state</div><h3>Memory</h3>
+  <p>An async, debounced, LLM-driven write-back loop: <code>MemoryMiddleware.after_agent</code> filters the conversation, detects EN/ZH correction/reinforcement signals, and enqueues on a process-global <code>MemoryUpdateQueue</code> (30s debounce, dedup per thread/user/agent). A timer drives <code>MemoryUpdater</code>, which prompts an LLM to extract facts &amp; context updates. Storage = atomic per-user/agent JSON (<code>FileMemoryStorage</code>, swappable). On read, facts are packed under a token budget with a <b>guaranteed reserve for "correction" facts</b> so explicit user corrections are never evicted.</p></div>
+
+  <div class="card"><div class="k">Layer 4 · execution</div><h3>Runtime &amp; streaming</h3>
+  <p><code>RunManager</code> is a lock-protected run registry over a pluggable <code>RunStore</code>; <code>run_agent</code> drives <code>graph.astream(stream_mode=[…])</code>. The <code>StreamBridge</code> ABC decouples producer from SSE consumers — <code>MemoryStreamBridge</code> buffers per-run events behind a condition, supports <b>resumable subscription</b> via <code>last_event_id</code>, heartbeats on idle, and signals completion. Checkpointer/store are config-selected (InMemory/SQLite/Postgres); on cancel/error the worker rolls back to the pre-run checkpoint.</p></div>
+
+  <div class="card"><div class="k">Layer 5 · data</div><h3>Persistence &amp; events</h3>
+  <p>Runs persist as <code>RunRow</code> (status, multitask strategy, denormalized token accounting) via SQL <code>RunRepository</code> or memory. Runtime events are a <b>single unified journal</b> — <code>RunEventRow</code> with <code>category ∈ {message,trace,lifecycle}</code> and a strictly-increasing per-thread <code>seq</code> (unique constraint) enabling cursor pagination; backends are Db / JSONL / Memory. Channel connections store OAuth state + <b>Fernet-encrypted credentials</b>, mapping external IM conversations to <code>thread_id</code>s.</p></div>
+
+  <div class="card"><div class="k">Layer 3 · extensibility</div><h3>Skills &amp; MCP</h3>
+  <p>Skills install with defense-in-depth: safe zip extraction (reject symlinks/traversal, zip-bomb caps) <em>then an LLM security gate</em> — <code>scan_skill_content</code> asks a chat model for an allow/block decision, defaulting to <b>block</b> on parse failure. <code>tool_policy.py</code> makes skills a per-agent <b>tool-permission boundary</b> (union of declared <code>allowed-tools</code>). MCP tools are <b>session-pooled</b> (LRU <code>MCPSessionPool</code>), sandbox-aware (rewrite <code>file://</code> &rarr; virtual paths), OAuth-injected, and mtime-cached. Both configured by one <code>extensions.json</code>.</p></div>
+
+  <div class="card"><div class="k">Layer 3 · research</div><h3>Web &amp; search tools</h3>
+  <p>A uniform duck-typed contract — every provider exposes <code>web_search_tool</code> / <code>web_fetch_tool</code> / <code>image_search_tool</code> returning JSON. ~12 providers: <span class="chip">brave</span><span class="chip">tavily</span><span class="chip">exa</span><span class="chip">firecrawl</span><span class="chip">searxng</span><span class="chip">serper</span><span class="chip">jina_ai</span><span class="chip">browserless</span><span class="chip">ddg</span><span class="chip">groundroute</span><span class="chip">infoquest</span><span class="chip">image_search</span>. Fetchers converge on a shared <code>ReadabilityExtractor</code> &rarr; Markdown. Serper adds real <b>SSRF hardening</b> (rejects private/loopback, normalizes octal/hex/int-encoded IPs).</p></div>
+
+  <div class="card"><div class="k">Layer 1 · API</div><h3>Gateway &amp; auth</h3>
+  <p><code>create_app()</code> mounts ~17 routers under <code>/api/*</code> (models, mcp, memory, skills, artifacts, uploads, threads, agents, channels, auth, runs, …) behind Auth → CSRF → (opt-in) CORS. The ASGI lifespan builds the restart-required LangGraph singletons. Auth is two-layer fail-closed: session JWT cookie <em>or</em> an internal-auth header (used by IM-channel workers), else 401. <code>thread_runs.py</code> implements the full <b>LangGraph-Platform-compatible</b> lifecycle (create/stream/wait/regenerate/cancel/join) delegating to <code>services.start_run()</code>.</p></div>
+
+  <div class="card"><div class="k">Layer 1 · ingress</div><h3>Channels (the front doors)</h3>
+  <p>A <code>Channel</code> ABC with concrete adapters for <b>WeChat, WeCom, DingTalk, Feishu, Telegram, Slack, Discord</b>, coordinated by <code>ChannelManager</code> / <code>ChannelService</code>. Inbound platform webhooks become <code>InboundMessage</code>s on the <code>MessageBus</code>; the agent's <code>OutboundMessage</code>s stream back as platform-native cards. <code>message_bus.py</code> is one of the repo's largest hubs — the async seam that decouples every channel from the agent dispatcher.</p></div>
+
+  <div class="card"><div class="k">Layer 6 · foundation</div><h3>Configuration</h3>
+  <p><code>AppConfig</code> composes ~30 per-domain Pydantic sections from one <code>config.yaml</code> (resolution chain: explicit → env → project root → legacy), resolves <code>$VAR</code> env values, and hot-reloads on a sha256 content-signature change. A <code>reload_boundary</code> registers <b>startup-only</b> infra fields. Notable: tracing (LangSmith/Langfuse) is the exception — read straight from env. Many feature flags: <code>tool_search</code>, <code>guardrails(.fail_closed)</code>, <code>loop_detection</code>, <code>token_budget</code>, <code>summarization</code>, <code>skill_evolution</code>, OIDC SSO.</p></div>
+
+  <div class="card"><div class="k">Layer 8 · UI</div><h3>Frontend</h3>
+  <p>The browser talks to the backend through a memoized <code>@langchain/langgraph-sdk</code> client (CSRF-injected, 409-aware reconnection), not raw REST. State splits between React Context (auth, i18n) and TanStack Query (server data). The workspace is a thread-centric split-pane: <code>message-list.tsx</code> renders grouped assistant turns and a <code>ToolCall</code> renderer turns web-search / write-file calls into the agentic "show-your-work" UX and clickable artifacts; <code>input-box.tsx</code> (~1.3k LoC) hosts the model selector, reasoning-effort pickers, slash-command skill autocomplete, and AI follow-up suggestions. A static-mode path runs the whole app on fixtures.</p></div>
+
+</div>
+
+<h2>5 · The hub map — where the gravity is</h2>
+<p class="sub">graphify's offline symbol graph (19,987 nodes · 39,142 edges) ranks the most-connected files. The hubs <em>are</em> the spine — these are the files a newcomer reads first because everything points at them:</p>
+<table>
+<tr><th>Degree</th><th>File</th><th>Why it's central</th></tr>
+<tr><td class="mono">394</td><td class="mono">frontend/src/lib/utils.ts</td><td>The classic UI utility super-hub (every component imports <code>cn()</code>)</td></tr>
+<tr><td class="mono">250</td><td class="mono">deerflow/config/app_config.py</td><td>The aggregate config every subsystem reads</td></tr>
+<tr><td class="mono">176</td><td class="mono">deerflow/config/paths.py</td><td>Traversal-guarded host/container path resolution</td></tr>
+<tr><td class="mono">161</td><td class="mono">deerflow/client.py</td><td><code>DeerFlowClient</code> — the in-process, gateway-equivalent agent surface</td></tr>
+<tr><td class="mono">154</td><td class="mono">app/channels/message_bus.py</td><td>Async pub/sub seam between channels and the agent dispatcher</td></tr>
+<tr><td class="mono">140</td><td class="mono">deerflow/models/vllm_provider.py</td><td>vLLM chat-model provider (self-hosted inference)</td></tr>
+</table>
+
+<h2>6 · Stack &amp; notable engineering</h2>
+<p>
+<span class="chip tag-b">LangGraph / LangChain</span><span class="chip tag-b">create_agent + middlewares</span><span class="chip tag-b">FastAPI</span><span class="chip tag-b">Pydantic / pydantic-settings</span><span class="chip tag-b">SQLAlchemy (SQLite/Postgres)</span><span class="chip tag-b">Next.js / React</span><span class="chip tag-b">TanStack Query</span><span class="chip tag-b">@langchain/langgraph-sdk</span><span class="chip tag-b">Docker sandbox</span><span class="chip tag-b">MCP</span><span class="chip tag-b">OIDC SSO</span><span class="chip tag-b">Langfuse / LangSmith tracing</span>
+</p>
+<ul class="tight">
+<li><b>It is an open-source Claude-Code analog.</b> Todo/plan-mode, sub-agents, installable skills, a sandbox, durable memory, token budgets, loop detection, prompt-injection defense, deferred tool schemas (<code>tool_search</code>) — the same harness vocabulary, built on LangGraph.</li>
+<li><b>Safety is pervasive and explicit:</b> P0 loop-detection hard-stop, provider safety-termination detectors, sandbox bash auditing + allowlist + path masking, SSRF-hardened search URLs, an LLM allow/block gate on skill install, Fernet-encrypted channel credentials, fail-closed auth.</li>
+<li><b>Multi-tenant from the ground up:</b> a ContextVar user identity threads through sandbox paths, storage, and every DB query; cross-user access 404s.</li>
+<li><b>Resumability &amp; resilience:</b> per-run checkpoint rollback on cancel, resumable SSE via <code>last_event_id</code>, circuit-breakered LLM retries with <code>Retry-After</code> honoring, crash-recovery scans for orphaned inflight runs.</li>
+</ul>
+
+<h2>7 · How the two tools learned it (and where they struggled)</h2>
+<div class="two">
+  <div class="card"><h3><span class="pill g">graphify</span> offline graph + queries</h3>
+  <p class="k">Method actually run</p>
+  <ul class="tight">
+    <li><code>update</code> → tree-sitter symbol graph (19,987 nodes, 890 communities), <b>fully offline</b>, no API key.</li>
+    <li>Mined <b>"rationale" nodes</b> — docstring-derived one-liners for every class/function (e.g. <em>"MessageBus — async pub/sub hub that decouples channels from the agent dispatcher"</em>). This alone outlined the whole architecture.</li>
+    <li><code>query</code> / <code>explain</code> / hub-degree ranking — pure graph traversal, the "ask instead of grep" surface.</li>
+  </ul>
+  <p class="k">Limits observed in real use</p>
+  <ul class="tight">
+    <li class="warn"><code>query</code> is keyword-BFS, not semantic — it drifted to the frontend on ambiguous terms ("reasoning", "runs").</li>
+    <li class="bad"><code>export callflow-html</code> sections are <b>hardcoded to graphify's own repo</b> ("Extraction Pipeline", "Graph Build", …) — useless for a foreign codebase.</li>
+    <li class="bad">Headless community-naming via the <code>claude-cli</code> backend produced <b>0 names</b> in this nested-session environment; module names had to be derived from members.</li>
+  </ul>
+  </div>
+
+  <div class="card"><h3><span class="pill u">understand-anything</span> multi-agent pipeline</h3>
+  <p class="k">Method actually run</p>
+  <ul class="tight">
+    <li>Deterministic scan → import-map → Louvain batching (1,327 files → 91 batches).</li>
+    <li><b>12 file-analyzer sub-agents</b> read 304 core files and emitted grounded summaries/tags + a 910-node, 1,955-edge graph.</li>
+    <li>architecture-analyzer → <b>8 layers</b>; tour-builder → <b>14-step guided tour</b>. These syntheses are the headline "learn the repo" value.</li>
+  </ul>
+  <p class="k">Limits observed in real use</p>
+  <ul class="tight">
+    <li class="warn">File→file granularity: its import graph is 959 edges vs graphify's 39k symbol-level — coarser without the per-file LLM pass.</li>
+    <li class="bad">The frontend <code>tsconfig.json</code> failed to parse (JSON5 comments) → <code>@/*</code> path aliases unresolved, dropping some frontend edges.</li>
+    <li class="warn">Full LLM analysis of all 1,327 files would be costly; this run scoped to 12 of 91 batches (core backend + gateway + frontend slice).</li>
+  </ul>
+  </div>
+</div>
+<p class="lead" style="border-left-color:var(--accent2)"><b>Complementary, not redundant.</b> graphify gave breadth instantly and for free — every symbol, every docstring, the hub map — and is the better first pass. understand-anything gave the <em>synthesis</em> graphify can't: layered architecture and a pedagogical reading order, at real LLM cost. Used together: graphify to map and locate, understand-anything to explain and sequence.</p>
+
+<div class="foot">
+<b>Provenance.</b> Both tools were run against a read-only snapshot of DeerFlow 2.0 (<span class="mono">commit 9fd20c92</span>, 635 .py + 357 .ts/.tsx). graphify: <span class="mono">19,987 nodes / 39,142 edges / 890 communities</span> (offline). understand-anything: <span class="mono">1,327 files scanned → 91 batches → 12 analyzed (304 files) → 910-node graph, 8 layers, 14-step tour</span>. Coverage is the architecturally-central backend harness + gateway + a frontend slice; test/docs/misc batches were excluded by design (not silently). Every subsystem claim is grounded in tool output (per-file analysis + docstring extraction), not assumed. Raw artifacts live gitignored under <span class="mono">scratchpad/harness-deerflow/{graphify,understand-anything}/</span>. The canonical subject was never mutated.
+</div>
+
+</div>
+</body>
+</html>
