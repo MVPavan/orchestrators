@@ -173,7 +173,7 @@ relational work.
   method).
 - **Extra features to pilot:** `.serena/memories/*.md` (durable project knowledge across sessions),
   onboarding, structural diagnostics (compiler/lint errors as data).
-- **Run:** `serena start-mcp-server --transport streamable-http --port <P> --project <repo> --context ide-assistant`
+- **Run:** `serena start-mcp-server --transport streamable-http --port <P> --project <repo> --context claude-code` (use the `claude-code` context — verified in serena 1.5.4.dev0: it drops 6 redundant file/shell tools, leaving 20. The older `ide-assistant` name was renamed and is **not** present in this build.)
 
 ### 5.2 CBM (codebase-memory-mcp) — persistent auto-sync knowledge graph + semantic memory
 - **Core value:** a single tree-sitter (+Hybrid-LSP) knowledge graph of functions/classes/call-chains/
@@ -193,6 +193,12 @@ relational work.
   completeness for an order-of-magnitude token cut; same-named-def disambiguation is **0.844** in our
   study (best of the graph engines, but cross-version over-attribution exists — below serena's 0.995);
   14-tool schema overhead means it must be the *only* graph engine mounted.
+- **Querying (important — verified 2026-06-24):** every CBM query tool (`search_graph`, `index_status`,
+  `trace_path`, `detect_changes`, `semantic_query`, `get_code_snippet`) **requires a `project` argument** —
+  a path-slug **name** (e.g. `/tmp/fixture` → `tmp-fixture`), **not** `repo_path`. Passing `repo_path`, a
+  short name, or omitting it returns `project not found or not indexed` *even when the repo is indexed*.
+  Get the name from `list_projects` (the entry whose `root_path` matches the repo); don't hand-derive the
+  slug. Helper: `external/code-intel/scripts/cbm-project.sh <repo>`.
 - **Extra features to pilot (high value):** `semantic_query` (vocabulary-agnostic "find code that does
   X"); `detect_changes` (git diff → affected symbols + risk → **which tests to run**, CI-ready);
   `manage_adr` (decision memory across sessions); `get_architecture` (one-call onboarding overview);
@@ -243,7 +249,7 @@ relational work.
   Claude Code and writes the MCP entry + hooks). Or register manually in `.mcp.json`:
   `{"mcpServers":{"codebase-memory-mcp":{"command":"<abs path to the built binary>","args":[]}}}`.
   Verify with `/mcp` — you should see `codebase-memory-mcp` with **14 tools**.
-- serena: add an MCP server entry running `serena start-mcp-server --context ide-assistant --project <repo>`
+- serena: add an MCP server entry running `serena start-mcp-server --context claude-code --project <repo>`
   (streamable-http or stdio). Decide stdio vs http; set a tool-local SERENA_HOME.
 - ast-grep: CLI is ready (full path above). Optionally add `ast-grep-mcp` if structural search via MCP
   is wanted; otherwise the agent calls the CLI.
