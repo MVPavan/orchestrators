@@ -37,3 +37,7 @@ docs/research/harness/results/
 # code-intel plugin runtime artifacts (serena project state, CBM team-graph) — regenerated, never committed
 .serena/
 .codebase-memory/
+
+# mvp-plugin is its own repo (github.com/MVPavan/mvp-plugin); not tracked by orchestrators
+external/mvp-plugin/
+external/mattpocock_skills/
