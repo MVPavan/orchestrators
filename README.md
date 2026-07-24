@@ -6,8 +6,8 @@ Workspace for agent orchestration experiments. The default direction is subscrip
 
 This repository keeps the upstream projects as Git submodules:
 
-- `external/gascity`: `https://github.com/gastownhall/gascity.git`
-- `external/gastown`: `https://github.com/gastownhall/gastown.git`
+- `external/agent-systems/gascity`: `https://github.com/gastownhall/gascity.git`
+- `external/agent-systems/gastown`: `https://github.com/gastownhall/gastown.git`
 
 Only the submodule commit pointers are tracked in this parent repository. The internal files and history of `gascity` and `gastown` stay in their own repositories.
 
@@ -28,15 +28,15 @@ git submodule update --init --recursive
 Update one upstream project:
 
 ```bash
-git submodule update --remote --merge external/gascity
-git add external/gascity
+git submodule update --remote --merge external/agent-systems/gascity
+git add external/agent-systems/gascity
 git commit -m "Update gascity submodule"
 ```
 
 Update both upstream projects:
 
 ```bash
-git submodule update --remote --merge external/gascity external/gastown
-git add external/gascity external/gastown
+git submodule update --remote --merge external/agent-systems/gascity external/agent-systems/gastown
+git add external/agent-systems/gascity external/agent-systems/gastown
 git commit -m "Update upstream submodules"
 ```

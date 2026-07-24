@@ -13,15 +13,15 @@ environment + visibility** discipline, not by sandboxing.
    worker running experiment Y. No global installs; if worker Y can run tool X just by typing its
    name, isolation has failed.
 3. **Subject mutation** — no tool may write into the canonical paperclip source or the real
-   `external/paperclip` submodule.
+   `external/agent-systems/paperclip` submodule.
 
 ## Planes of isolation
 
 ### A. Filesystem
 | Purpose | Path | Rule |
 | --- | --- | --- |
-| Tool code | `external/harness_repos/<tool>/` | Read the repo here; do not edit it. |
-| Tool runtime env | `external/harness_repos/<tool>/` (its own `venv`/`node_modules`) | Installs land **here only**. |
+| Tool code | `external/harness-tools/codebase-intelligence/<tool>/` | Read the repo here; do not edit it. |
+| Tool runtime env | `external/harness-tools/codebase-intelligence/<tool>/` (its own `venv`/`node_modules`) | Installs land **here only**. |
 | Canonical subject (read-only) | `scratchpad/harness/_paperclip_src/` | `chmod a-w`. Read-only tools may point here. **Never written.** |
 | Per-tool writable subject copy | `scratchpad/harness/<tool>/paperclip-src/` | Indexing/mutating tools get their **own** copy. |
 | Tool artifacts/index/logs | `scratchpad/harness/<tool>/` | All scratch output lands here (gitignored). |
@@ -36,7 +36,7 @@ tools is correct (it is the subject, not a result). Sharing any *result* is forb
   shared `PATH` location (`~/.local/bin`, npm global prefix, `~/.cargo/bin`, `/usr/local/bin`).
 - **Install locally, invoke by explicit path:**
   - Node tools → `npm install <pkg>` (or `pnpm install`) **inside the tool dir**; invoke via
-    `external/harness_repos/<tool>/node_modules/.bin/<bin>` or `node <path>`. Never bare `npx <pkg>`
+    `external/harness-tools/codebase-intelligence/<tool>/node_modules/.bin/<bin>` or `node <path>`. Never bare `npx <pkg>`
     against a global, never a bare tool name.
   - Python tools → a tool-local `uv venv` inside the tool dir; invoke via `uv run --project <tool dir>`
     or that venv's `bin/`. uv's shared **download cache** (`~/.cache/uv`) is allowed (a content-addressed
@@ -49,12 +49,12 @@ tools is correct (it is the subject, not a result). Sharing any *result* is forb
 
 ### C. Visibility / input
 - A worker is told **only** about its own tool's paths. It must not read another tool's
-  `results/<other>/` or `external/harness_repos/<other>/`, and must not consume another tool's artifacts.
+  `results/<other>/` or `external/harness-tools/codebase-intelligence/<other>/`, and must not consume another tool's artifacts.
 - Only the **orchestrator** reads across tools, and only in Phase C synthesis.
 
 ## Subject-scoping (never ingest the whole tree)
 Point the tool at the scoped subject only. Never run with `cwd` = the `orchestrators` repo root.
-Never ingest: the parent repo; `external/harness_repos/**`; the Codex CLI binary; any tool binary;
+Never ingest: the parent repo; `external/harness-tools/codebase-intelligence/**`; the Codex CLI binary; any tool binary;
 `.git/`; `node_modules/`; build output (`dist/ build/ .next/ coverage/ .turbo/`); the pnpm store;
 binary assets; oversized lockfiles. Exclude globs:
 
@@ -75,10 +75,10 @@ it as the whole.
 
 ## Per-worker preflight (must pass before real work)
 1. Confirm `cwd` is the scoped subject or the tool dir — never the repo root.
-2. Confirm the tool resolves to a **local** path under `external/harness_repos/<tool>/` (run
+2. Confirm the tool resolves to a **local** path under `external/harness-tools/codebase-intelligence/<tool>/` (run
    `command -v` / `which` and assert it is **not** a global bin).
 3. Confirm the subject is `_paperclip_src` (read-only tools) or this tool's own `paperclip-src/` copy.
-4. On exit, confirm nothing was written under `external/paperclip/` or `_paperclip_src/`.
+4. On exit, confirm nothing was written under `external/agent-systems/paperclip/` or `_paperclip_src/`.
 
 ## Phase B runtime hardening (from the Codex audit, 2026-06-22)
 Codex's review found several tools write into the shared home dir or phone home by default. Every

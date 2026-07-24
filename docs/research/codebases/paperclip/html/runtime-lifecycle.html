@@ -59,10 +59,10 @@
     <section>
       <div class="section-head"><div class="section-no">02</div><h2>Lifecycle Phases</h2></div>
       <div class="grid">
-        <div class="panel"><h3>Startup</h3><p><code>startServer()</code> waits for instrumentation, loads config, configures secrets, applies migrations, creates DB clients, builds auth/storage/plugin services, starts WebSockets, and starts recovery loops. Source: <code>external/paperclip/server/src/index.ts:102-116</code>, <code>151-199</code>, <code>642-704</code>, <code>753-895</code>.</p></div>
-        <div class="panel"><h3>HTTP/API</h3><p><code>createApp()</code> installs middleware, auth, route groups, plugin routes, adapter routes, static plugin UI, built UI serving, and Vite dev middleware. Source: <code>external/paperclip/server/src/app.ts:129-437</code>.</p></div>
-        <div class="panel"><h3>Wakeup</h3><p>The heartbeat service checks company/agent state, budget, policy, issue status, dependency readiness, holds, coalescing, and queued run insertion. Source: <code>external/paperclip/server/src/services/heartbeat.ts:10099-10795</code>.</p></div>
-        <div class="panel"><h3>Run Execution</h3><p>A queued run is claimed per agent, then context, workspace, environment lease, runtime services, adapter execution, logs, usage, and result state are processed. Source: <code>external/paperclip/server/src/services/heartbeat.ts:7666-9025</code>, <code>9120-9205</code>.</p></div>
+        <div class="panel"><h3>Startup</h3><p><code>startServer()</code> waits for instrumentation, loads config, configures secrets, applies migrations, creates DB clients, builds auth/storage/plugin services, starts WebSockets, and starts recovery loops. Source: <code>external/agent-systems/paperclip/server/src/index.ts:102-116</code>, <code>151-199</code>, <code>642-704</code>, <code>753-895</code>.</p></div>
+        <div class="panel"><h3>HTTP/API</h3><p><code>createApp()</code> installs middleware, auth, route groups, plugin routes, adapter routes, static plugin UI, built UI serving, and Vite dev middleware. Source: <code>external/agent-systems/paperclip/server/src/app.ts:129-437</code>.</p></div>
+        <div class="panel"><h3>Wakeup</h3><p>The heartbeat service checks company/agent state, budget, policy, issue status, dependency readiness, holds, coalescing, and queued run insertion. Source: <code>external/agent-systems/paperclip/server/src/services/heartbeat.ts:10099-10795</code>.</p></div>
+        <div class="panel"><h3>Run Execution</h3><p>A queued run is claimed per agent, then context, workspace, environment lease, runtime services, adapter execution, logs, usage, and result state are processed. Source: <code>external/agent-systems/paperclip/server/src/services/heartbeat.ts:7666-9025</code>, <code>9120-9205</code>.</p></div>
       </div>
     </section>
 

@@ -9,16 +9,16 @@
 
 ## Claims That Are Inference
 
-- "Bead-backed desired-state engine" is an inference from the combined `DesiredStateResult`, `CityRuntime.tick`, and `session_reconciler.go` paths (`external/gascity/cmd/gc/build_desired_state.go:28`, `external/gascity/cmd/gc/city_runtime.go:1040`, `external/gascity/cmd/gc/session_reconciler.go:1`). It is not a quoted phrase from the codebase.
-- "Configured provider is not identical to selected implementation" is inferred from `OpenStoreAtForCity` selecting native/file/exec/bd fallback based on preflight and options (`external/gascity/internal/beads/factory.go:76`, `external/gascity/internal/beads/factory.go:156`).
-- "Dashboard is peripheral" is inferred from the architecture spec describing it as a static SPA over the supervisor API, not a control-plane owner (`external/gascity/specs/architecture.md:121`, `external/gascity/specs/architecture.md:132`).
+- "Bead-backed desired-state engine" is an inference from the combined `DesiredStateResult`, `CityRuntime.tick`, and `session_reconciler.go` paths (`external/agent-systems/gascity/cmd/gc/build_desired_state.go:28`, `external/agent-systems/gascity/cmd/gc/city_runtime.go:1040`, `external/agent-systems/gascity/cmd/gc/session_reconciler.go:1`). It is not a quoted phrase from the codebase.
+- "Configured provider is not identical to selected implementation" is inferred from `OpenStoreAtForCity` selecting native/file/exec/bd fallback based on preflight and options (`external/agent-systems/gascity/internal/beads/factory.go:76`, `external/agent-systems/gascity/internal/beads/factory.go:156`).
+- "Dashboard is peripheral" is inferred from the architecture spec describing it as a static SPA over the supervisor API, not a control-plane owner (`external/agent-systems/gascity/specs/architecture.md:121`, `external/agent-systems/gascity/specs/architecture.md:132`).
 
 ## Architectural Risks
 
-- Worker-boundary migration is still active. Upstream guidance says `worker.Handle` is canonical for session lifecycle, while some direct `session.Manager` construction remains in API paths (`external/gascity/AGENTS.md:201`, `external/gascity/AGENTS.md:218`). Changes near sessions should verify whether the path is expected to use worker handles or an allowed direct manager exception.
+- Worker-boundary migration is still active. Upstream guidance says `worker.Handle` is canonical for session lifecycle, while some direct `session.Manager` construction remains in API paths (`external/agent-systems/gascity/AGENTS.md:201`, `external/agent-systems/gascity/AGENTS.md:218`). Changes near sessions should verify whether the path is expected to use worker handles or an allowed direct manager exception.
 - The system has many safety gates around partial store reads, provider liveness, drain ack, pending interactions, and assigned work. Simplifying these paths without characterization tests is likely to cause destructive drains or stuck sessions.
-- Config/reload behavior depends on provenance, includes, packs, order scans, store metadata changes, and soft reload acceptance. A change that looks like "only config parsing" can affect runtime watchers and reconciliation (`external/gascity/internal/config/compose.go:106`, `external/gascity/internal/config/compose.go:220`; `external/gascity/cmd/gc/city_runtime.go:1597`, `external/gascity/cmd/gc/city_runtime.go:1695`).
-- Event logs are best-effort. Building hard correctness on event presence alone would be risky (`external/gascity/internal/events/events.go:1`, `external/gascity/internal/events/events.go:9`).
+- Config/reload behavior depends on provenance, includes, packs, order scans, store metadata changes, and soft reload acceptance. A change that looks like "only config parsing" can affect runtime watchers and reconciliation (`external/agent-systems/gascity/internal/config/compose.go:106`, `external/agent-systems/gascity/internal/config/compose.go:220`; `external/agent-systems/gascity/cmd/gc/city_runtime.go:1597`, `external/agent-systems/gascity/cmd/gc/city_runtime.go:1695`).
+- Event logs are best-effort. Building hard correctness on event presence alone would be risky (`external/agent-systems/gascity/internal/events/events.go:1`, `external/agent-systems/gascity/internal/events/events.go:9`).
 - Default `bd` storage introduces external process/service dependencies and multiple implementation paths. Tests should pin provider mode intentionally.
 
 ## Follow-Up Reads
@@ -28,19 +28,19 @@
 - `internal/runtime/k8s`, `internal/runtime/cloudflare`, `internal/runtime/t3bridge`, `internal/runtime/exec`: provider-specific lifecycle and state differences.
 - `internal/api/handler_*.go` plus `internal/api/client.go`: full API mutation fallback semantics and async request result contracts.
 - `cmd/gc/session_reconciler_trace_*`: how operators should inspect reconciliation decisions in practice.
-- `engdocs/architecture/*`: useful for intended invariants, but always cross-check implementation because upstream `AGENTS.md` explicitly says docs are a reference and should be updated when DX/code wins (`external/gascity/AGENTS.md:86`, `external/gascity/AGENTS.md:87`).
+- `engdocs/architecture/*`: useful for intended invariants, but always cross-check implementation because upstream `AGENTS.md` explicitly says docs are a reference and should be updated when DX/code wins (`external/agent-systems/gascity/AGENTS.md:86`, `external/agent-systems/gascity/AGENTS.md:87`).
 
 ## Suggested Experiments
 
-- Run `make test-integration-huma` in the submodule with isolated `GC_HOME` to confirm the supervisor API path from binary startup through `/health`, `/openapi.json`, and `gc cities` still works (`external/gascity/Makefile:403`, `external/gascity/Makefile:405`; `external/gascity/TESTING.md:186`, `external/gascity/TESTING.md:192`).
-- Run a file-store smoke city with `GC_BEADS=file` to observe session bead creation, order tracking, and `.gc/events.jsonl` without Dolt/bd dependencies (`external/gascity/README.md:65`, `external/gascity/README.md:67`).
-- For provider work, compare the same session lifecycle under tmux, subprocess, and ACP. Their `runtime.Provider` contract is shared, but attach/readiness/interaction guarantees differ (`external/gascity/internal/runtime/tmux/adapter.go:64`, `external/gascity/internal/runtime/subprocess/subprocess.go:14`, `external/gascity/internal/runtime/acp/acp.go:100`).
+- Run `make test-integration-huma` in the submodule with isolated `GC_HOME` to confirm the supervisor API path from binary startup through `/health`, `/openapi.json`, and `gc cities` still works (`external/agent-systems/gascity/Makefile:403`, `external/agent-systems/gascity/Makefile:405`; `external/agent-systems/gascity/TESTING.md:186`, `external/agent-systems/gascity/TESTING.md:192`).
+- Run a file-store smoke city with `GC_BEADS=file` to observe session bead creation, order tracking, and `.gc/events.jsonl` without Dolt/bd dependencies (`external/agent-systems/gascity/README.md:65`, `external/agent-systems/gascity/README.md:67`).
+- For provider work, compare the same session lifecycle under tmux, subprocess, and ACP. Their `runtime.Provider` contract is shared, but attach/readiness/interaction guarantees differ (`external/agent-systems/gascity/internal/runtime/tmux/adapter.go:64`, `external/agent-systems/gascity/internal/runtime/subprocess/subprocess.go:14`, `external/agent-systems/gascity/internal/runtime/acp/acp.go:100`).
 - For store work, characterize the same bead operation under file, bd CLI fallback, and native Dolt where available.
 
 ## Do Not Assume
 
-- Do not assume `gc start` always owns the long-running control loop. The default path registers a city with the machine supervisor (`external/gascity/cmd/gc/cmd_start.go:472`, `external/gascity/cmd/gc/cmd_start.go:563`).
-- Do not assume a live runtime session means the expected agent process is healthy. The reconciler distinguishes running and alive and records zombie crashes (`external/gascity/cmd/gc/session_reconciler.go:1409`, `external/gascity/cmd/gc/session_reconciler.go:1431`).
-- Do not assume missing work means no demand if store query partial flags are set (`external/gascity/cmd/gc/build_desired_state.go:58`, `external/gascity/cmd/gc/build_desired_state.go:67`).
-- Do not assume order triggers are pure timers. They can be event, condition subprocess, cooldown, cron with catch-up, or manual (`external/gascity/internal/orders/triggers.go:50`, `external/gascity/internal/orders/triggers.go:258`).
+- Do not assume `gc start` always owns the long-running control loop. The default path registers a city with the machine supervisor (`external/agent-systems/gascity/cmd/gc/cmd_start.go:472`, `external/agent-systems/gascity/cmd/gc/cmd_start.go:563`).
+- Do not assume a live runtime session means the expected agent process is healthy. The reconciler distinguishes running and alive and records zombie crashes (`external/agent-systems/gascity/cmd/gc/session_reconciler.go:1409`, `external/agent-systems/gascity/cmd/gc/session_reconciler.go:1431`).
+- Do not assume missing work means no demand if store query partial flags are set (`external/agent-systems/gascity/cmd/gc/build_desired_state.go:58`, `external/agent-systems/gascity/cmd/gc/build_desired_state.go:67`).
+- Do not assume order triggers are pure timers. They can be event, condition subprocess, cooldown, cron with catch-up, or manual (`external/agent-systems/gascity/internal/orders/triggers.go:50`, `external/agent-systems/gascity/internal/orders/triggers.go:258`).
 - Do not assume submodule-local upstream workflow instructions apply to the parent `orchestrators` repo. Parent repo instructions control parent-level research artifacts.

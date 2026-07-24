@@ -30,9 +30,9 @@ authoritative for the battery; this file is the execution runbook.**
 
 | Repo | Path | Tracked files | Language mix | Why it's a good test |
 | --- | --- | --- | --- | --- |
-| paperclip | `external/paperclip` | ~2,961 | TS/TSX only (pnpm monorepo) | Baseline; barrel-export + JSX failure modes |
-| OpenHands | `external/OpenHands` (submodule) | ~2,440 | **Python (845)** + TS/TSX (721+510) | Polyglot; tests Python support + a different frontend |
-| deer-flow | `external/deer-flow` | ~1,368 | **Python (635)** + TS/TSX (192+165) + md/mdx | Smaller polyglot; Python-first |
+| paperclip | `external/agent-systems/paperclip` | ~2,961 | TS/TSX only (pnpm monorepo) | Baseline; barrel-export + JSX failure modes |
+| OpenHands | `external/agent-systems/OpenHands` (submodule) | ~2,440 | **Python (845)** + TS/TSX (721+510) | Polyglot; tests Python support + a different frontend |
+| deer-flow | `external/agent-systems/deer-flow` | ~1,368 | **Python (635)** + TS/TSX (192+165) + md/mdx | Smaller polyglot; Python-first |
 
 The two new repos are **Python-heavy**, so replication is a real generality test (not a repeat). Tools
 behave differently per language — see §5.

@@ -338,7 +338,7 @@ tree-sitter attribution both miss calls inside component bodies / arrow consts.
 **Phase B (all 8 runs): clean** (orchestrator-verified — [results/_isolation_audit.md](results/_isolation_audit.md)). Every run was independently verified **home-local** (tool-local
 `HOME` + tool-specific cache/store env vars), **no-global-bin** (`command -v <tool>` returns nothing;
 invoked only by explicit path), and **subject-untouched** (canonical `_paperclip_src` still
-read-only `dr-xr-xr-x`, file count unchanged, no tool artifacts written into it; `external/paperclip`
+read-only `dr-xr-xr-x`, file count unchanged, no tool artifacts written into it; `external/agent-systems/paperclip`
 submodule clean). Notable: serena/codegraph/CBM/graphify wrote indexes only into writable copies or
 tool-local caches; ast-grep, repomix, and headroom are effectively stateless (wrote zero or one
 artifact to the tool-local HOME); serena's TS language server auto-installed under `SERENA_HOME` by

@@ -81,12 +81,12 @@
         <div class="panel">
           <h3>V1 API surface</h3>
           <p>The app-server exposes <code>/api/v1</code> routes for events, app conversations, pending messages, sandbox management, sandbox specs, settings, secrets, user, skills, webhooks, web client config, git, and config.</p>
-          <p class="refs">Refs: <code>external/OpenHands/openhands/app_server/v1_router.py:23</code>, <code>external/OpenHands/openhands/app_server/v1_router.py:37</code>.</p>
+          <p class="refs">Refs: <code>external/agent-systems/OpenHands/openhands/app_server/v1_router.py:23</code>, <code>external/agent-systems/OpenHands/openhands/app_server/v1_router.py:37</code>.</p>
         </div>
         <div class="panel">
           <h3>Frontend boundary</h3>
           <p>The frontend path follows the repository guidance: UI components call TanStack Query hooks, hooks use <code>frontend/src/api</code>, and API clients hit app-server endpoints or direct runtime URLs for runtime-specific operations.</p>
-          <p class="refs">Refs: <code>external/OpenHands/AGENTS.md:148</code>, <code>external/OpenHands/frontend/src/api/conversation-service/v1-conversation-service.api.ts:29</code>.</p>
+          <p class="refs">Refs: <code>external/agent-systems/OpenHands/AGENTS.md:148</code>, <code>external/agent-systems/OpenHands/frontend/src/api/conversation-service/v1-conversation-service.api.ts:29</code>.</p>
         </div>
       </div>
     </section>
@@ -114,7 +114,7 @@
           <path class="e" d="M255 142 H330"/><path class="e" d="M560 142 H635"/>
         </svg>
       </div>
-      <p class="refs">Refs: <code>external/OpenHands/openhands/app_server/app_conversation/live_status_app_conversation_service.py:1404</code>, <code>external/OpenHands/openhands/app_server/app_conversation/live_status_app_conversation_service.py:1482</code>, <code>external/OpenHands/openhands/app_server/app_conversation/live_status_app_conversation_service.py:786</code>.</p>
+      <p class="refs">Refs: <code>external/agent-systems/OpenHands/openhands/app_server/app_conversation/live_status_app_conversation_service.py:1404</code>, <code>external/agent-systems/OpenHands/openhands/app_server/app_conversation/live_status_app_conversation_service.py:1482</code>, <code>external/agent-systems/OpenHands/openhands/app_server/app_conversation/live_status_app_conversation_service.py:786</code>.</p>
     </section>
 
     <section aria-labelledby="skills-hooks">
@@ -131,7 +131,7 @@
       <div class="panel">
         <p>Enterprise SaaS startup sets <code>OPENHANDS_CONFIG_CLS</code> to a SaaS config class unless already set, disables the base SPA mount while enterprise routes are registered, imports the base app, registers auth, billing, sharing, organization, integration, API key, verified model, email, analytics, and provider-specific routers, adds middleware, then mounts the SPA last.</p>
         <p>Architecturally, Enterprise changes app mode, store classes, auth class, analytics user provider, feature flags, and provider configuration. It also introduces SaaS auth with cookie and bearer/API key paths plus effective-org resolution.</p>
-        <p class="refs">Refs: <code>external/OpenHands/enterprise/saas_server.py:7</code>, <code>external/OpenHands/enterprise/saas_server.py:206</code>, <code>external/OpenHands/enterprise/server/config.py:55</code>, <code>external/OpenHands/enterprise/server/auth/saas_user_auth.py:56</code>.</p>
+        <p class="refs">Refs: <code>external/agent-systems/OpenHands/enterprise/saas_server.py:7</code>, <code>external/agent-systems/OpenHands/enterprise/saas_server.py:206</code>, <code>external/agent-systems/OpenHands/enterprise/server/config.py:55</code>, <code>external/agent-systems/OpenHands/enterprise/server/auth/saas_user_auth.py:56</code>.</p>
       </div>
     </section>
   </main>

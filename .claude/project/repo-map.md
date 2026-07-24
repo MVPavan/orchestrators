@@ -22,8 +22,8 @@ Physical layout and navigation for the parent repo.
 
 | Path | Role |
 | --- | --- |
-| `external/gascity` | Upstream submodule from `gastownhall/gascity`, branch `main` |
-| `external/gastown` | Upstream submodule from `gastownhall/gastown`, branch `main` |
+| `external/agent-systems/gascity` | Upstream submodule from `gastownhall/gascity`, branch `main` |
+| `external/agent-systems/gastown` | Upstream submodule from `gastownhall/gastown`, branch `main` |
 
 The parent repo tracks only the submodule commit pointers. If a task is about parent orchestration, avoid editing inside `external/*`. If a task is about updating upstream pointers, use `git submodule update --remote --merge ...` and stage the submodule path only.
 

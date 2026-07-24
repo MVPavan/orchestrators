@@ -15,7 +15,7 @@ Repo-local Codex-facing assets for this project.
 
 - [`skills/adopt/`](skills/adopt/) — adapt the Codex project overlay to a repository.
 - [`skills/check-invariants/`](skills/check-invariants/) — run mechanically checkable project invariants.
-- [`skills/codebase-architecture-research/`](skills/codebase-architecture-research/) — reusable workflow for studying an external codebase such as `external/gastown` and writing both agent-facing Markdown reports and human-review HTML under `docs/research/codebases/<slug>/`.
+- [`skills/codebase-architecture-research/`](skills/codebase-architecture-research/) — reusable workflow for studying an external codebase such as `external/agent-systems/gastown` and writing both agent-facing Markdown reports and human-review HTML under `docs/research/codebases/<slug>/`.
 - [`skills/prepare-phases/`](skills/prepare-phases/) — create a Beads-backed workstream from docs or research.
 - [`skills/run-phases/`](skills/run-phases/) — run incomplete workstream phases sequentially.
 - [`skills/use-codex/`](skills/use-codex/) — choose Codex-native invocation surfaces.

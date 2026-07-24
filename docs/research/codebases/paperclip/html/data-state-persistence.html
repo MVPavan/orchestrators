@@ -52,7 +52,7 @@
         <table>
           <thead><tr><th>Group</th><th>State held</th><th>Source anchor</th></tr></thead>
           <tbody>
-            <tr><td>Agents</td><td>Company, role, status, hierarchy, adapter/runtime config, default environment, budgets, permissions.</td><td><code>external/paperclip/packages/db/src/schema/agents.ts:14-44</code></td></tr>
+            <tr><td>Agents</td><td>Company, role, status, hierarchy, adapter/runtime config, default environment, budgets, permissions.</td><td><code>external/agent-systems/paperclip/packages/db/src/schema/agents.ts:14-44</code></td></tr>
             <tr><td>Wakeups and runs</td><td>Wakeup source/reason/payload/idempotency plus heartbeat status, result, errors, usage, session, logs, retry and process fields.</td><td><code>agent_wakeup_requests.ts:5-40</code>, <code>heartbeat_runs.ts:6-59</code></td></tr>
             <tr><td>Issues</td><td>Work item state, dependency relations, execution locks, workspaces, liveness, recovery and productivity metadata.</td><td><code>issues.ts:22-144</code></td></tr>
             <tr><td>Execution workspaces</td><td>Mode, strategy, cwd, repo/ref/branch, provider references, source issue, status, metadata.</td><td><code>execution_workspaces.ts:15-68</code></td></tr>
@@ -64,10 +64,10 @@
     <section>
       <div class="section-head"><div class="section-no">03</div><h2>Concurrency Model</h2></div>
       <div class="grid">
-        <div class="panel"><h3>Agent-start lock</h3><p>Queued runs are claimed through <code>startNextQueuedRunForAgent()</code>, which serializes launch decisions per agent before calling execution. Source: <code>external/paperclip/server/src/services/heartbeat.ts:7666-7755</code>.</p></div>
-        <div class="panel"><h3>Issue execution fields</h3><p>Checkout validates assignment, tree holds, dependencies, stale locks, and then updates assignee/status/checkout/run fields. Source: <code>external/paperclip/server/src/services/issues.ts:5480-5688</code>.</p></div>
-        <div class="panel"><h3>Dependency readiness</h3><p><code>blocks</code> relations and workspace-finalization barriers decide whether dependents can wake. Source: <code>external/paperclip/server/src/services/issues.ts:622-750</code>.</p></div>
-        <div class="panel"><h3>Recovery loops</h3><p>Startup maintenance resumes queued runs, promotes retries, recovers orphaned runs, checks watchdogs, and sweeps stale locks. Source: <code>external/paperclip/server/src/index.ts:753-895</code>.</p></div>
+        <div class="panel"><h3>Agent-start lock</h3><p>Queued runs are claimed through <code>startNextQueuedRunForAgent()</code>, which serializes launch decisions per agent before calling execution. Source: <code>external/agent-systems/paperclip/server/src/services/heartbeat.ts:7666-7755</code>.</p></div>
+        <div class="panel"><h3>Issue execution fields</h3><p>Checkout validates assignment, tree holds, dependencies, stale locks, and then updates assignee/status/checkout/run fields. Source: <code>external/agent-systems/paperclip/server/src/services/issues.ts:5480-5688</code>.</p></div>
+        <div class="panel"><h3>Dependency readiness</h3><p><code>blocks</code> relations and workspace-finalization barriers decide whether dependents can wake. Source: <code>external/agent-systems/paperclip/server/src/services/issues.ts:622-750</code>.</p></div>
+        <div class="panel"><h3>Recovery loops</h3><p>Startup maintenance resumes queued runs, promotes retries, recovers orphaned runs, checks watchdogs, and sweeps stale locks. Source: <code>external/agent-systems/paperclip/server/src/index.ts:753-895</code>.</p></div>
       </div>
     </section>
     <footer>

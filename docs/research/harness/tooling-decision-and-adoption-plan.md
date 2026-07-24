@@ -37,9 +37,9 @@ concrete next steps are here.
 **Tradeoff we accept by choosing CBM over codegraph (be aware on revisit):** CBM mounts **14 MCP tools** (~10–15K tool-schema on the first turn) vs codegraph's single tool (~tiny). We accept that overhead in exchange for CBM's far richer surface (semantic search, impact+risk, ADR, traces, cross-service) and its higher measured accuracy. The "mount only ONE graph engine" rule still holds — CBM **is** that one engine; do not also mount codegraph. See §2 and §7.
 
 Tool versions/paths in this repo (verified 2026-06-24):
-- serena `1.5.4.dev0` — `external/harness_repos/serena/.venv/bin/serena` (pyright LSP backend)
-- CBM (codebase-memory-mcp) `0.8.1` — built static binary `external/harness_repos/codebase-memory-mcp/build/c/codebase-memory-mcp` (266 MB, zero-dep; has `install` to auto-register MCP, `cli` for headless queries)
-- ast-grep `0.44.0` — `external/harness_repos/ast-grep/.local-npm/node_modules/@ast-grep/cli-linux-x64-gnu/ast-grep`
+- serena `1.5.4.dev0` — `external/harness-tools/codebase-intelligence/serena/.venv/bin/serena` (pyright LSP backend)
+- CBM (codebase-memory-mcp) `0.8.1` — built static binary `external/harness-tools/codebase-intelligence/codebase-memory-mcp/build/c/codebase-memory-mcp` (266 MB, zero-dep; has `install` to auto-register MCP, `cli` for headless queries)
+- ast-grep `0.44.0` — `external/harness-tools/codebase-intelligence/ast-grep/.local-npm/node_modules/@ast-grep/cli-linux-x64-gnu/ast-grep`
   (NOTE: `/usr/bin/sg` is **not** ast-grep — it's `newgrp`. Use the full path.)
 
 ---
@@ -245,7 +245,7 @@ relational work.
 ## 8. Adoption plan (resumable, ordered steps)
 
 **Step 1 — Register the MCP servers + verify CLI.** *(start here on resume)*
-- CBM: `external/harness_repos/codebase-memory-mcp/build/c/codebase-memory-mcp install` (auto-detects
+- CBM: `external/harness-tools/codebase-intelligence/codebase-memory-mcp/build/c/codebase-memory-mcp install` (auto-detects
   Claude Code and writes the MCP entry + hooks). Or register manually in `.mcp.json`:
   `{"mcpServers":{"codebase-memory-mcp":{"command":"<abs path to the built binary>","args":[]}}}`.
   Verify with `/mcp` — you should see `codebase-memory-mcp` with **14 tools**.
@@ -312,7 +312,7 @@ CBM→codegraph if the §7 codegraph trigger fires (CBM's 14-tool schema cost pr
 - **Study raw data/scripts/gold/scorer + 3 Codex transcripts:** `scratchpad/harness-2repo/`
   (`GROUND_RULES.md`, `goldbuilder.py`, `gold_manifest.json`, `score.py`, `scores.json`,
   `results/<repo>/<tool>.json`).
-- **Tools:** `external/harness_repos/{serena,codegraph,ast-grep,codebase-memory-mcp,repomix,graphify,understand-anything,headroom}`.
+- **Tools:** `external/harness-tools/codebase-intelligence/{serena,codegraph,ast-grep,codebase-memory-mcp,repomix,graphify,understand-anything,headroom}`.
 - **Beads:** epic for this adoption = see `bd list` (created alongside this file). Research tasks
   `orch-y8u` (closed, accuracy study), `orch-kfd` (closed, Codex token research).
 - **Panel:** 2 Opus + 2 Codex (GPT-5.x) token-economics researchers; conclusions embedded in §3.3

@@ -90,12 +90,12 @@
         <div class="panel">
           <h3>Packaged app</h3>
           <p><code>docker-compose.yml</code> builds <code>containers/app/Dockerfile</code>, exposes port 3000, mounts the Docker socket, maps <code>~/.openhands</code> to <code>/.openhands</code>, and mounts the workspace base into <code>/opt/workspace_base</code>.</p>
-          <p class="refs">Refs: <code>external/OpenHands/docker-compose.yml:2</code>, <code>external/OpenHands/docker-compose.yml:24</code>.</p>
+          <p class="refs">Refs: <code>external/agent-systems/OpenHands/docker-compose.yml:2</code>, <code>external/agent-systems/OpenHands/docker-compose.yml:24</code>.</p>
         </div>
         <div class="panel">
           <h3>Runtime image</h3>
           <p>The app Dockerfile uses frontend-builder, backend-builder, and runtime stages. It sets defaults including <code>RUN_AS_OPENHANDS</code>, <code>SANDBOX_LOCAL_RUNTIME_URL</code>, <code>WORKSPACE_BASE</code>, <code>FILE_STORE=local</code>, and <code>INIT_GIT_IN_EMPTY_WORKSPACE=1</code>.</p>
-          <p class="refs">Refs: <code>external/OpenHands/containers/app/Dockerfile:1</code>, <code>external/OpenHands/containers/app/Dockerfile:105</code>.</p>
+          <p class="refs">Refs: <code>external/agent-systems/OpenHands/containers/app/Dockerfile:1</code>, <code>external/agent-systems/OpenHands/containers/app/Dockerfile:105</code>.</p>
         </div>
       </div>
     </section>
@@ -116,7 +116,7 @@
       <h2 id="enterprise">Enterprise Operations</h2>
       <div class="panel">
         <p>Enterprise has separate setup and run instructions. The repo guidance names Python 3.12, Poetry, Node.js 22.x, and optional Docker, then instructs developers to build the main project, install enterprise dependencies, and install enterprise pre-commit hooks. Enterprise tests use <code>poetry run --project=enterprise pytest</code> with xdist/forking and enterprise-specific config; server startup uses enterprise make targets.</p>
-        <p class="refs">Refs: <code>external/OpenHands/AGENTS.md:174</code>, <code>external/OpenHands/AGENTS.md:196</code>, <code>external/OpenHands/enterprise/saas_server.py:81</code>, <code>external/OpenHands/enterprise/server/app_lifespan/saas_app_lifespan_service.py:19</code>.</p>
+        <p class="refs">Refs: <code>external/agent-systems/OpenHands/AGENTS.md:174</code>, <code>external/agent-systems/OpenHands/AGENTS.md:196</code>, <code>external/agent-systems/OpenHands/enterprise/saas_server.py:81</code>, <code>external/agent-systems/OpenHands/enterprise/server/app_lifespan/saas_app_lifespan_service.py:19</code>.</p>
       </div>
     </section>
 

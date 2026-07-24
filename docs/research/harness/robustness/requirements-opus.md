@@ -16,7 +16,7 @@ tier (B) of twelve dimensions here.
 `scratchpad/harness/_paperclip_src` (~2,961 files, ~38 workspace packages, server + ui + cli + db + adapters,
 106 SQL migrations, 739 test files, Docker, CI under `.github/workflows/`). Requirements stay general; the
 touchstone only makes the tests executable. **Caveat:** this snapshot is pruned of `.git`, so history tests
-(Dimension J) must be run against the live repo (`external/paperclip`), not the snapshot.
+(Dimension J) must be run against the live repo (`external/agent-systems/paperclip`), not the snapshot.
 
 ---
 
@@ -584,7 +584,7 @@ keys + their injection sites + a scan for leaks. Metric: secret recall + zero fa
 
 ## Dimension J — History, Change Patterns & Evolution
 
-*(Requires `.git`; not testable on the pruned snapshot — run against `external/paperclip`.)*
+*(Requires `.git`; not testable on the pruned snapshot — run against `external/agent-systems/paperclip`.)*
 
 ### J1. Change history & blame
 **Def.** For a file/symbol: when and why it last changed, who changed it, and the commit/PR rationale.

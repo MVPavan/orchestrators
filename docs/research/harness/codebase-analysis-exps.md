@@ -1,6 +1,6 @@
 # Codebase Analysis — Tooling Experiments
 
-**Goal.** Use the codebase-analysis tools below as independent *lenses* to understand the **paperclip** repo (`external/paperclip`) as deeply as possible, then compare them — but only where their capabilities genuinely overlap. This file is the **executable runbook**: a goal runner can drive it phase by phase after a context compaction.
+**Goal.** Use the codebase-analysis tools below as independent *lenses* to understand the **paperclip** repo (`external/agent-systems/paperclip`) as deeply as possible, then compare them — but only where their capabilities genuinely overlap. This file is the **executable runbook**: a goal runner can drive it phase by phase after a context compaction.
 
 ## 0. How this runs (orchestration contract)
 
@@ -20,7 +20,7 @@
 
 ## 1. Subject under test — paperclip
 
-- **Path:** `external/paperclip`  ·  **Origin:** `github.com/paperclipai/paperclip`
+- **Path:** `external/agent-systems/paperclip`  ·  **Origin:** `github.com/paperclipai/paperclip`
 - **What it is:** "the app people use to manage AI agents for work."
 - **Stack & size (verified):** TypeScript/TSX **pnpm monorepo** — ~3,071 tracked files (1,674 `.ts`, 488 `.tsx`, 311 `.md`, 192 `.json`, 110 `.sql`); workspaces include `packages/`, `server`, `ui`, `cli`, `evals`.
 - **Why it is a good subject:** large, multi-package, multi-language — a realistic stress test that punishes shallow file-by-file exploration.
@@ -29,9 +29,9 @@
 
 Each tool runs as an **isolated experiment scoped to paperclip source only**. A tool left to its defaults will happily ingest the entire working tree, the other tool repos, and binaries — that is **not** what we want.
 
-- **Target = paperclip source only.** Point every tool explicitly at `external/paperclip` (or a named subset of it). Never run a tool with `cwd` = the `orchestrators` repo root — it would pull in everything.
-- **Never ingest:** the parent `orchestrators` repo; `external/harness_repos/**` (the tool repos and their binaries); the Codex CLI binary (`~/.local/bin/codex`); any tool's own binary; `.git/`; `node_modules/`; build output (`dist/`, `build/`, `.next/`, `coverage/`); the pnpm store; large binary assets (`*.png`, `*.jpg`, `*.svg`, fonts); oversized lockfiles.
-- **Output isolation:** each tool writes its index/artifacts **only** to `scratchpad/harness/<tool>/`. If a tool insists on writing into its target, run it against a throwaway copy at `scratchpad/harness/<tool>/paperclip/`, never against `external/paperclip` directly.
+- **Target = paperclip source only.** Point every tool explicitly at `external/agent-systems/paperclip` (or a named subset of it). Never run a tool with `cwd` = the `orchestrators` repo root — it would pull in everything.
+- **Never ingest:** the parent `orchestrators` repo; `external/harness-tools/codebase-intelligence/**` (the tool repos and their binaries); the Codex CLI binary (`~/.local/bin/codex`); any tool's own binary; `.git/`; `node_modules/`; build output (`dist/`, `build/`, `.next/`, `coverage/`); the pnpm store; large binary assets (`*.png`, `*.jpg`, `*.svg`, fonts); oversized lockfiles.
+- **Output isolation:** each tool writes its index/artifacts **only** to `scratchpad/harness/<tool>/`. If a tool insists on writing into its target, run it against a throwaway copy at `scratchpad/harness/<tool>/paperclip/`, never against `external/agent-systems/paperclip` directly.
 - **One tool per subagent**, no shared working directories. Codex stays in its default read-only sandbox.
 - **No silent truncation:** if a tool cannot handle full paperclip source, scope to representative packages and **log exactly what was excluded** in that tool's `exploitation.md`.
 
@@ -56,7 +56,7 @@ pnpm-lock.yaml  **/*.min.js  **/*.map
 
 ## 4. Tools under test (the lenses)
 
-Each tool lives in `external/harness_repos/<tool>/`. **Status:** only `headroom` is cloned so far; the other seven still need cloning (see §6, Phase 0).
+Each tool lives in `external/harness-tools/codebase-intelligence/<tool>/`. **Status:** only `headroom` is cloned so far; the other seven still need cloning (see §6, Phase 0).
 
 | Layer                   | Tool                    | GitHub                                                                            | Best functionality to test                                                                                                                                                                                                                                                                      | What success should look like                                                                                                      |
 | ----------------------- | ----------------------- | --------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
@@ -73,16 +73,16 @@ Each tool lives in `external/harness_repos/<tool>/`. **Status:** only `headroom`
 
 ## 5. Repo layout and where results go
 
-- **Tools:** `external/harness_repos/<tool>/` — plain clones, **not** submodules (consistent with the existing `headroom`).
+- **Tools:** `external/harness-tools/codebase-intelligence/<tool>/` — plain clones, **not** submodules (consistent with the existing `headroom`).
 - **Per-tool results:** `docs/research/harness/results/<tool>/` — `capabilities.md` (Phase A) + `exploitation.md` (Phase B) + small artifacts.
 - **Large / raw artifacts** (packed digests, `graph.json`, logs) and any throwaway paperclip copies: `scratchpad/harness/<tool>/` (gitignored); link them from `exploitation.md`.
 - **Final synthesis:** `docs/research/harness/findings.md` (Phase C).
 
 ## 6. Phase 0 — Setup (orchestrator, Bash)
 
-Clone each missing tool into `external/harness_repos/`. Exact build/run commands are confirmed per-tool in Phase A — read each README first, do not assume.
+Clone each missing tool into `external/harness-tools/codebase-intelligence/`. Exact build/run commands are confirmed per-tool in Phase A — read each README first, do not assume.
 
-| Tool                | Clone (run inside `external/harness_repos/`)                                     | Consumed as                                                         |
+| Tool                | Clone (run inside `external/harness-tools/codebase-intelligence/`)                                     | Consumed as                                                         |
 | ------------------- | -------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
 | Serena              | `git clone https://github.com/oraios/serena serena`                              | MCP server (Python / uv)                                            |
 | ast-grep            | `git clone https://github.com/ast-grep/ast-grep ast-grep`                        | CLI `ast-grep`/`sg` (install binary separately; repo for reference) |
@@ -94,11 +94,11 @@ Clone each missing tool into `external/harness_repos/`. Exact build/run commands
 | Headroom            | _already cloned_                                                                 | Library / proxy / MCP                                               |
 
 **Also:** create `scratchpad/harness/` and define the exclude list from §2.
-**Done when:** all 7 tool dirs exist under `external/harness_repos/`; `scratchpad/harness/` exists; the exclude list is written down; one tool runs once against the scoped target without error.
+**Done when:** all 7 tool dirs exist under `external/harness-tools/codebase-intelligence/`; `scratchpad/harness/` exists; the exclude list is written down; one tool runs once against the scoped target without error.
 
 ## 7. Phase A — Capability discovery (Opus **medium** ×7, parallel)
 
-For each tool, an Opus-medium worker reads its repo in `external/harness_repos/<tool>/` (README, docs, `--help`, examples) and writes `results/<tool>/capabilities.md`:
+For each tool, an Opus-medium worker reads its repo in `external/harness-tools/codebase-intelligence/<tool>/` (README, docs, `--help`, examples) and writes `results/<tool>/capabilities.md`:
 
 - **Domain & sweet spot** — what class of question is this tool *built* to answer?
 - **Capabilities** — concrete, named operations.

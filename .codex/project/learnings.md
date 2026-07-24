@@ -17,7 +17,7 @@ Keep entries short. Never store secrets or machine-local paths.
 
 ### 2026-06-13 - Track upstream projects as submodules
 
-- Scope: `external/gascity` and `external/gastown`.
+- Scope: `external/agent-systems/gascity` and `external/agent-systems/gastown`.
 - Trigger: deciding how to keep upstream projects inside the parent repo without tracking all internals.
 - Rule: keep upstream projects as Git submodules under `external/`; the parent repo tracks only commit pointers.
 - Evidence: `.gitmodules` declares both submodules on `main`; `README.md` documents clone and sync commands.

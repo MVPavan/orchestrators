@@ -14,9 +14,9 @@
 
 ## Claims That Are Inferences
 
-- OpenHands Local GUI is an orchestration shell around SDK/agent-server packages. This is inferred from README product boundaries, pyproject pins, and code paths that build SDK requests and POST to sandbox agent-server endpoints (`external/OpenHands/README.md:34`, `external/OpenHands/pyproject.toml:248`, `external/OpenHands/openhands/app_server/app_conversation/live_status_app_conversation_service.py:342`).
-- OSS mode appears single-user or weakly multi-tenant compared with SaaS. This is inferred from the default `DefaultUserAuth`/file stores and the absence of user filtering in the OSS SQL metadata service, contrasted with Enterprise SaaS filtering. It is not a full security verdict (`external/OpenHands/openhands/app_server/server_config/server_config.py:17`, `external/OpenHands/openhands/app_server/server_config/server_config.py:27`, `external/OpenHands/enterprise/server/utils/saas_app_conversation_info_injector.py:51`, `external/OpenHands/enterprise/server/utils/saas_app_conversation_info_injector.py:116`).
-- The app-server is intended to stay mostly thin around running-agent actions. This is inferred from the send-message endpoint's own design note and frontend direct runtime URL helpers (`external/OpenHands/openhands/app_server/app_conversation/app_conversation_router.py:461`, `external/OpenHands/openhands/app_server/app_conversation/app_conversation_router.py:467`, `external/OpenHands/frontend/src/api/conversation-service/v1-conversation-service.api.ts:29`, `external/OpenHands/frontend/src/api/conversation-service/v1-conversation-service.api.ts:35`).
+- OpenHands Local GUI is an orchestration shell around SDK/agent-server packages. This is inferred from README product boundaries, pyproject pins, and code paths that build SDK requests and POST to sandbox agent-server endpoints (`external/agent-systems/OpenHands/README.md:34`, `external/agent-systems/OpenHands/pyproject.toml:248`, `external/agent-systems/OpenHands/openhands/app_server/app_conversation/live_status_app_conversation_service.py:342`).
+- OSS mode appears single-user or weakly multi-tenant compared with SaaS. This is inferred from the default `DefaultUserAuth`/file stores and the absence of user filtering in the OSS SQL metadata service, contrasted with Enterprise SaaS filtering. It is not a full security verdict (`external/agent-systems/OpenHands/openhands/app_server/server_config/server_config.py:17`, `external/agent-systems/OpenHands/openhands/app_server/server_config/server_config.py:27`, `external/agent-systems/OpenHands/enterprise/server/utils/saas_app_conversation_info_injector.py:51`, `external/agent-systems/OpenHands/enterprise/server/utils/saas_app_conversation_info_injector.py:116`).
+- The app-server is intended to stay mostly thin around running-agent actions. This is inferred from the send-message endpoint's own design note and frontend direct runtime URL helpers (`external/agent-systems/OpenHands/openhands/app_server/app_conversation/app_conversation_router.py:461`, `external/agent-systems/OpenHands/openhands/app_server/app_conversation/app_conversation_router.py:467`, `external/agent-systems/OpenHands/frontend/src/api/conversation-service/v1-conversation-service.api.ts:29`, `external/agent-systems/OpenHands/frontend/src/api/conversation-service/v1-conversation-service.api.ts:35`).
 
 ## Areas Deliberately Not Audited
 
@@ -29,18 +29,18 @@
 
 ## Recommended Next Reads
 
-- `external/OpenHands/openhands/app_server/app_conversation/live_status_app_conversation_service.py`
-- `external/OpenHands/openhands/app_server/app_conversation/app_conversation_router.py`
-- `external/OpenHands/openhands/app_server/config.py`
-- `external/OpenHands/openhands/app_server/sandbox/docker_sandbox_service.py`
-- `external/OpenHands/openhands/app_server/sandbox/remote_sandbox_service.py`
-- `external/OpenHands/openhands/app_server/event_callback/sql_event_callback_service.py`
-- `external/OpenHands/openhands/app_server/integrations/provider.py`
-- `external/OpenHands/openhands/app_server/mcp/mcp_router.py`
-- `external/OpenHands/frontend/src/api/conversation-service/v1-conversation-service.api.ts`
-- `external/OpenHands/frontend/src/hooks/query/use-task-polling.ts`
-- `external/OpenHands/enterprise/saas_server.py`
-- `external/OpenHands/enterprise/server/config.py`
-- `external/OpenHands/enterprise/server/auth/saas_user_auth.py`
-- `external/OpenHands/enterprise/server/utils/saas_app_conversation_info_injector.py`
+- `external/agent-systems/OpenHands/openhands/app_server/app_conversation/live_status_app_conversation_service.py`
+- `external/agent-systems/OpenHands/openhands/app_server/app_conversation/app_conversation_router.py`
+- `external/agent-systems/OpenHands/openhands/app_server/config.py`
+- `external/agent-systems/OpenHands/openhands/app_server/sandbox/docker_sandbox_service.py`
+- `external/agent-systems/OpenHands/openhands/app_server/sandbox/remote_sandbox_service.py`
+- `external/agent-systems/OpenHands/openhands/app_server/event_callback/sql_event_callback_service.py`
+- `external/agent-systems/OpenHands/openhands/app_server/integrations/provider.py`
+- `external/agent-systems/OpenHands/openhands/app_server/mcp/mcp_router.py`
+- `external/agent-systems/OpenHands/frontend/src/api/conversation-service/v1-conversation-service.api.ts`
+- `external/agent-systems/OpenHands/frontend/src/hooks/query/use-task-polling.ts`
+- `external/agent-systems/OpenHands/enterprise/saas_server.py`
+- `external/agent-systems/OpenHands/enterprise/server/config.py`
+- `external/agent-systems/OpenHands/enterprise/server/auth/saas_user_auth.py`
+- `external/agent-systems/OpenHands/enterprise/server/utils/saas_app_conversation_info_injector.py`
 

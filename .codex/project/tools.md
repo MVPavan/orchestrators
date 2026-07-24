@@ -39,7 +39,7 @@ Routing guidance for this repo. Current project facts live in `.codex/project/`;
 
 ## External Repos
 
-- `external/gascity` and `external/gastown` are upstream submodules.
+- `external/agent-systems/gascity` and `external/agent-systems/gastown` are upstream submodules.
 - Inspect them when evaluating orchestration patterns or syncing upstreams.
 - Do not modify their internals from the parent repo unless the task is explicitly submodule-local.
 

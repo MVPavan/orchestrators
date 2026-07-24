@@ -50,10 +50,10 @@
         <table>
           <thead><tr><th>Area</th><th>Fact</th><th>Source anchor</th></tr></thead>
           <tbody>
-            <tr><td>Quickstart</td><td><code>npx paperclipai onboard --yes</code>; manual path is <code>pnpm install</code> then <code>pnpm dev</code>.</td><td><code>external/paperclip/README.md:279-323</code></td></tr>
-            <tr><td>Scripts</td><td><code>dev</code>, <code>build</code>, <code>typecheck</code>, <code>test</code>, CLI entry, DB generate/migrate scripts.</td><td><code>external/paperclip/package.json:5-54</code></td></tr>
-            <tr><td>Runtime versions</td><td>Node <code>&gt;=20</code>, pnpm <code>9.15.4</code>.</td><td><code>external/paperclip/package.json:62-65</code></td></tr>
-            <tr><td>Config defaults</td><td>Local trusted mode, local encrypted secrets, local disk storage, port 3100, embedded Postgres port 54329, scheduler enabled.</td><td><code>external/paperclip/server/src/config.ts:111-165</code>, <code>288-336</code></td></tr>
+            <tr><td>Quickstart</td><td><code>npx paperclipai onboard --yes</code>; manual path is <code>pnpm install</code> then <code>pnpm dev</code>.</td><td><code>external/agent-systems/paperclip/README.md:279-323</code></td></tr>
+            <tr><td>Scripts</td><td><code>dev</code>, <code>build</code>, <code>typecheck</code>, <code>test</code>, CLI entry, DB generate/migrate scripts.</td><td><code>external/agent-systems/paperclip/package.json:5-54</code></td></tr>
+            <tr><td>Runtime versions</td><td>Node <code>&gt;=20</code>, pnpm <code>9.15.4</code>.</td><td><code>external/agent-systems/paperclip/package.json:62-65</code></td></tr>
+            <tr><td>Config defaults</td><td>Local trusted mode, local encrypted secrets, local disk storage, port 3100, embedded Postgres port 54329, scheduler enabled.</td><td><code>external/agent-systems/paperclip/server/src/config.ts:111-165</code>, <code>288-336</code></td></tr>
           </tbody>
         </table>
       </div>
@@ -61,7 +61,7 @@
     <section>
       <div class="section-head"><div class="section-no">03</div><h2>Operations Checklist</h2></div>
       <div class="grid">
-        <div class="panel"><h3>Before runtime claims</h3><ul><li>Install dependencies in <code>external/paperclip</code>.</li><li>Run <code>pnpm typecheck</code> and <code>pnpm test</code>.</li><li>Boot <code>pnpm dev</code> and verify DB, migrations, health route, UI, and scheduler logs.</li></ul></div>
+        <div class="panel"><h3>Before runtime claims</h3><ul><li>Install dependencies in <code>external/agent-systems/paperclip</code>.</li><li>Run <code>pnpm typecheck</code> and <code>pnpm test</code>.</li><li>Boot <code>pnpm dev</code> and verify DB, migrations, health route, UI, and scheduler logs.</li></ul></div>
         <div class="panel"><h3>Before production claims</h3><ul><li>Verify external Postgres migration path.</li><li>Audit authenticated deployment exposure and trusted origins.</li><li>Check backup schedule and restore story.</li></ul></div>
         <div class="panel"><h3>Before plugin trust</h3><ul><li>Review manifest validation and capability gates.</li><li>Check plugin database namespace isolation.</li><li>Review worker environment and host handlers.</li></ul></div>
         <div class="panel"><h3>Before adapter trust</h3><ul><li>Inspect workspace path and remote target handling.</li><li>Check JWT/token scoping.</li><li>Confirm log redaction and command execution behavior.</li></ul></div>
@@ -76,7 +76,7 @@
             <tr><td>Source-only research</td><td><span class="tag medium">Medium</span></td><td>Run Paperclip's own checks and a local boot before treating behavior as runtime-proven.</td></tr>
             <tr><td>Plugin trust</td><td><span class="tag high">High</span></td><td>Security review manifest validation, host handlers, DB migrations, process environment, and worker restart behavior.</td></tr>
             <tr><td>Adapter execution</td><td><span class="tag high">High</span></td><td>Audit token flow, workspace realization, command execution, logs, and execution target handling.</td></tr>
-            <tr><td>Parent repo tracking</td><td><span class="tag low">Low</span></td><td>Clarify whether <code>external/paperclip</code> should remain a local checkout or become tracked parent metadata.</td></tr>
+            <tr><td>Parent repo tracking</td><td><span class="tag low">Low</span></td><td>Clarify whether <code>external/agent-systems/paperclip</code> should remain a local checkout or become tracked parent metadata.</td></tr>
           </tbody>
         </table>
       </div>

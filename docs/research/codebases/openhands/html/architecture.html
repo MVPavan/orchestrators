@@ -101,7 +101,7 @@
         <div class="fact"><strong>Dominant dependency direction</strong><span>Routers depend on injected service interfaces, which resolve configured implementations for storage, sandbox, providers, MCP, settings, and conversation services.</span></div>
         <div class="fact"><strong>Extension strategy</strong><span>Deployment behavior changes through injectors, store classes, and enterprise dynamic imports more often than through router rewrites.</span></div>
       </div>
-      <p class="refs">Grounding: <code>external/OpenHands/openhands/app_server/app_conversation/live_status_app_conversation_service.py:319</code>, <code>external/OpenHands/openhands/app_server/app_conversation/live_status_app_conversation_service.py:369</code>, <code>external/OpenHands/openhands/app_server/config.py:191</code>, <code>external/OpenHands/enterprise/server/config.py:55</code>.</p>
+      <p class="refs">Grounding: <code>external/agent-systems/OpenHands/openhands/app_server/app_conversation/live_status_app_conversation_service.py:319</code>, <code>external/agent-systems/OpenHands/openhands/app_server/app_conversation/live_status_app_conversation_service.py:369</code>, <code>external/agent-systems/OpenHands/openhands/app_server/config.py:191</code>, <code>external/agent-systems/OpenHands/enterprise/server/config.py:55</code>.</p>
     </section>
 
     <section aria-labelledby="topology">
@@ -201,12 +201,12 @@
         <div class="panel">
           <h3>App construction</h3>
           <p>The app initializes the Tavily MCP proxy, builds a FastMCP HTTP app at <code>/mcp</code>, combines its lifespan with the configured app lifespan, creates the FastAPI app, mounts routers, optionally mounts <code>frontend/build</code>, and installs middleware.</p>
-          <p class="refs">Refs: <code>external/OpenHands/openhands/app_server/app.py:30</code>, <code>external/OpenHands/openhands/app_server/app.py:33</code>, <code>external/OpenHands/openhands/app_server/app.py:54</code>, <code>external/OpenHands/openhands/app_server/app.py:71</code>.</p>
+          <p class="refs">Refs: <code>external/agent-systems/OpenHands/openhands/app_server/app.py:30</code>, <code>external/agent-systems/OpenHands/openhands/app_server/app.py:33</code>, <code>external/agent-systems/OpenHands/openhands/app_server/app.py:54</code>, <code>external/agent-systems/OpenHands/openhands/app_server/app.py:71</code>.</p>
         </div>
         <div class="panel">
           <h3>Router ownership</h3>
           <p>The V1 router is a composition layer. It aggregates events, app conversations, pending messages, sandbox management, settings, secrets, user, skills, webhooks, web client config, git, and config routes while feature modules keep their own behavior.</p>
-          <p class="refs">Refs: <code>external/OpenHands/openhands/app_server/v1_router.py:23</code>, <code>external/OpenHands/openhands/app_server/v1_router.py:37</code>.</p>
+          <p class="refs">Refs: <code>external/agent-systems/OpenHands/openhands/app_server/v1_router.py:23</code>, <code>external/agent-systems/OpenHands/openhands/app_server/v1_router.py:37</code>.</p>
         </div>
       </div>
     </section>
@@ -334,7 +334,7 @@
           <path class="edge" d="M580 250 H655"/>
         </svg>
       </div>
-      <p class="refs">Grounding: <code>external/OpenHands/openhands/app_server/app_conversation/app_conversation_models.py:106</code>, <code>external/OpenHands/openhands/app_server/app_conversation/app_conversation_models.py:151</code>, <code>external/OpenHands/openhands/app_server/app_conversation/app_conversation_models.py:240</code>, <code>external/OpenHands/openhands/app_server/app_conversation/app_conversation_router.py:360</code>.</p>
+      <p class="refs">Grounding: <code>external/agent-systems/OpenHands/openhands/app_server/app_conversation/app_conversation_models.py:106</code>, <code>external/agent-systems/OpenHands/openhands/app_server/app_conversation/app_conversation_models.py:151</code>, <code>external/agent-systems/OpenHands/openhands/app_server/app_conversation/app_conversation_models.py:240</code>, <code>external/agent-systems/OpenHands/openhands/app_server/app_conversation/app_conversation_router.py:360</code>.</p>
     </section>
 
     <section aria-labelledby="boundary">

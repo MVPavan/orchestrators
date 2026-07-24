@@ -32,7 +32,7 @@ Date: 2026-06-13
 ## What Changed
 
 - Replaced copied source-project facts with Agent Orchestrators facts.
-- Marked `external/gascity` and `external/gastown` as submodule upstreams, not parent-repo source trees.
+- Marked `external/agent-systems/gascity` and `external/agent-systems/gastown` as submodule upstreams, not parent-repo source trees.
 - Removed Python/Temporal/Postgres/MLflow verification assumptions from the project overlay.
 - Added current structural verification commands for Git, submodules, Beads, Claude settings, and hooks.
 - Recorded current open gaps: no first-party `src/`, `tests/`, `docs/`, `scripts/`, CI, workstream renderer, or project-native Codex wrappers yet.

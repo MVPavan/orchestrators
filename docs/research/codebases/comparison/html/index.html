@@ -598,28 +598,28 @@
           </thead>
           <tbody>
             <tr>
-              <td><strong>Gastown</strong><br><code>external/gastown</code></td>
+              <td><strong>Gastown</strong><br><code>external/agent-systems/gastown</code></td>
               <td>Durable local coordination of many AI coding agents across one or more repositories.</td>
               <td>Creates a town workspace and per-project rigs; routes Beads work to named agents; gives workers git worktrees and tmux sessions; submits completion through Beads-backed merge requests; refinery merges after gates.</td>
               <td>Bead plus assignment hook; merge request bead for integration.</td>
               <td><code>gt</code> CLI, town/rig filesystem, Beads/Dolt, git worktrees, tmux, daemon/refinery.</td>
             </tr>
             <tr>
-              <td><strong>Gascity</strong><br><code>external/gascity</code></td>
+              <td><strong>Gascity</strong><br><code>external/agent-systems/gascity</code></td>
               <td>Configurable multi-agent orchestration without hardcoding roles or one fixed workflow.</td>
               <td>Loads <code>city.toml</code>, includes, packs, formulas, orders, beads, and runtime providers; computes desired state; reconciles sessions through a supervisor and per-city runtime loop.</td>
               <td>Session bead, task bead, molecule graph, order-tracking bead.</td>
               <td><code>gc</code> CLI, machine supervisor, <code>CityRuntime</code>, config model, provider/store interfaces.</td>
             </tr>
             <tr>
-              <td><strong>Paperclip</strong><br><code>external/paperclip</code></td>
+              <td><strong>Paperclip</strong><br><code>external/agent-systems/paperclip</code></td>
               <td>Productized operation of an AI company: teams, agents, governance, budgets, workspaces, plugins, and work execution.</td>
               <td>Runs a Node/Express server over Postgres; queues heartbeat runs; validates budgets/dependencies/locks; realizes workspaces and environments; executes selected adapters; stores logs, usage, costs, and run results.</td>
               <td>Issue plus wakeup request plus heartbeat run.</td>
               <td>Server service layer, Drizzle/Postgres schema, heartbeat service, environment orchestrator, adapter and plugin registries.</td>
             </tr>
             <tr>
-              <td><strong>OpenHands</strong><br><code>external/OpenHands</code></td>
+              <td><strong>OpenHands</strong><br><code>external/agent-systems/OpenHands</code></td>
               <td>User-facing software-engineering conversations in sandboxed runtime environments.</td>
               <td>Uses a FastAPI app-server and React frontend to manage settings, metadata, sandboxes, repos, skills, hooks, git providers, and start tasks; posts SDK start requests into a sandbox-hosted agent-server.</td>
               <td>Conversation start task and conversation metadata; live execution is owned by sandbox/agent-server state.</td>
@@ -863,7 +863,7 @@
       <details style="margin-top: 24px;">
         <summary>Important open questions carried forward</summary>
         <ul>
-          <li>The live tree contains four external repositories, while the current project overlay still documents only <code>gascity</code> and <code>gastown</code> as submodules. Parent-repo tracking status for <code>external/paperclip</code> and <code>external/OpenHands</code> should be clarified before metadata cleanup.</li>
+          <li>The live tree contains four external repositories, while the current project overlay still documents only <code>gascity</code> and <code>gastown</code> as submodules. Parent-repo tracking status for <code>external/agent-systems/paperclip</code> and <code>external/agent-systems/OpenHands</code> should be clarified before metadata cleanup.</li>
           <li>Paperclip and OpenHands findings are source-grounded but not runtime-verified; dependency installation, migrations, local boot, UI/API flows, and test suites were not run in the underlying research passes.</li>
           <li>OpenHands execution semantics behind the pinned <code>openhands-sdk</code>, <code>openhands-agent-server</code>, and <code>openhands-tools</code> packages remain outside the local repository analysis.</li>
           <li>Gascity provider-specific behavior and the active worker-handle migration need targeted reads before changing session lifecycle paths.</li>

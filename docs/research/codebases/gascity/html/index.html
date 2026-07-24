@@ -468,7 +468,7 @@
       <h1>Gascity Core Orchestration</h1>
       <p class="subtitle">A contents-style review page for how Gas City turns config, beads, formulas, orders, and session demand into live agent runtime state. Markdown reports remain the canonical source; this page is the human review surface.</p>
       <div class="meta">
-        <span>Target: <code>external/gascity</code></span>
+        <span>Target: <code>external/agent-systems/gascity</code></span>
         <span>Research baseline: <code>2026-06-13</code></span>
         <span>HTML contents revised: <code>2026-06-14</code></span>
         <span>Submodule commit: <code>ec67043b8c9cd5f763ac699e22c6d9f75be6ebb5</code></span>
@@ -918,7 +918,7 @@
             <tr>
               <td>Parent repo edits accidentally modify submodule internals.</td>
               <td><span class="tag risk">high</span></td>
-              <td>For parent-level research, edit only <code>docs/research/codebases/gascity/</code>. Treat <code>external/gascity</code> as source material unless the task is explicitly submodule-local.</td>
+              <td>For parent-level research, edit only <code>docs/research/codebases/gascity/</code>. Treat <code>external/agent-systems/gascity</code> as source material unless the task is explicitly submodule-local.</td>
             </tr>
           </tbody>
         </table>
@@ -946,13 +946,13 @@
         <div class="panel">
           <h3>Highest-Yield Source Files</h3>
           <ul>
-            <li><code>external/gascity/cmd/gc/main.go</code> - CLI entry and command registration.</li>
-            <li><code>external/gascity/cmd/gc/cmd_start.go</code> - start path and supervisor registration.</li>
-            <li><code>external/gascity/cmd/gc/cmd_supervisor.go</code> - machine supervisor lifecycle and city runtime construction.</li>
-            <li><code>external/gascity/cmd/gc/city_runtime.go</code> - per-city controller loop.</li>
-            <li><code>external/gascity/cmd/gc/build_desired_state.go</code> - demand and desired session state.</li>
-            <li><code>external/gascity/cmd/gc/session_reconciler.go</code> - wake/sleep/drain/restart decisions.</li>
-            <li><code>external/gascity/internal/{config,beads,session,worker,runtime,formula,molecule,sling,orders,events}</code> - domain primitives.</li>
+            <li><code>external/agent-systems/gascity/cmd/gc/main.go</code> - CLI entry and command registration.</li>
+            <li><code>external/agent-systems/gascity/cmd/gc/cmd_start.go</code> - start path and supervisor registration.</li>
+            <li><code>external/agent-systems/gascity/cmd/gc/cmd_supervisor.go</code> - machine supervisor lifecycle and city runtime construction.</li>
+            <li><code>external/agent-systems/gascity/cmd/gc/city_runtime.go</code> - per-city controller loop.</li>
+            <li><code>external/agent-systems/gascity/cmd/gc/build_desired_state.go</code> - demand and desired session state.</li>
+            <li><code>external/agent-systems/gascity/cmd/gc/session_reconciler.go</code> - wake/sleep/drain/restart decisions.</li>
+            <li><code>external/agent-systems/gascity/internal/{config,beads,session,worker,runtime,formula,molecule,sling,orders,events}</code> - domain primitives.</li>
           </ul>
         </div>
       </div>
@@ -967,7 +967,7 @@
 
   <footer>
     <div class="wrap">
-      Source: <code>docs/research/codebases/gascity/agent/*.md</code>, grounded in the checked-out <code>external/gascity</code> submodule. Markdown is canonical for future agents; this HTML file is the current contents and review surface for humans.
+      Source: <code>docs/research/codebases/gascity/agent/*.md</code>, grounded in the checked-out <code>external/agent-systems/gascity</code> submodule. Markdown is canonical for future agents; this HTML file is the current contents and review surface for humans.
     </div>
   </footer>
 </body>

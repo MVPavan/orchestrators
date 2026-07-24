@@ -185,12 +185,12 @@
         <table>
           <thead><tr><th>Area</th><th>Role</th><th>Source anchor</th></tr></thead>
           <tbody>
-            <tr><td><code>server/</code></td><td>Composition root, API routes, service layer, background schedulers, plugin host, live events.</td><td><code>external/paperclip/server/src/index.ts:102-116</code>, <code>server/src/app.ts:208-322</code></td></tr>
-            <tr><td><code>packages/db/</code></td><td>Drizzle client and shared schema for durable control-plane state.</td><td><code>external/paperclip/packages/db/src/client.ts:37-51</code>, <code>schema/index.ts:1-85</code></td></tr>
-            <tr><td><code>ui/</code></td><td>React board and admin surface over the server API.</td><td><code>external/paperclip/ui/src/App.tsx:73-177</code></td></tr>
-            <tr><td><code>cli/</code></td><td>Command surface for onboarding, heartbeat, agents, issues, projects, routines, plugins, secrets, and more.</td><td><code>external/paperclip/cli/src/index.ts:50-201</code></td></tr>
-            <tr><td><code>packages/adapters/*</code></td><td>Runtime-specific adapter metadata and execution wrappers.</td><td><code>external/paperclip/server/src/adapters/registry.ts:249-435</code></td></tr>
-            <tr><td><code>packages/plugins/sdk</code></td><td>Plugin worker SDK, JSON-RPC host protocol, context, and helpers.</td><td><code>external/paperclip/packages/plugins/sdk/src/index.ts:1-86</code></td></tr>
+            <tr><td><code>server/</code></td><td>Composition root, API routes, service layer, background schedulers, plugin host, live events.</td><td><code>external/agent-systems/paperclip/server/src/index.ts:102-116</code>, <code>server/src/app.ts:208-322</code></td></tr>
+            <tr><td><code>packages/db/</code></td><td>Drizzle client and shared schema for durable control-plane state.</td><td><code>external/agent-systems/paperclip/packages/db/src/client.ts:37-51</code>, <code>schema/index.ts:1-85</code></td></tr>
+            <tr><td><code>ui/</code></td><td>React board and admin surface over the server API.</td><td><code>external/agent-systems/paperclip/ui/src/App.tsx:73-177</code></td></tr>
+            <tr><td><code>cli/</code></td><td>Command surface for onboarding, heartbeat, agents, issues, projects, routines, plugins, secrets, and more.</td><td><code>external/agent-systems/paperclip/cli/src/index.ts:50-201</code></td></tr>
+            <tr><td><code>packages/adapters/*</code></td><td>Runtime-specific adapter metadata and execution wrappers.</td><td><code>external/agent-systems/paperclip/server/src/adapters/registry.ts:249-435</code></td></tr>
+            <tr><td><code>packages/plugins/sdk</code></td><td>Plugin worker SDK, JSON-RPC host protocol, context, and helpers.</td><td><code>external/agent-systems/paperclip/packages/plugins/sdk/src/index.ts:1-86</code></td></tr>
           </tbody>
         </table>
       </div>
@@ -233,7 +233,7 @@
     </section>
 
     <footer>
-      Source basis: <code>../agent/01-core-architecture.md</code>, <code>external/paperclip/server/src/index.ts</code>, <code>server/src/app.ts</code>, <code>server/src/services/index.ts</code>, <code>packages/db</code>, adapter registry, and plugin loader files.
+      Source basis: <code>../agent/01-core-architecture.md</code>, <code>external/agent-systems/paperclip/server/src/index.ts</code>, <code>server/src/app.ts</code>, <code>server/src/services/index.ts</code>, <code>packages/db</code>, adapter registry, and plugin loader files.
     </footer>
   </main>
 </body>
