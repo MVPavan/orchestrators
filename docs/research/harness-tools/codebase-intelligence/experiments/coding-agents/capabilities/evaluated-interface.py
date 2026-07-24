@@ -25,7 +25,12 @@ COMMAND_FRAGMENT = re.compile(r"(?:^|[\s;&|`])(?:curl|wget|git|sh|bash)\b", re.I
 FORBIDDEN_ENV_MARKERS = ("KEY", "TOKEN", "SECRET", "PASSWORD", "CREDENTIAL")
 ALLOWED_ENV_NAMES = {"PATH", "HOME", "TMPDIR", "LANG", "LC_ALL"}
 LANE_ENV_NAMES = {
-    "codegraph": {"CODEGRAPH_DIR", "CODEGRAPH_NO_DAEMON", "CODEGRAPH_NO_WATCH"},
+    "codegraph": {
+        "CODEGRAPH_DIR",
+        "CODEGRAPH_NO_DAEMON",
+        "CODEGRAPH_NO_WATCH",
+        "DO_NOT_TRACK",
+    },
     "cbm": {"CBM_CACHE_DIR", "CBM_LOG_LEVEL", "CBM_WORKERS"},
     "graphify": {"GRAPHIFY_OUT"},
 }
@@ -195,11 +200,14 @@ def validate_environment(
             "TMPDIR",
             "CBM_CACHE_DIR",
             "GRAPHIFY_OUT",
-            "CODEGRAPH_DIR",
         }:
             path = normalized_path(value)
             if not is_within(path, scratch_root):
                 raise ValueError(f"{name} must be inside scratch_root")
+        if name == "CODEGRAPH_DIR" and (
+            value in {"", ".", ".."} or Path(value).name != value
+        ):
+            raise ValueError("CODEGRAPH_DIR must be a plain directory name")
         if name == "PATH":
             for part in value.split(os.pathsep):
                 if not part:
@@ -207,7 +215,11 @@ def validate_environment(
                 path = normalized_path(part)
                 if not is_within(path, scratch_root):
                     raise ValueError("PATH entries must be inside scratch_root")
-        if name in {"CODEGRAPH_NO_DAEMON", "CODEGRAPH_NO_WATCH"} and value != "1":
+        if name in {
+            "CODEGRAPH_NO_DAEMON",
+            "CODEGRAPH_NO_WATCH",
+            "DO_NOT_TRACK",
+        } and value != "1":
             raise ValueError(f"{name} must be fixed to 1")
         if name == "CBM_LOG_LEVEL" and value not in {"none", "error", "warn", "info"}:
             raise ValueError("CBM_LOG_LEVEL is outside the safe allowlist")

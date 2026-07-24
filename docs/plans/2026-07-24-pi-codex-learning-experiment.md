@@ -1,8 +1,12 @@
 # Pi and Codex Learning and Code-Graph Tool Evaluation Plan
 
-**Status:** Approved on 2026-07-24; Phase 0 capability discovery in progress
+**Status:** Approved and revised to lean tracer-first execution on 2026-07-24;
+Phase 0B capability discovery complete; Phase 0C in progress
 
-**Execution boundary:** Planning and Beads setup are approved. Do not begin repository analysis, indexing, tool experiments, or lessons as part of this plan-finalization task.
+**Execution boundary:** Offline preparation, indexing, direct graph queries, and
+source-grounded research are approved. Do not launch a provider/model session,
+repair, retry, replicate, or escalation without the explicit approval required
+by Section 3.4.
 
 **Order:** Pi first; Codex only after the Pi learning gate. Pydantic AI and Deep Agents are deferred.
 
@@ -129,15 +133,90 @@ The experiment will therefore use the least expensive assignment that preserves 
 | Bounded capability-schema or evidence normalization with an explicit source and output schema, only when a deterministic transform is insufficient | Luna low | Cheapest suitable lane; its output is mechanically checked and no capability judgment is delegated to it. |
 | Scan-only repository orientation or candidate-file discovery | Terra low | Efficient broad reading before deeper analysis. |
 | Comparable agent-mediated capability probes and the cross-tool capability matrix | Terra medium | Natural-language tool use needs a capable agent, and one fixed configuration keeps tool comparisons fair. |
-| Source-only and all three graph-assisted controlled runs | Terra medium | Same capable, balanced configuration in every arm prevents model choice from confounding the tool comparison. |
-| Routine tool-lane investigation, lesson drafting, teaching dialogue, and first-pass blind scoring | Terra medium | Best default balance of reading quality, reasoning, and cost. |
-| Reference architecture, central lifecycle reconstruction, anchor selection, and final systems synthesis | Sol medium | These decisions define ground truth and require the strongest causal systems reasoning. |
-| Disputed capability evidence, fairness decisions, or mastery/quality adjudication | Sol low first, Sol medium if needed | Escalate only the contested portion. |
+| One approved source-only tracer and its three graph-assisted tracer arms | Terra medium | Same capable, balanced configuration in the four-arm tracer prevents model choice from confounding the comparison. |
+| Offline tool-lane investigation, indexing, querying, and evidence capture | No model | CodeGraph, CBM, and Graphify are local parsers/indexers; their raw capability and evidence do not require a provider session. |
+| Routine lesson drafting, teaching dialogue, scoring, and systems synthesis | Current orchestrator, without delegated model sessions | Preserve continuity and avoid paying for repeated fresh contexts. A separate model session requires an explicit cost approval. |
+| Reference architecture, central lifecycle reconstruction, and anchor selection | Current orchestrator using source and offline evidence | Ground truth is source evidence, not model tier. Escalation to a dedicated Sol session requires explicit approval for a specific unresolved question. |
+| Disputed evidence, fairness decisions, or mastery/quality adjudication | No separate model by default | Use source and learner review first. A bounded Sol session is optional only after explicit approval for the contested question. |
 | A failed quality gate or irreconcilable evidence | Sol high, then xhigh only if measured benefit is still needed | Higher effort is an exception with a recorded reason and before/after result. |
 
 `max` is reserved for an exceptional unresolved systems question after `xhigh` proves insufficient. `ultra` is excluded from the experiment because its delegated execution changes the independence and cost structure being measured. Although public API guidance discusses a `none` effort in some contexts, the current local Codex catalog advertises `low`, `medium`, `high`, `xhigh`, and `max` for all three models, plus `ultra` for Sol and Terra; Phase 0 must revalidate the live CLI rather than assume `none` is available.
 
-Luna must not select reference anchors, infer central causality, judge system correctness, or produce the final architecture. Model efficiency will be judged as **cost to a passing answer**, not price per token alone. Any lane that repeatedly fails its gate is promoted one step and the added cost is recorded.
+Luna must not select reference anchors, infer central causality, judge system
+correctness, or produce the final architecture. Model efficiency will be
+judged as **cost to a passing answer**, not price per token alone. A failed
+lane is retained and reported; model or effort promotion is never automatic
+and requires the explicit approval in Section 3.4.
+
+### 3.3 Strict orchestration and bounded-prerequisite policy
+
+The user approved strict mode with bounded prerequisites on 2026-07-24 after
+the capability-discovery review loop caused excessive model usage. Until the
+Pi tracer lesson gate, this policy overrides the broader escalation routes in
+Section 3.2:
+
+- Use no Sol model and do not escalate model effort.
+- Keep at most one model session active. Every delegated task uses a fresh,
+  minimal-context Terra session; do not reuse a reviewer or send follow-up
+  turns into an accumulated context.
+- Use deterministic local checks for manifests, schemas, tests, evidence
+  reconciliation, and acceptance whenever code can answer the question.
+- Read the final provider token event from the fresh session log after every
+  delegated model turn and compute its published-rate equivalent from
+  uncached input, cached input, and output tokens. Stop and report before
+  another call if telemetry is missing, if one turn exceeds 12
+  credit-equivalent, or if the remaining Phase 0B work exceeds 50
+  credit-equivalent cumulatively.
+- The earlier Phase 0B ceiling was eight delegated model turns. Phase 0B is
+  now closed and authorizes no further model turns.
+- A failed review or run is recorded as a limitation. Any repair or retry
+  follows the stricter explicit-approval rule in Section 3.4.
+- Do not expand capability discovery with new languages, frameworks, optional
+  backends, credentials, network services, or exhaustive variants. Preserve
+  truthful `UNTESTED`, `PARTIAL`, `UNAVAILABLE`, and `RESTRICTED`
+  dispositions instead.
+
+The bounded Phase 0B prerequisites are: accept the tested shared runner,
+stabilize the current CodeGraph and Graphify evidence sets, retain the
+completed CBM deterministic report, and freeze one cross-tool matrix. The user
+canceled the three agent-mediated capability probes after the current Codex
+CLI failed before inference inside the read-only runner. Those probes remain
+`UNTESTED` and excluded.
+
+No further capability work may delay Pi unless it affects safety,
+reproducibility, or the fairness of the later controlled arms. After
+deterministic evidence stabilization, do not launch additional
+capability-discovery model sessions. Produce the matrix directly from the
+validated reports, record non-safety limitations, and proceed to Pi.
+
+### 3.4 Lean tracer-first budget decision
+
+The user replaced the exhaustive fresh-session grid with a lean design after
+confirming that all three code-intelligence tools are primarily offline
+parsers and indexers. This decision supersedes any later wording that implies
+one provider session per question, automatic replication, paid smoke sessions,
+or automatic repair turns.
+
+- Index and query each tool offline against its own disposable Pi clone.
+- Validate runner configuration, schemas, isolation, and tool availability
+  deterministically. Do not run paid model smoke sessions.
+- Use exactly one initial controlled Pi question: the primary agent-turn
+  lifecycle.
+- For that tracer only, run four fresh Terra-medium sessions: source-only,
+  CodeGraph-assisted, CBM-assisted, and Graphify-assisted.
+- Permit one answer turn per arm. A repair, retry, replicate, additional
+  question, reviewer session, or model escalation requires a new explicit user
+  approval after reporting the observed usage.
+- After the tracer gate, use the tools directly for the remaining systems
+  questions and continue learning in one coherent research-and-teaching
+  workspace. Additional four-arm comparisons are optional experiments, not
+  completion requirements.
+- A setup failure before inference is classified as setup evidence, not a
+  measured result. Stop before retrying it.
+
+The initial paid Pi experiment is therefore capped at four model sessions.
+Offline parser work, local artifact tokens, provider usage, and teaching
+workspace usage remain separate measurements.
 
 Official sources:
 
@@ -158,12 +237,17 @@ The plan is based on the locally checked-out revisions below. Phase 0 will re-re
 | CBM | `53ebeb4cf1fc` | `main` |
 | Graphify | `2fa6cd3d5548` | `v8` |
 
-Current readiness observations, to be revalidated in Phase 0:
+Current readiness observations:
 
-- CodeGraph has a local built CLI reporting `1.0.1`.
-- CBM's expected `build/c/codebase-memory-mcp` executable is currently absent and must be built or otherwise provisioned after approval.
-- Graphify has local virtual environments, but its import, package version, and exact supported command surface must be smoke-tested.
-- Source registries currently show eight CodeGraph MCP tools, fourteen CBM tools, and ten Graphify MCP tools plus Graphify resources; these are preliminary source observations, not runtime-verified capability counts.
+- CodeGraph's isolated CLI and offline index/query surface were verified during
+  capability discovery.
+- CBM's isolated binary and offline index/query surface were verified during
+  capability discovery.
+- Graphify's isolated import, package version, and offline supported command
+  surface were verified during capability discovery; provider-backed and
+  restricted paths remain excluded.
+- The reconciled runtime/source capability counts and dispositions are frozen
+  in the three capability reports and cross-tool matrix.
 - Pi is primarily a TypeScript monorepo; Codex is substantially larger and primarily a Rust workspace with additional TypeScript surfaces.
 
 These observations are setup facts, not experiment results.
@@ -191,7 +275,11 @@ The prior harness experiments showed that these tools are not interchangeable. T
 - **Graph-assisted controlled run:** require the assigned graph tool first, then allow normal source search and file reads as needed for verification or completion.
 - **Source-only baseline:** allow the same normal source search and file reads but no graph tool.
 
-The primary token comparison is graph-assisted versus source-only. This measures whether the graph improves a realistic research workflow. Graph-only results measure tool sufficiency and explain failure modes; they are not used alone to claim end-to-end token savings.
+The primary token comparison is the single tracer's graph-assisted arms versus
+its source-only arm. The remaining question battery is investigated through
+offline graph queries and source-grounded learning, not a fresh-session grid.
+Graph-only results measure tool sufficiency and explain failure modes; they are
+not used alone to claim end-to-end token savings.
 
 ### 5.3 Compare at equal answer quality
 
@@ -205,7 +293,9 @@ Each controlled answer must:
 - distinguish verified facts from inference;
 - name relevant limitations or unresolved questions.
 
-Each measured run has at most two answer turns: one initial answer and one repair answer based on reviewer feedback. Both turns, all intervening tool calls, and all file reads count toward the total. If the repair still misses the gate, report failure rather than extrapolating savings.
+Each initial tracer arm has exactly one answer turn. If it misses the quality
+gate, retain the failure and report its usage. Do not launch a repair turn
+without explicit user approval after the four initial results are visible.
 
 The graph-only capability run may use source returned by the graph tool but may not independently grep or read the subject. The graph-assisted run may search and read source after its required graph query; those operations and their tokens are charged to the tool arm. The source-only baseline uses normal source search and file reading and has no graph access.
 
@@ -331,8 +421,11 @@ The discovery procedure is:
 3. Build a disposable mixed TypeScript/Rust fixture containing packages, cross-file calls, inheritance or traits, callbacks/events, name collisions, unresolved/dynamic edges, entry points, state, and a synthetic change.
 4. Exercise every safe offline public capability. Mutating, update, install, delete, or change-analysis operations run only inside disposable tool and subject clones.
 5. Inventory but do not execute restricted network, paid-model, GitHub-write, external-database, global-install, or credential-bearing capabilities without separate approval.
-6. Run a fixed Terra-medium agent probe battery against each tool’s normal public interface. Keep prompts and runner configuration identical where the capability permits comparison.
-7. Reconcile runtime observations with source and documentation, using Sol low only when evidence conflicts or a fairness decision is disputed; escalate that narrow question to Sol medium only if needed.
+6. The planned fixed Terra-medium capability probes are canceled and recorded
+   as `UNTESTED` after the read-only runner failed before inference. Do not
+   retry them or substitute a weaker-isolation run.
+7. Reconcile deterministic runtime observations with source and documentation
+   without another capability-discovery model session.
 8. Freeze the exact tool surface used later in controlled Pi/Codex arms and record any capability intentionally excluded.
 
 Capability-discovery model tokens, tool calls, and smoke-test outputs are measured separately and excluded from the controlled source-only versus graph-assisted experiment. “Full discovery” does not justify unsafe execution or installing every optional backend.
@@ -416,7 +509,10 @@ CLI-only runs have no MCP schema charge and will be labeled separately.
 
 ### 9.4 End-to-end agent cost
 
-For a controlled question, use a fresh session with `gpt-5.6-terra` at `medium` for the source-only baseline and every graph-assisted arm. Pin the same observable model build, CLI/runtime version, configuration, prompt, output contract, and repository commit:
+For the primary-lifecycle tracer, use one fresh session with
+`gpt-5.6-terra` at `medium` for the source-only baseline and each of the three
+graph-assisted arms. Pin the same observable model build, CLI/runtime version,
+configuration, prompt, output contract, and repository commit:
 
 - input tokens;
 - cached input tokens, when exposed;
@@ -428,9 +524,15 @@ For a controlled question, use a fresh session with `gpt-5.6-terra` at `medium` 
 - repair-pass tokens;
 - final quality result.
 
-Run the source-only baseline and all three graph-assisted arms using the same contract. For the three sentinel questions—architecture, primary lifecycle, and impact—run three fresh-session replicates per arm. Randomize arm order within each question using a recorded seed, keep the runs in a short time block, and report median, minimum, maximum, and individual observations. Do not claim statistical significance from three repeats.
+Run the source-only baseline and all three graph-assisted arms once using the
+same contract, in a deterministically recorded shuffled order. Do not run
+automatic replicates. Report individual observations and explicitly label the
+four-arm result a tracer case study, not a statistically generalizable saving.
 
-The remaining questions are capability and coverage case studies unless later promoted to the repeated subset. Their token numbers must be labeled descriptive, not generalized savings.
+The remaining questions are offline capability and learning case studies.
+Their parser/query bytes, local tokens, wall time, and resource use may be
+measured, but they do not receive provider-token comparisons unless the user
+separately promotes a specific question after reviewing the tracer.
 
 Compare each graph-assisted arm against the source-only baseline only after blinded quality review. Graph-only capability runs are reported separately.
 
@@ -624,22 +726,34 @@ Large graph databases, raw event streams, copied repositories, and generated vis
 - Create Pi subject clones and tool-local homes/caches. Do not create, inspect, or index Codex subject clones yet.
 - Strip model credentials, Git credentials, and unrelated MCP configuration from tool subprocess environments.
 
-#### Phase 0B — Complete tool-capability discovery
+#### Phase 0B — Bounded tool-capability completion
 
 - Execute the Section 8.1 discovery protocol using recursive CLI help, live MCP discovery, source registries, tests/docs, and disposable runtime probes.
 - Produce the four capability reports, matrix, and experiment-surface freeze listed in Section 12.
-- Use no model for enumeration and mechanical probes, Luna low only for mechanically checked normalization, Terra medium for the fixed agent-mediated probe battery and matrix synthesis, and Sol only for narrow adjudication.
-- Exercise all safe offline public capabilities on the mixed TypeScript/Rust fixture; inventory restricted or unavailable capabilities without activating them.
+- Apply the strict orchestration policy in Section 3.3. Use no additional model
+  session for Phase 0B; build the matrix mechanically from the frozen reports.
+- Treat the current deterministic evidence as the boundary. Resolve only safety, reproducibility, evidence-stability, and comparison-fairness blockers; inventory all other gaps without expanding the probe surface.
 - Record capability-discovery setup, schema, query, output, and model costs separately from the controlled experiment.
 - Freeze the normal public interface and enabled tool list each later experimental arm will receive.
 
 #### Phase 0C — Pi experiment protocol freeze
 
-- Freeze the Pi question battery, prompt templates, allowed tools, maximum two-turn budget, output contract, replicate count, randomization seed, metric schema, contamination rules, and smoke-test exclusions.
+- Freeze the Pi question battery, tracer prompt templates, allowed tools,
+  one-turn output contract, zero-replicate policy, recorded arm order, metric
+  schema, contamination rules, and setup-failure handling.
 - Freeze concrete Pi source anchors and scoring keys during the Pi systems-reference task before any tool runner sees them.
-- Smoke-test the frozen Pi runner configuration once per tool; exclude those sessions from measured results.
+- Validate all four runner configurations deterministically without a model.
+  The first four measured tracer arms are the only initial provider sessions.
 
-**Gate:** every public capability has a recorded disposition; all safe offline capabilities have fixture evidence; restricted and unavailable capabilities have explicit reasons; the exact later experiment surfaces are frozen; all three tools run against disposable Pi clones without touching any live submodule or real home/cache; every measured-run control is frozen; tool and subject clones remain clean except for declared build/index artifacts; capability probes and smoke-test sessions are excluded from measured results.
+**Gate:** the current reports give every inventoried public capability a
+truthful disposition; unresolved breadth is explicitly marked rather than
+probed further; the shared fixture and runner pass deterministic checks; the
+canceled agent-mediated capability probes remain `UNTESTED` and excluded; the
+exact later experiment surfaces are frozen in the cross-tool matrix; all
+three tools run against disposable Pi clones without touching any live
+submodule or real home/cache; every measured-run control is frozen; tool and
+subject clones remain clean except for declared build/index artifacts; and no
+paid smoke or automatic retry is required.
 
 ### Phase 1 — Pi tracer bullet
 
@@ -654,8 +768,12 @@ Large graph databases, raw event streams, copied repositories, and generated vis
 ### Phase 2 — Pi full understanding
 
 - Complete the Pi reference report set.
-- Run the remaining capability-first and controlled questions.
-- Produce per-tool Pi reports and token metrics.
+- Run the remaining questions as offline per-tool case studies and
+  source-grounded learning traces.
+- Produce per-tool Pi reports, offline resource metrics, and the tracer's
+  provider-token metrics.
+- Request approval before promoting any additional question to a four-arm
+  provider comparison.
 - Synthesize what each tool contributed or distorted.
 - Teach Pi in small modules with retrieval and transfer checks.
 
@@ -698,30 +816,31 @@ The approved execution is tracked by epic `orch-8sk`. Its current direct childre
 1. `orch-8sk.1` — Finalize approved systems-level plan and model routing.
 2. `orch-8sk.2` — Verify isolated tool runtimes and model readiness.
 3. `orch-8sk.3` — Build Pi tracer reference and scoring anchor.
-4. `orch-8sk.4` — Run remaining Pi CodeGraph experiments.
-5. `orch-8sk.5` — Run remaining Pi CBM experiments.
-6. `orch-8sk.6` — Run remaining Pi Graphify experiments.
+4. `orch-8sk.4` — Run remaining Pi CodeGraph offline case studies.
+5. `orch-8sk.5` — Run remaining Pi CBM offline case studies.
+6. `orch-8sk.6` — Run remaining Pi Graphify offline case studies.
 7. `orch-8sk.7` — Synthesize Pi systems results and token accounting.
 8. `orch-8sk.8` — Teach and review Pi to systems mastery gate.
 9. `orch-8sk.9` — Build Codex tracer reference and scoring anchor.
-10. `orch-8sk.10` — Run remaining Codex CodeGraph experiments.
-11. `orch-8sk.11` — Run remaining Codex CBM experiments.
-12. `orch-8sk.12` — Run remaining Codex Graphify experiments.
+10. `orch-8sk.10` — Run remaining Codex CodeGraph offline case studies.
+11. `orch-8sk.11` — Run remaining Codex CBM offline case studies.
+12. `orch-8sk.12` — Run remaining Codex Graphify offline case studies.
 13. `orch-8sk.13` — Synthesize Codex systems results and token accounting.
 14. `orch-8sk.14` — Teach and review Codex to systems mastery gate.
 15. `orch-8sk.15` — Produce cross-repository and cross-tool systems synthesis.
 16. `orch-8sk.16` — Discover and validate code-graph tool capabilities.
 17. `orch-8sk.17` — Freeze Pi experiment protocol and runner surfaces.
 18. `orch-8sk.18` — Run Pi tracer bullet and approve lesson format.
-19. `orch-8sk.19` — Run remaining Pi source-only controlled baselines.
+19. `orch-8sk.19` — Retired remaining Pi source-only session grid.
 20. `orch-8sk.20` — Run Codex tracer bullet and approve method transfer.
-21. `orch-8sk.21` — Run remaining Codex source-only controlled baselines.
+21. `orch-8sk.21` — Retired remaining Codex source-only session grid.
 22. `orch-8sk.22` — Run cross-repository spaced retrieval and transfer review.
 23. `orch-8sk.23` — Verify complete study against approved plan.
 24. `orch-8sk.24` — Complete Pi systems reference map after tracer gate.
 25. `orch-8sk.25` — Complete Codex systems reference map after tracer gate.
 26. `orch-8sk.26` — Reconcile approved plan with audited Beads execution graph.
 27. `orch-8sk.27` — Audit unauthorized checkpoint commit and preserve recovery options.
+28. `orch-8sk.28` — Stop reviewer token explosion and enforce model budget guardrails.
 
 Capability discovery is tracked as nested epic `orch-8sk.16`:
 
@@ -736,13 +855,35 @@ Capability discovery is tracked as nested epic `orch-8sk.16`:
 
 `orch-8sk.1` and `orch-8sk.2` are the completed Phase 0A prerequisites. Phase 0B starts with the discovery protocol (`orch-8sk.16.1`) and the shared fixture/probe battery (`orch-8sk.16.6`). The fixture-freeze repair (`orch-8sk.16.8`) and provider-compatible capped Terra runner repair (`orch-8sk.16.7`) must restore the common probe foundation before the three per-tool discovery tasks (`orch-8sk.16.2`–`.16.4`) complete. Their capability matrix (`orch-8sk.16.5`) then gates Phase 0C's Pi protocol and runner-surface freeze (`orch-8sk.17`).
 
-The authoritative subject sequence is: Phase 0B → Phase 0C → Pi tracer reference (`orch-8sk.3`) → Pi tracer and interactive lesson-format gate (`orch-8sk.18`) → post-tracer Pi reference (`orch-8sk.24`) plus the remaining Pi source-only and three tool lanes (`orch-8sk.19`, `.4`, `.5`, `.6`) → Pi synthesis (`orch-8sk.7`) → Pi mastery (`orch-8sk.8`) → Codex tracer reference (`orch-8sk.9`) → Codex tracer and interactive method-transfer gate (`orch-8sk.20`) → post-tracer Codex reference (`orch-8sk.25`) plus the remaining Codex source-only and three tool lanes (`orch-8sk.21`, `.10`, `.11`, `.12`) → Codex synthesis (`orch-8sk.13`) → Codex mastery (`orch-8sk.14`) → cross-repository synthesis (`orch-8sk.15`) → spaced retrieval and transfer review (`orch-8sk.22`) → final audit (`orch-8sk.23`). The final audit is gated by the spaced review (`orch-8sk.22`), this plan/graph reconciliation (`orch-8sk.26`), and the checkpoint audit (`orch-8sk.27`).
+The authoritative subject sequence is: Phase 0B → Phase 0C → Pi tracer reference
+(`orch-8sk.3`) → one four-arm Pi tracer and interactive lesson-format gate
+(`orch-8sk.18`) → post-tracer Pi reference (`orch-8sk.24`) plus the three
+offline tool lanes (`orch-8sk.4`, `.5`, `.6`) → Pi synthesis (`orch-8sk.7`) →
+Pi mastery (`orch-8sk.8`) → Codex tracer reference (`orch-8sk.9`) → one
+four-arm Codex tracer and interactive method-transfer gate (`orch-8sk.20`) →
+post-tracer Codex reference (`orch-8sk.25`) plus the three offline tool lanes
+(`orch-8sk.10`, `.11`, `.12`) → Codex synthesis (`orch-8sk.13`) → Codex
+mastery (`orch-8sk.14`) → cross-repository synthesis (`orch-8sk.15`) → spaced
+retrieval and transfer review (`orch-8sk.22`) → final audit (`orch-8sk.23`).
+The retired source-only grids (`orch-8sk.19`, `.21`) are not execution
+requirements. The final audit is gated by the spaced review (`orch-8sk.22`),
+this plan/graph reconciliation (`orch-8sk.26`), and the checkpoint audit
+(`orch-8sk.27`).
 
 `orch-8sk.27` is an operational recovery and audit task only. It preserves non-destructive recovery options for an unauthorized checkpoint commit and does not alter the study's scientific method, model routing, controlled comparisons, or learning gates.
 
+`orch-8sk.28` records the excessive reviewer usage and the user-approved strict
+orchestration policy in Section 3.3. Its bounded Phase 0B gate supersedes the
+earlier exhaustive execution interpretation but preserves truthful capability
+dispositions and controlled-comparison fairness.
+
 There are explicit user-interaction pauses at the Pi tracer gate: the learner must complete teach-back/transfer and approve or revise the lesson format before the post-tracer Pi work begins. There is a second explicit user-interaction pause at the Codex tracer gate: the learner must complete teach-back/transfer and accept or request correction to the method before the post-tracer Codex work begins. The spaced review is also interactive; unresolved misconceptions create targeted follow-up lessons rather than being silently passed.
 
-The remaining source-only and three per-tool experiment tasks for each repository can run independently only after that repository's post-tracer reference anchors and scoring keys are frozen. Teaching depends on validated synthesis, not raw tool output. Codex subject indexing or analysis remains prohibited until the Pi mastery gate passes.
+The three offline per-tool case-study tasks for each repository can run
+independently only after that repository's post-tracer reference anchors and
+scoring keys are frozen. Teaching depends on validated synthesis, not raw tool
+output. Codex subject indexing or analysis remains prohibited until the Pi
+mastery gate passes.
 
 This task graph records the approved work; it does not by itself authorize paid services, upstream changes, or a push.
 
@@ -752,7 +893,7 @@ This task graph records the approved work; it does not by itself authorize paid 
 | --- | --- |
 | Documentation overstates the runtime surface | Reconcile recursive help and live MCP discovery with source registries; use runtime dispositions rather than marketing claims. |
 | “Full capability” becomes unsafe scope expansion | Inventory restricted and optional capabilities, but execute only safe offline operations without separate approval. |
-| Capability probing contaminates measured sessions | Use separate fixture clones, sessions, logs, and accounting; exclude discovery and smoke-test sessions from controlled results. |
+| Capability probing contaminates the tracer | Use separate fixture clones, sessions, logs, and accounting; deterministic preflight and offline case studies remain outside the four measured tracer sessions. |
 | Tool output biases the reference truth | Complete source anchors and scoring key before exposing tool outputs to synthesis. |
 | One tool contaminates another's index or cache | Separate clones, homes, caches, indexes, sessions, and raw-output directories. |
 | CBM indexes the parent repo | Require an independent `.git` per clone and verify CBM's project root. |
@@ -760,7 +901,7 @@ This task graph records the approved work; it does not by itself authorize paid 
 | Same-name symbols inflate apparent graph quality | Preselect a collision/disambiguation anchor and verify binding against source. |
 | Dynamic dispatch or UI/event callbacks disappear | Include lifecycle anchors that cross callback/event boundaries and measure omissions. |
 | Tool schemas dominate token cost | Measure fresh-session schema overhead separately from query output. |
-| Short answers look efficient but are incomplete | Compare only at equal answer quality; include repair attempts. |
+| Short answers look efficient but are incomplete | Compare only at equal answer quality; retain failures, and run a repair only after explicit approval. |
 | Repeated questions leak cached knowledge | Use fresh sessions and separate runner contexts; record cached-token fields. |
 | Codex's size causes shallow coverage | Use tracer bullets and subsystem gates rather than exhaustive file inventories. |
 | Learner fluency is mistaken for mastery | Require teach-back, source trace, counterfactual prediction, and spaced retrieval. |
@@ -784,8 +925,10 @@ The Pi/Codex study is complete only when:
 
 - both canonical report sets are source-cited and revision-pinned;
 - all three capability inventories and the cross-tool matrix are source- and runtime-grounded, with every public capability assigned a disposition;
-- all six tool runs have reproducible runbooks and isolation audits;
-- controlled token results include a no-graph baseline and equal-quality judgment;
+- all six offline tool case-study lanes have reproducible runbooks and
+  isolation audits;
+- each repository's single four-arm tracer includes a no-graph baseline,
+  equal-quality judgment, and provider-token accounting;
 - limitations and failed queries are recorded, not hidden;
 - the learner passes the Pi and Codex mastery gates;
 - the cross-tool recommendation distinguishes human learning value from agent retrieval value;
@@ -802,5 +945,9 @@ Approved defaults:
 4. Use the Section 3.2 model routing, with Terra medium fixed across controlled experimental arms.
 5. Track execution under Beads epic `orch-8sk`.
 6. Complete nested capability-discovery epic `orch-8sk.16` before Pi source-reference work, executing safe offline capabilities and inventorying restricted ones.
+7. Use the Section 3.4 lean tracer-first design: offline parser evaluation by
+   default, one four-arm one-turn tracer per repository, no paid smoke,
+   automatic repair, or replication, and explicit approval before any
+   additional provider session.
 
 User approval of this plan authorizes planning/tracking setup and the local read-only experiment workflow. The current request separately authorizes committing the preparation changes. It does not authorize pushes, submodule updates beyond the already prepared additions, paid API use, or upstream edits.

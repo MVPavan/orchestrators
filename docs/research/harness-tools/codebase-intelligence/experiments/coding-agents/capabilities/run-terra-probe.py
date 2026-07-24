@@ -604,18 +604,24 @@ def finalize_run(output: Path, run_dir: Path, capability_dir: Path) -> dict[str,
 
 
 def isolated_fixture_errors(
-    fixture: Path, denied_content_sha256: set[str] | None = None
+    fixture: Path,
+    denied_content_sha256: set[str] | None = None,
+    ignored_generated_dirs: set[str] | None = None,
 ) -> list[str]:
     """Scan the actual fixture recursively, independent of leak filenames."""
     errors: list[str] = []
     denied_content_sha256 = denied_content_sha256 or set()
+    ignored_generated_dirs = ignored_generated_dirs or set()
     if not (fixture / ".git").exists():
         errors.append("fixture is not an isolated Git repository")
     for name in ("AGENTS.md", "CLAUDE.md", ".codex"):
         if (fixture / name).exists():
             errors.append(f"fixture contains forbidden learning overlay: {name}")
     for path in fixture.rglob("*"):
-        if ".git" in path.relative_to(fixture).parts:
+        relative = path.relative_to(fixture)
+        if ".git" in relative.parts:
+            continue
+        if relative.parts and relative.parts[0] in ignored_generated_dirs:
             continue
         if path.is_symlink():
             try:
@@ -969,7 +975,15 @@ def run(args: argparse.Namespace) -> int:
         capability_dir=capability_dir,
     )
     fixture_scan_errors = (
-        isolated_fixture_errors(fixture, denied_hashes)
+        isolated_fixture_errors(
+            fixture,
+            denied_hashes,
+            {
+                interface_config.get("environment", {}).get("CODEGRAPH_DIR", "")
+            }
+            if args.tool_lane == "codegraph" and interface_config
+            else set(),
+        )
         if not preflight_errors
         else []
     )

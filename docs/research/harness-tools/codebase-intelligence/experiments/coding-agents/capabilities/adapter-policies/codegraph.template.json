@@ -10,9 +10,10 @@
     "HOME": "${SCRATCH_ROOT}/home",
     "TMPDIR": "${SCRATCH_ROOT}/tmp",
     "LANG": "C.UTF-8",
-    "CODEGRAPH_DIR": "${SCRATCH_ROOT}/index",
+    "CODEGRAPH_DIR": ".codegraph-probe",
     "CODEGRAPH_NO_DAEMON": "1",
-    "CODEGRAPH_NO_WATCH": "1"
+    "CODEGRAPH_NO_WATCH": "1",
+    "DO_NOT_TRACK": "1"
   },
   "executable": {
     "realpath": "${EXECUTABLE_REALPATH}",

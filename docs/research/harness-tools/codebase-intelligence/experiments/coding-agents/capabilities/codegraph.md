@@ -28,8 +28,12 @@ All earlier deterministic results tied to fixture commit
 `f9cf965fd10a1852f80c7713479e0c1935baa70607dbed66d3b0606fe5338bf9`
 are superseded. The earlier Terra event stream is also superseded because it
 used that fixture generation. It had already failed before model execution
-because the frozen schema used provider-rejected `allOf`; no Terra retry was
-performed here. The shared runner task owns any future agent-mediated probe.
+because the frozen schema used provider-rejected `allOf`. One current-fixture
+retry was later authorized, but the current Codex CLI exited before inference
+because its in-process app-server could not initialize inside the read-only
+filesystem. It produced zero provider events and zero tool calls. The user
+canceled further capability-probe retries; current agent-mediated behavior
+remains `UNTESTED` and excluded.
 
 ## Scope and isolation
 

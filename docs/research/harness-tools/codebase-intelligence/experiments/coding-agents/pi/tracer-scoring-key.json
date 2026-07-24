@@ -1,0 +1,182 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schema_version": "1.0",
+  "question_id": "PI-T01",
+  "subject_commit": "24bace27cf308c89707cf8005b4795d873e23f17",
+  "reference_file": "reference-ledger.md",
+  "passing_rule": {
+    "mandatory_facts_required": 12,
+    "minimum_total_score": 10,
+    "maximum_total_score": 12,
+    "required_dimension_scores": {
+      "factual_precision": 2,
+      "source_citation_correctness": 2
+    },
+    "automatic_failures": [
+      "fabricated source path or symbol",
+      "critical contradiction of a mandatory fact",
+      "claim that Pi project trust is a tool sandbox or built-in permission system",
+      "claim that a shorter graph answer is a token saving without passing the same quality gate"
+    ]
+  },
+  "mandatory_facts": [
+    {
+      "id": "F01",
+      "fact": "Interactive submission is handed from InteractiveMode to AgentSession.prompt; an already-streaming submission is queued as steering or follow-up instead of starting a concurrent direct Agent run.",
+      "anchors": [
+        "packages/coding-agent/src/modes/interactive/interactive-mode.ts:2804-2825",
+        "packages/coding-agent/src/modes/interactive/interactive-mode.ts:905-914",
+        "packages/coding-agent/src/core/agent-session.ts:1158-1172",
+        "packages/agent/src/agent.ts:337-376"
+      ]
+    },
+    {
+      "id": "F02",
+      "fact": "AgentSession owns prompt preflight: extension command/input handling, skill/template expansion, model/auth validation, pre-send compaction check, user message construction, and before_agent_start extension injection.",
+      "anchors": [
+        "packages/coding-agent/src/core/agent-session.ts:1114-1265"
+      ]
+    },
+    {
+      "id": "F03",
+      "fact": "Agent snapshots system prompt, transcript, and tools, creates one abort-controlled active run, and invokes the reusable agent loop.",
+      "anchors": [
+        "packages/agent/src/agent.ts:398-469",
+        "packages/agent/src/agent.ts:471-519"
+      ]
+    },
+    {
+      "id": "F04",
+      "fact": "The loop emits agent/turn/user-message lifecycle events, applies context transformation, converts AgentMessage to provider Message, and builds the provider Context from system prompt, messages, and tools.",
+      "anchors": [
+        "packages/agent/src/agent-loop.ts:95-117",
+        "packages/agent/src/agent-loop.ts:281-302"
+      ]
+    },
+    {
+      "id": "F05",
+      "fact": "The coding-agent stream function delegates through ModelRuntime to the selected provider's normalized streamSimple implementation with runtime auth/config and request options.",
+      "anchors": [
+        "packages/coding-agent/src/core/sdk.ts:294-329",
+        "packages/coding-agent/src/core/model-runtime.ts:450-496"
+      ]
+    },
+    {
+      "id": "F06",
+      "fact": "Provider start/delta/done/error events update a partial assistant message and emit message_start, message_update, and message_end; Agent reduces those events into public in-memory state before listeners run.",
+      "anchors": [
+        "packages/agent/src/agent-loop.ts:314-371",
+        "packages/agent/src/agent.ts:529-575",
+        "packages/ai/src/types.ts:484-503"
+      ]
+    },
+    {
+      "id": "F07",
+      "fact": "Tool calls are resolved by name, arguments are validated, optional beforeToolCall policy can block them, and tools receive the active abort signal and may stream updates.",
+      "anchors": [
+        "packages/agent/src/agent-loop.ts:600-703"
+      ]
+    },
+    {
+      "id": "F08",
+      "fact": "Tool batches are sequential when configured or forced by a tool, otherwise parallel; finalized results become toolResult messages keyed by tool-call ID and are appended to context in assistant source order.",
+      "anchors": [
+        "packages/agent/src/agent-loop.ts:411-553",
+        "packages/agent/src/agent-loop.ts:763-792"
+      ]
+    },
+    {
+      "id": "F09",
+      "fact": "After tool results the loop emits turn_end and normally makes another model turn; it also handles termination hints, steering, follow-ups, graceful stop, and final agent_end.",
+      "anchors": [
+        "packages/agent/src/agent-loop.ts:218-275",
+        "packages/agent/src/agent-loop.ts:582-584"
+      ]
+    },
+    {
+      "id": "F10",
+      "fact": "Finalized user, assistant, and tool-result messages persist on message_end as parent-linked JSONL session entries; session ID and tool-call ID are distinct identities with different roles.",
+      "anchors": [
+        "packages/coding-agent/src/core/agent-session.ts:618-665",
+        "packages/coding-agent/src/core/session-manager.ts:930-955",
+        "packages/coding-agent/src/core/session-manager.ts:1015-1066"
+      ]
+    },
+    {
+      "id": "F11",
+      "fact": "InteractiveMode converts session stream/tool/end events into components and render requests; Pi TUI coalesces requests and performs full or differential terminal writes.",
+      "anchors": [
+        "packages/coding-agent/src/modes/interactive/interactive-mode.ts:2890-3052",
+        "packages/tui/src/tui.ts:716-763",
+        "packages/tui/src/tui.ts:1258-1285",
+        "packages/tui/src/tui.ts:1372-1406"
+      ]
+    },
+    {
+      "id": "F12",
+      "fact": "Cancellation propagates through the Agent abort signal, but Pi has no built-in tool sandbox or general permission system; project trust only gates project-local resource loading.",
+      "anchors": [
+        "packages/agent/src/agent.ts:306-323",
+        "packages/agent/src/agent-loop.ts:304-312",
+        "packages/agent/src/agent-loop.ts:666-706",
+        "packages/coding-agent/docs/security.md:3-37",
+        "README.md:37-45"
+      ]
+    }
+  ],
+  "dimensions": [
+    {
+      "id": "D01",
+      "name": "factual_precision",
+      "score_2": "No material contradiction; package and boundary ownership are accurate.",
+      "score_1": "Mostly accurate with one non-critical conflation or overstatement.",
+      "score_0": "Materially wrong control flow, ownership, or trust claim."
+    },
+    {
+      "id": "D02",
+      "name": "required_fact_coverage",
+      "score_2": "All twelve mandatory facts are present.",
+      "score_1": "Nine to eleven mandatory facts are present.",
+      "score_0": "Fewer than nine mandatory facts are present."
+    },
+    {
+      "id": "D03",
+      "name": "source_citation_correctness",
+      "score_2": "Every material claim has a real, supporting repo-relative source citation.",
+      "score_1": "Citations are real but one or more material claims are weakly supported.",
+      "score_0": "A citation is fabricated, materially mismatched, or absent for central claims."
+    },
+    {
+      "id": "D04",
+      "name": "causal_mechanism",
+      "score_2": "Explains the ordered causal path through input, provider stream, tools, persistence, and rendering.",
+      "score_1": "Mostly ordered but omits or merely lists one central transition.",
+      "score_0": "Primarily a component inventory with no reliable lifecycle."
+    },
+    {
+      "id": "D05",
+      "name": "uncertainty_handling",
+      "score_2": "Separates source facts, inference, and open questions and avoids provider/runtime generalization.",
+      "score_1": "Acknowledges some uncertainty but leaves an important assumption implicit.",
+      "score_0": "Presents inference or configuration-dependent behavior as universal fact."
+    },
+    {
+      "id": "D06",
+      "name": "learning_value",
+      "score_2": "Provides a coherent systems mental model with state, identity, control/data, trust, failure, and rendering boundaries.",
+      "score_1": "Useful trace but weak on one or more system boundaries.",
+      "score_0": "Too syntactic, fragmented, or tool-marketing-oriented to teach the system."
+    }
+  ],
+  "review_rules": {
+    "blind_labels": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "tool_identity_hidden": true,
+    "valid_extra_facts": "Verify against frozen source before credit; do not penalize merely because absent from this key.",
+    "near_threshold_or_disputed": "Record the dispute and request user approval before any separate model reviewer."
+  }
+}

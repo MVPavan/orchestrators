@@ -1,0 +1,49 @@
+{
+  "schema_version": "1.0",
+  "policy": {
+    "max_delegated_turns_before_pi": 8,
+    "max_credit_equivalent_per_turn": 12.0,
+    "max_credit_equivalent_phase_0b": 50.0,
+    "rates_per_million_tokens": {
+      "gpt-5.6-terra": {
+        "input": 62.5,
+        "cached_input": 6.25,
+        "output": 375.0
+      }
+    }
+  },
+  "totals": {
+    "delegated_turns": 2,
+    "credit_equivalent": 18.711587
+  },
+  "turns": [
+    {
+      "sequence": 1,
+      "purpose": "orch-8sk.16.7 runner acceptance review",
+      "session_id": "019f94a5-5eeb-7722-9448-056432c3e553",
+      "model": "gpt-5.6-terra",
+      "effort": "medium",
+      "input_tokens": 434751,
+      "cached_input_tokens": 369152,
+      "uncached_input_tokens": 65599,
+      "output_tokens": 3547,
+      "credit_equivalent": 7.737262,
+      "within_per_turn_limit": true,
+      "result": "FAIL_REVIEW_ADJUDICATED_LOCALLY"
+    },
+    {
+      "sequence": 2,
+      "purpose": "orch-8sk.16.4 Graphify evidence stability repair",
+      "session_id": "019f94a9-010a-7603-a0ee-9ba3566e7651",
+      "model": "gpt-5.6-terra",
+      "effort": "medium",
+      "input_tokens": 727510,
+      "cached_input_tokens": 657152,
+      "uncached_input_tokens": 70358,
+      "output_tokens": 6586,
+      "credit_equivalent": 10.974325,
+      "within_per_turn_limit": true,
+      "result": "DONE_LIMIT_RAISED_WITH_USER_APPROVAL"
+    }
+  ]
+}

@@ -827,7 +827,8 @@ TXT/JSON evidence. It writes `artifact-metrics.json`,
 `artifact-item-metrics.json`, and `generated-output-metrics.json`.
 `test-measure-artifacts-idempotence.js` executes that generator twice and
 requires all three outputs to be byte-identical with unchanged counts. Scripts,
-generated summaries, and idempotence output are excluded by construction. The
+generated summaries (including `normalized-capability-matrix.json`), and
+idempotence output are excluded by construction. The
 stale alternate aggregate generator was removed; `measure-mcp-items.mjs`
 remains a separate, MCP-schema-only measurement utility rather than an
 aggregate generator.
@@ -861,11 +862,11 @@ aggregate generator.
 
 The shared `timed-safe-operations.txt` ledger supplies the fresh timings cited
 above and also records `check-update` 0.05 s and `hook status` 0.04 s. The
-current primary deterministic evidence is 79 TXT/JSON files, 919,409 bytes,
-and 217,688 local `o200k_base` tokens. Including the current
-`artifact-metrics.json` summary itself, the per-item inventory covers 80 files,
-922,169 bytes, and 218,456 tokens. The increase is mostly the normalized
-433-row matrix and exhaustive installer/flag/routing snapshots. These aggregates include inventories and
+current primary deterministic evidence is 78 TXT/JSON files, 361,467 bytes,
+and 92,333 local `o200k_base` tokens. Including the current
+`artifact-metrics.json` summary itself, the per-item inventory covers 79 files,
+364,185 bytes, and 93,088 tokens. Generated summaries, including the normalized
+433-row matrix, are excluded from the immutable input manifest. These aggregates include inventories and
 diagnostics, not just graph answers, so they are not a measure of prompt
 context that Pi or Codex must consume. The generated per-item/output metrics
 files and measurement script are excluded from the primary aggregate.
@@ -923,7 +924,7 @@ Two ignored metrics artifacts validate against `metrics.schema.json`:
 - `deterministic-discovery.metrics.json` is `DISCOVERY_SETUP`. Provider usage
   and operation totals are `UNKNOWN`; its 170 ms elapsed value is explicitly
   the final safe-flags completeness probe, not aggregate discovery time. Its
-  artifact estimate reflects the 73-file primary deterministic inventory. Its
+  artifact estimate reflects the 78-file primary deterministic inventory. Its
   current fixture identity is manifest digest
   `fc12b07aa2219f346ee1e00f52875efae8c52bbb12dc410456e9457ea1b58e24`
   at fixture commit `e7ddad2c44321f7b50e60c923b8f0733fb757874`;
@@ -1019,8 +1020,8 @@ deterministic rows reflect the completed inventory:
 | --- | ---: | --- |
 | MCP source-schema bytes | 5,798 | canonical JSON serialization |
 | MCP source-schema tokens | 1,234 | local `o200k_base` |
-| Primary deterministic raw output | 79 files; 919,409 bytes / 217,688 tokens | `artifact-metrics.json`; canonical SHA-256-manifested inputs only |
-| Per-item deterministic inventory | 80 files; 922,169 bytes / 218,456 tokens | `artifact-item-metrics.json`; includes `artifact-metrics.json` itself |
+| Primary deterministic raw output | 78 files; 361,467 bytes / 92,333 tokens | `artifact-metrics.json`; canonical SHA-256-manifested inputs only; generated summaries, including `normalized-capability-matrix.json`, are excluded |
+| Per-item deterministic inventory | 79 files; 364,185 bytes / 93,088 tokens | `artifact-item-metrics.json`; includes `artifact-metrics.json` itself |
 | Retained generated outputs | 475 files; 3,696,088 bytes / 1,038,422 local tokens | `generated-output-metrics.json`; duplicate snapshots counted separately |
 | Graphify code-only provider/model tokens | 0 / 0 | `.graphify_analysis.json` |
 | Terra provider usage | 637,486 input; 609,536 cached input; 5,761 output; 1,625 reasoning output | provider completion event |
@@ -1122,7 +1123,8 @@ material:
 10. the historical Terra attempt is not comparison-valid because it exceeded the
    call cap, failed schema validation, and saw a prior learning overlay.
 
-The deterministic Graphify lane is complete. The only remaining execution is
-the fixed Terra-medium retry after the shared capped runner is repaired under
-`orch-8sk.16.7`; its capability disposition is `UNTESTED`. It is not a
-deterministic capability gap and was not run here.
+The deterministic Graphify lane is complete. The user canceled the fixed
+Terra-medium retry after the equivalent CodeGraph runner failed before
+inference inside the read-only sandbox. Graphify's current-fixture
+agent-mediated capability disposition remains `UNTESTED`; the invalid
+historical attempt stays diagnostic-only and excluded.

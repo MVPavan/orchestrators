@@ -351,6 +351,24 @@ class PolicyTests(unittest.TestCase):
         config["environment"]["OPENAI_API_KEY"] = "secret"
         self.assert_rejected(config, "credential-like")
 
+    def test_codegraph_dir_requires_a_plain_directory_name(self) -> None:
+        config = cli_policy(self.tree)
+        config["environment"]["CODEGRAPH_DIR"] = ".codegraph-probe"
+        config["environment"]["DO_NOT_TRACK"] = "1"
+        config = interface.seal_policy(
+            {key: value for key, value in config.items() if key != "policy_digest"}
+        )
+        interface.validate_config(config)
+
+        for value in ("", ".", "..", "../index", "nested/index", "/tmp/index"):
+            config = cli_policy(self.tree)
+            config["environment"]["CODEGRAPH_DIR"] = value
+            self.assert_rejected(config, "CODEGRAPH_DIR must be a plain")
+
+        config = cli_policy(self.tree)
+        config["environment"]["DO_NOT_TRACK"] = "0"
+        self.assert_rejected(config, "DO_NOT_TRACK must be fixed to 1")
+
     def test_dynamic_path_escape_and_command_fragment_are_rejected(self) -> None:
         config = cli_policy(self.tree)
         operation = config["public_operations"][0]
@@ -388,6 +406,17 @@ class PolicyTests(unittest.TestCase):
         leaked.write_text("confidential scoring key and reference answer")
         errors = runner.isolated_fixture_errors(self.tree.fixture)
         self.assertTrue(any("anchor-like content" in error for error in errors))
+
+        generated = self.tree.fixture / ".codegraph-probe"
+        generated.mkdir()
+        (generated / "index.bin").write_text("confidential scoring key")
+        errors = runner.isolated_fixture_errors(
+            self.tree.fixture, ignored_generated_dirs={generated.name}
+        )
+        self.assertEqual(
+            [error for error in errors if ".codegraph-probe" in error], []
+        )
+        self.assertTrue(any("neutral.bin" in error for error in errors))
 
 
 class SurfaceTests(unittest.TestCase):

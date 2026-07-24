@@ -45,7 +45,10 @@ No current-fixture Terra run was performed. The historical
 `faa03d6...`/`f9...` attempt is explicitly superseded as
 `DISCOVERY_SETUP`: it produced no model completion and made no CBM call, and it
 is excluded from every current metric and capability disposition. Provider
-usage for a future agent-mediated probe remains `UNKNOWN`.
+usage for an agent-mediated probe remains `UNKNOWN`. The user canceled all
+remaining capability-probe retries after the equivalent CodeGraph runner
+failed before inference; CBM agent-mediated behavior remains `UNTESTED` and
+excluded.
 
 ## Scope, isolation, and evidence precedence
 
@@ -704,12 +707,12 @@ record used historical fixture `faa03d6...` and manifest `f9...`; it stopped
 during runner setup before a model completion or CBM call. It is therefore
 superseded as `DISCOVERY_SETUP`, not a capability result, and is excluded from
 all tables and aggregates above. No replacement Terra attempt was made during
-this repair.
+this repair, and the user subsequently canceled capability-probe retries under
+the strict budget policy.
 
 The agent-mediated disposition remains `UNTESTED`, with provider tokens
-`UNKNOWN`. A future controlled run must pin the current fixture, manifest,
-prompt, runner version, model, effort, and call ceiling and must obtain any
-required authorization independently; it cannot reuse the superseded metric.
+`UNKNOWN`. It is excluded from the capability matrix and later controlled
+results rather than being retried with weaker isolation.
 
 ## Reproduction outline
 
