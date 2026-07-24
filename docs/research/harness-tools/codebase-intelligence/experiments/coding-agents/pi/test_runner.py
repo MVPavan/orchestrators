@@ -34,7 +34,9 @@ class PiTracerRunnerTest(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "out of frozen order"):
             runner.next_arm(["source-only"])
 
-    def test_source_only_command_is_one_turn_read_only_and_retry_free(self) -> None:
+    def test_source_only_command_uses_custom_openai_provider_without_retries(
+        self,
+    ) -> None:
         runner = load_runner()
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -56,8 +58,24 @@ class PiTracerRunnerTest(unittest.TestCase):
         self.assertIn("--sandbox\nread-only", joined)
         self.assertIn("--model\ngpt-5.6-terra", joined)
         self.assertIn('model_reasoning_effort="medium"', command)
-        self.assertIn("model_providers.openai.request_max_retries=0", command)
-        self.assertIn("model_providers.openai.stream_max_retries=0", command)
+        self.assertIn('model_provider="openai-no-retry"', command)
+        self.assertIn(
+            'model_providers.openai-no-retry.name="OpenAI no retry"', command
+        )
+        self.assertIn(
+            'model_providers.openai-no-retry.wire_api="responses"', command
+        )
+        self.assertIn(
+            "model_providers.openai-no-retry.requires_openai_auth=true",
+            command,
+        )
+        self.assertIn(
+            "model_providers.openai-no-retry.request_max_retries=0", command
+        )
+        self.assertIn(
+            "model_providers.openai-no-retry.stream_max_retries=0", command
+        )
+        self.assertNotIn("model_providers.openai.", joined)
         self.assertNotIn("mcp_servers.evaluated.command", joined)
 
     def test_event_summary_requires_one_completion_with_usage(self) -> None:
