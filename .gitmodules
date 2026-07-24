@@ -57,3 +57,19 @@
 	path = external/harness-tools/codebase-intelligence/understand-anything
 	url = https://github.com/Egonex-AI/Understand-Anything.git
 	branch = main
+[submodule "external/coding-agents/codex"]
+	path = external/coding-agents/codex
+	url = https://github.com/openai/codex.git
+	branch = main
+[submodule "external/coding-agents/pydantic-ai"]
+	path = external/coding-agents/pydantic-ai
+	url = https://github.com/pydantic/pydantic-ai.git
+	branch = main
+[submodule "external/coding-agents/deepagents"]
+	path = external/coding-agents/deepagents
+	url = https://github.com/langchain-ai/deepagents.git
+	branch = main
+[submodule "external/coding-agents/pi"]
+	path = external/coding-agents/pi
+	url = https://github.com/earendil-works/pi.git
+	branch = main
