@@ -68,7 +68,7 @@ Start with the supervisor and city runtime model:
 
 ## Parent Repo Caveats
 
-This report was written from the parent `orchestrators` repo. In that repo, `external/agent-systems/gascity` is a submodule. Do not edit submodule internals for parent-level research tasks unless the task is explicitly submodule-local. Parent-level durable artifacts belong under `docs/research/codebases/gascity/`.
+This report was written from the parent `orchestrators` repo. In that repo, `external/agent-systems/gascity` is a submodule. Do not edit submodule internals for parent-level research tasks unless the task is explicitly submodule-local. Parent-level durable artifacts belong under `docs/research/agent-systems/gascity/`.
 
 Parent repo verification currently focuses on structural checks rather than Gas City tests. Running the upstream Gas City full test suite from the parent repo would be a separate, heavier validation step and may require network/toolchain dependencies not needed for this documentation task.
 

@@ -57,11 +57,11 @@ Enterprise runtime adds SaaS configuration, analytics startup/shutdown through P
 
 ## Parent Repo Caveats
 
-This research was conducted from `/data/codes/orchestrators`, and `external/agent-systems/OpenHands` was treated as an external source tree. The parent repository should only receive research artifacts under `docs/research/codebases/openhands/`; no OpenHands source, lockfile, generated frontend output, or submodule content should be modified for this task.
+This research was conducted from `/data/codes/orchestrators`, and `external/agent-systems/OpenHands` was treated as an external source tree. The parent repository should only receive research artifacts under `docs/research/agent-systems/openhands/`; no OpenHands source, lockfile, generated frontend output, or submodule content should be modified for this task.
 
 Verification for this task should focus on:
 
-- Output file existence under `docs/research/codebases/openhands/`.
+- Output file existence under `docs/research/agent-systems/openhands/`.
 - Absence of placeholder or draft-marker artifacts in the generated research files.
 - Source-reference sanity: each cited `external/agent-systems/OpenHands/...:line` path exists and line numbers are in range.
 - `git -C external/agent-systems/OpenHands status --short --branch` remains clean.

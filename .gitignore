@@ -32,7 +32,7 @@ graphify-out/
 # external/harness-tools/codebase-intelligence/
 # external/agent-systems/deer-flow/
 # Raw per-tool capability/exploitation transcripts (machine-local paths; evidence only)
-docs/research/harness/results/
+docs/research/harness-tools/codebase-intelligence/results/
 
 # code-intel plugin runtime artifacts (serena project state, CBM team-graph) — regenerated, never committed
 .serena/

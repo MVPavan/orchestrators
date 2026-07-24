@@ -48,7 +48,7 @@ Adapter operations include built-in adapter registration, external adapter plugi
 
 Safe operational assumptions for this repo:
 
-- Write research outputs under `docs/research/codebases/paperclip/`.
+- Write research outputs under `docs/research/agent-systems/paperclip/`.
 - Do not modify `external/agent-systems/paperclip/` unless the task is explicitly submodule/external-codebase-local.
 - If the goal is to run Paperclip, run commands from `external/agent-systems/paperclip/` and expect dependency install, embedded Postgres data directories, local env files, and server-generated state.
 - If the goal is to change Paperclip, inspect its own git status and branch first; it is a nested git checkout.

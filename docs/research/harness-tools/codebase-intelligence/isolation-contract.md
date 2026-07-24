@@ -25,7 +25,7 @@ environment + visibility** discipline, not by sandboxing.
 | Canonical subject (read-only) | `scratchpad/harness/_paperclip_src/` | `chmod a-w`. Read-only tools may point here. **Never written.** |
 | Per-tool writable subject copy | `scratchpad/harness/<tool>/paperclip-src/` | Indexing/mutating tools get their **own** copy. |
 | Tool artifacts/index/logs | `scratchpad/harness/<tool>/` | All scratch output lands here (gitignored). |
-| Tool results (committed) | `docs/research/harness/results/<tool>/` | `capabilities.md`, `exploitation.md`, small artifacts. |
+| Tool results (committed) | `docs/research/harness-tools/codebase-intelligence/results/<tool>/` | `capabilities.md`, `exploitation.md`, small artifacts. |
 
 The canonical subject (`_paperclip_src`) is the **controlled variable** — sharing it read-only across
 tools is correct (it is the subject, not a result). Sharing any *result* is forbidden.

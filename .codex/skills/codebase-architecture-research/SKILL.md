@@ -1,6 +1,6 @@
 ---
 name: codebase-architecture-research
-description: Investigate a provided source codebase or external repository and produce architecture-focused research reports for future agents and human review. Use when asked to understand a codebase such as external/agent-systems/gastown or external/agent-systems/gascity, map its core architecture, runtime lifecycle, data/state model, inner workings, integration points, or create docs/research/codebases/name/ Markdown and HTML reports while avoiding excessive focus on cosmetic UI, release plumbing, generic tooling, or process layers unless they explain core behavior.
+description: Investigate a provided source codebase or external repository and produce architecture-focused research reports for future agents and human review. Use when asked to understand a codebase such as external/agent-systems/gastown or external/agent-systems/gascity, map its core architecture, runtime lifecycle, data/state model, inner workings, integration points, or create docs/research/agent-systems/name/ Markdown and HTML reports while avoiding excessive focus on cosmetic UI, release plumbing, generic tooling, or process layers unless they explain core behavior.
 ---
 
 # Codebase Architecture Research
@@ -16,7 +16,7 @@ The canonical output is Markdown for future agents. HTML is a derived, human-fac
 For a target like `external/agent-systems/gastown`, write reports under:
 
 ```text
-docs/research/codebases/gastown/
+docs/research/agent-systems/gastown/
 ├── agent/
 │   ├── 00-index.md
 │   ├── 01-core-architecture.md

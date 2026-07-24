@@ -3,7 +3,7 @@
 ## Tracking And Scope
 
 1. Is `external/agent-systems/paperclip/` intended to become a tracked submodule of the parent orchestrators repo, or is it a local external checkout used only for research? The parent overlay names `external/agent-systems/gascity` and `external/agent-systems/gastown` as submodules, but this research request targeted `external/agent-systems/paperclip/` as an available nested checkout. This should be clarified before staging any parent-repo metadata around Paperclip.
-2. Should this report set be linked from `docs/research/codebases/00-index.md` or another top-level docs index? I did not add cross-index links because the user asked specifically for `@external/agent-systems/paperclip/` research and because parent docs indexing conventions should be followed deliberately.
+2. Should this report set be linked from `docs/research/agent-systems/00-index.md` or another top-level docs index? I did not add cross-index links because the user asked specifically for `@external/agent-systems/paperclip/` research and because parent docs indexing conventions should be followed deliberately.
 
 ## Runtime Verification Gaps
 

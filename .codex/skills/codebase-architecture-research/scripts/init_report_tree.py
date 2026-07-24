@@ -26,7 +26,7 @@ def slugify(value: str) -> str:
 
 def main() -> int:
     parser = argparse.ArgumentParser(
-        description="Create the standard docs/research/codebases/<slug>/ report tree."
+        description="Create the standard docs/research/agent-systems/<slug>/ report tree."
     )
     parser.add_argument("codebase_path", help="Path to the codebase being studied, e.g. external/agent-systems/gastown")
     parser.add_argument(

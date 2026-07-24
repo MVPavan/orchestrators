@@ -64,7 +64,7 @@ Runtime files to inspect:
 For this `orchestrators` repo:
 
 - `external/agent-systems/gastown` is an external codebase. Do not edit its internals unless the user explicitly asks to patch Gastown itself.
-- Reports should live under `docs/research/codebases/gastown/`, not in the Gastown submodule.
+- Reports should live under `docs/research/agent-systems/gastown/`, not in the Gastown submodule.
 - To update Gastown later, use normal submodule/origin sync procedures from the parent repo and then refresh these reports if architecture-relevant files changed.
 - Avoid running `make install`, daemon start/stop, or `gt install` from analysis tasks unless the user explicitly wants to exercise Gastown; those commands can alter user-level runtime state.
 - Running `go test ./...` inside the submodule is source-level verification, but it may require Go 1.26.2, Dolt/Beads/tmux, Docker for e2e paths, and local environment setup.

@@ -74,9 +74,9 @@ Each tool lives in `external/harness-tools/codebase-intelligence/<tool>/`. **Sta
 ## 5. Repo layout and where results go
 
 - **Tools:** `external/harness-tools/codebase-intelligence/<tool>/` — plain clones, **not** submodules (consistent with the existing `headroom`).
-- **Per-tool results:** `docs/research/harness/results/<tool>/` — `capabilities.md` (Phase A) + `exploitation.md` (Phase B) + small artifacts.
+- **Per-tool results:** `docs/research/harness-tools/codebase-intelligence/results/<tool>/` — `capabilities.md` (Phase A) + `exploitation.md` (Phase B) + small artifacts.
 - **Large / raw artifacts** (packed digests, `graph.json`, logs) and any throwaway paperclip copies: `scratchpad/harness/<tool>/` (gitignored); link them from `exploitation.md`.
-- **Final synthesis:** `docs/research/harness/findings.md` (Phase C).
+- **Final synthesis:** `docs/research/harness-tools/codebase-intelligence/findings.md` (Phase C).
 
 ## 6. Phase 0 — Setup (orchestrator, Bash)
 

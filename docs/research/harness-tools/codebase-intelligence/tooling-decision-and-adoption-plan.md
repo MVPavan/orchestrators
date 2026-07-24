@@ -305,9 +305,9 @@ CBM→codegraph if the §7 codegraph trigger fires (CBM's 14-tool schema cost pr
 ---
 
 ## 10. Provenance / artifact index
-- **This file:** `docs/research/harness/tooling-decision-and-adoption-plan.md`
-- **Accuracy study:** `docs/research/harness/two-repo-traversal-analysis.{md,html}`; pilot +
-  cross-repo robustness: `docs/research/harness/robustness-synthesis.md`,
+- **This file:** `docs/research/harness-tools/codebase-intelligence/tooling-decision-and-adoption-plan.md`
+- **Accuracy study:** `docs/research/harness-tools/codebase-intelligence/two-repo-traversal-analysis.{md,html}`; pilot +
+  cross-repo robustness: `docs/research/harness-tools/codebase-intelligence/robustness-synthesis.md`,
   `robustness-findings-deerflow.md`, `deerflow-architecture-learned.html`.
 - **Study raw data/scripts/gold/scorer + 3 Codex transcripts:** `scratchpad/harness-2repo/`
   (`GROUND_RULES.md`, `goldbuilder.py`, `gold_manifest.json`, `score.py`, `scores.json`,
