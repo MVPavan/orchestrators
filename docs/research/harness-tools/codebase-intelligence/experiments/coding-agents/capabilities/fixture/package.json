@@ -1,0 +1,12 @@
+{
+  "name": "capability-fixture",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "tsc --project tsconfig.json",
+    "start": "node dist/packages/gateway/src/main.js"
+  }
+}
