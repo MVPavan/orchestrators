@@ -55,10 +55,43 @@ explicit public-operation allowlist and argv templates, executed without a
 shell. Configured executables and cwd must be absolute, the cwd must be the
 isolated fixture, and credential-like environment fields are rejected.
 
+Every runnable config is materialized from a lane-specific dry policy. The
+sealed policy binds its digest, exact executable realpath and SHA-256, fixed
+command/argv templates, argument kinds, allowed tool names, fixed safe MCP
+methods, expected tools/resources/prompts/capabilities/instructions, and
+denied content hashes. Executables and all writable home/cache/temp/index
+paths must remain inside the assigned scratch lane. Shell interpreters and
+`-c`, network clients, Git and writer commands, command strings, URLs,
+credential environment variables, parent/private/live-submodule paths, and
+path escapes are rejected before startup.
+
+Native policies attest a separate fresh server with initialize, `tools/list`,
+`resources/list`, `resources/templates/list`, and `prompts/list`, retaining
+canonical digests of the complete returned surface objects. Any unexpected or
+changed tool, resource, resource template, prompt, capability, or instruction
+hash rejects startup. The model-facing side uses that same attested process,
+shows only `allowed_tool_names`, strips resources/prompts/instructions, rejects
+arbitrary methods, and validates native arguments recursively against the two
+approved roots.
+
+Each call is journaled as `ATTEMPTED` before child dispatch and then receives
+one terminal record. A missing child response becomes
+`FAILED_NO_RESPONSE` and invalidates the run; CLI operations use a fixed
+120-second response timeout. Provider MCP-call events must use
+server `evaluated` and match the journal's operation names and order; an
+unrelated server, missing event, extra event, or mismatch is contamination.
+Every real probe requires an `interface_started` record even with zero calls.
+A missing, empty, call-only, duplicated-startup, or surface-mismatched audit
+invalidates the run.
+
 The generated provider schema is only a transport adapter. Passing requires
 provider-schema validation, canonical-schema validation, and the canonical
 sequence validator. Provider JSONL, usage, interface audit, final validation,
 and a fail-closed contamination/status artifact are retained for every run.
+The runner also writes a `metrics.json` artifact, validates it against
+`metrics.schema.json`, and uses an explicit supported lane for
+`SMOKE_EXCLUDED`; the smoke exposes no tool but uses that lane's frozen fixture
+identity.
 
 ## Contamination and exclusions
 
@@ -67,6 +100,12 @@ tool's output, `expected-anchors.json`, Pi/Codex source or reports, tool
 implementation source, a source-only reference answer, generic shell/search/
 file-read results, or a non-public/hidden tool surface. Unexpected network or
 credential access and any live-submodule mutation also invalidate the run.
+
+Contamination fields are derived from the active command, recursively scanned
+fixture/config content, denied hashes, provider events, MCP identities, and
+startup surface attestation. The scan does not rely on prohibited content
+keeping a particular filename. Expected anchors remain curator-only and are
+never a runner, adapter, or model input.
 
 Fixture-preparation, index/build, schema enumeration, this one-off probe-design
 session, tool smokes, failed runner setup, and repair sessions are

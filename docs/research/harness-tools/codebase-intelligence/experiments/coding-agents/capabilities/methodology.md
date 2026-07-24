@@ -29,6 +29,7 @@ schemas, and the allowed-operation boundary. It does not report any tool result.
 | `evaluated-interface.py` | Pre-dispatch 24-call gate for native MCP and allowlisted CLI lanes |
 | `run-terra-probe.py` | Clean Terra invocation, JSONL/usage capture, and fail-closed validation |
 | `test_runner.py` | Fake-server/command and output-validation self-tests |
+| `adapter-policies/` | Materializable CodeGraph, CBM, and Graphify dry policies plus the materialized-policy schema |
 
 ## Fixture coverage
 
@@ -110,7 +111,24 @@ The runner uses the isolated fixture as cwd with `--ephemeral`,
 built-in tool features disabled. Its only configured MCP is the evaluated
 interface. Native MCP servers pass through a stdio JSON-RPC counter; CLI-only
 lanes expose explicitly configured public operations and argv templates
-without a shell. Both reject and audit call 25 before dispatch.
+without a shell. Each materialized lane policy seals one executable
+realpath/SHA-256, fixed argv templates, typed arguments, environment/path
+roots, safe exposed tools, fixed MCP methods, and exact runtime surface.
+Native startup is independently attested with initialize and
+tool/resource/resource-template/prompt lists, including canonical digests of
+the full returned objects; unexpected or changed tools, resources, resource
+templates, prompts, capabilities, or instructions fail closed. The live proxy
+filters that same attested server instance down to its safe exposed tools and
+rejects arbitrary methods.
+Both interfaces persist an
+`ATTEMPTED` journal record before dispatch, append the terminal outcome, reject
+and audit call 25 before dispatch, and invalidate any attempt that ends as
+`FAILED_NO_RESPONSE`. CLI operations additionally have a fixed 120-second
+response timeout. Provider MCP-call events must name server `evaluated` and
+match the journal's operation names and order. Every real run must first emit
+`interface_started`, which captures the policy, executable, roots, methods,
+expected/observed/exposed surface, active MCP count, and contamination scan.
+Zero calls are valid only when that startup record exists.
 
 The adapter may translate a question to a public tool name but cannot provide
 extra source, anchors, hints, questions, calls, turns, or another tool. Missing
@@ -132,7 +150,10 @@ The later synthetic no-tool setup smoke is retained separately under
 `scratchpad/code-intelligence/sessions/capability-runner/` as
 `SMOKE_EXCLUDED`. It reached one Terra-medium completion and passed the
 provider schema, canonical schema, and sequence validator without repository
-or tool content; its provider usage is recorded in the status artifact.
+or tool content; its provider usage is recorded in the status artifact. A
+smoke still declares one supported `tool_lane` and runs from that lane's frozen
+fixture so its required manifest and commit metrics remain truthful, but it
+does not configure or expose the evaluated interface.
 
 ## Measurement and contamination
 
@@ -149,6 +170,18 @@ evidence counts, and contamination booleans. Documentation-only evidence never
 counts as returned source or a graph fact. The one-off Terra session used to
 design/review this battery is `DISCOVERY_SETUP` and its provider usage is
 retained separately; it is not a tool result.
+
+Contamination is derived from the active command, recursive fixture/config
+content and hashes, provider events, MCP identities, and attested runtime
+surface. The scan detects anchor/reference content after renaming and rejects
+cross-tool, subject-source, private-path, URL, credential, and live-submodule
+inputs without loading curator-owned expected anchors.
+
+`run-terra-probe.py` writes `metrics.json` and validates it against
+`metrics.schema.json`. Provider usage comes only from completion events;
+fixture identity comes from the frozen digest and Git commit; audited calls and
+evidence counts are derived mechanically. Artifact-token fields remain
+`UNKNOWN` when the pinned tokenizer is unavailable rather than being inferred.
 
 After JSON Schema validation, every runner executes:
 

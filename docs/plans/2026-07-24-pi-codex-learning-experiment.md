@@ -721,6 +721,7 @@ The approved execution is tracked by epic `orch-8sk`. Its current direct childre
 24. `orch-8sk.24` — Complete Pi systems reference map after tracer gate.
 25. `orch-8sk.25` — Complete Codex systems reference map after tracer gate.
 26. `orch-8sk.26` — Reconcile approved plan with audited Beads execution graph.
+27. `orch-8sk.27` — Audit unauthorized checkpoint commit and preserve recovery options.
 
 Capability discovery is tracked as nested epic `orch-8sk.16`:
 
@@ -735,7 +736,9 @@ Capability discovery is tracked as nested epic `orch-8sk.16`:
 
 `orch-8sk.1` and `orch-8sk.2` are the completed Phase 0A prerequisites. Phase 0B starts with the discovery protocol (`orch-8sk.16.1`) and the shared fixture/probe battery (`orch-8sk.16.6`). The fixture-freeze repair (`orch-8sk.16.8`) and provider-compatible capped Terra runner repair (`orch-8sk.16.7`) must restore the common probe foundation before the three per-tool discovery tasks (`orch-8sk.16.2`–`.16.4`) complete. Their capability matrix (`orch-8sk.16.5`) then gates Phase 0C's Pi protocol and runner-surface freeze (`orch-8sk.17`).
 
-The authoritative subject sequence is: Phase 0B → Phase 0C → Pi tracer reference (`orch-8sk.3`) → Pi tracer and interactive lesson-format gate (`orch-8sk.18`) → post-tracer Pi reference (`orch-8sk.24`) plus the remaining Pi source-only and three tool lanes (`orch-8sk.19`, `.4`, `.5`, `.6`) → Pi synthesis (`orch-8sk.7`) → Pi mastery (`orch-8sk.8`) → Codex tracer reference (`orch-8sk.9`) → Codex tracer and interactive method-transfer gate (`orch-8sk.20`) → post-tracer Codex reference (`orch-8sk.25`) plus the remaining Codex source-only and three tool lanes (`orch-8sk.21`, `.10`, `.11`, `.12`) → Codex synthesis (`orch-8sk.13`) → Codex mastery (`orch-8sk.14`) → cross-repository synthesis (`orch-8sk.15`) → spaced retrieval and transfer review (`orch-8sk.22`) → final audit (`orch-8sk.23`). The final audit is gated by both the spaced review (`orch-8sk.22`) and this plan/graph reconciliation (`orch-8sk.26`).
+The authoritative subject sequence is: Phase 0B → Phase 0C → Pi tracer reference (`orch-8sk.3`) → Pi tracer and interactive lesson-format gate (`orch-8sk.18`) → post-tracer Pi reference (`orch-8sk.24`) plus the remaining Pi source-only and three tool lanes (`orch-8sk.19`, `.4`, `.5`, `.6`) → Pi synthesis (`orch-8sk.7`) → Pi mastery (`orch-8sk.8`) → Codex tracer reference (`orch-8sk.9`) → Codex tracer and interactive method-transfer gate (`orch-8sk.20`) → post-tracer Codex reference (`orch-8sk.25`) plus the remaining Codex source-only and three tool lanes (`orch-8sk.21`, `.10`, `.11`, `.12`) → Codex synthesis (`orch-8sk.13`) → Codex mastery (`orch-8sk.14`) → cross-repository synthesis (`orch-8sk.15`) → spaced retrieval and transfer review (`orch-8sk.22`) → final audit (`orch-8sk.23`). The final audit is gated by the spaced review (`orch-8sk.22`), this plan/graph reconciliation (`orch-8sk.26`), and the checkpoint audit (`orch-8sk.27`).
+
+`orch-8sk.27` is an operational recovery and audit task only. It preserves non-destructive recovery options for an unauthorized checkpoint commit and does not alter the study's scientific method, model routing, controlled comparisons, or learning gates.
 
 There are explicit user-interaction pauses at the Pi tracer gate: the learner must complete teach-back/transfer and approve or revise the lesson format before the post-tracer Pi work begins. There is a second explicit user-interaction pause at the Codex tracer gate: the learner must complete teach-back/transfer and accept or request correction to the method before the post-tracer Codex work begins. The spaced review is also interactive; unresolved misconceptions create targeted follow-up lessons rather than being silently passed.
 

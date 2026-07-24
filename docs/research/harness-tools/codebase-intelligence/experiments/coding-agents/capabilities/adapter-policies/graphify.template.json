@@ -1,0 +1,124 @@
+{
+  "policy_version": "1.0",
+  "tool_lane": "graphify",
+  "mode": "cli",
+  "fixture_root": "${FIXTURE_ROOT}",
+  "scratch_root": "${SCRATCH_ROOT}",
+  "cwd": "${FIXTURE_ROOT}",
+  "environment": {
+    "PATH": "${SCRATCH_ROOT}/bin",
+    "HOME": "${SCRATCH_ROOT}/home",
+    "TMPDIR": "${SCRATCH_ROOT}/tmp",
+    "LANG": "C.UTF-8",
+    "GRAPHIFY_OUT": "${SCRATCH_ROOT}/graph"
+  },
+  "executable": {
+    "realpath": "${EXECUTABLE_REALPATH}",
+    "sha256": "${EXECUTABLE_SHA256}"
+  },
+  "command_template": ["${EXECUTABLE_REALPATH}"],
+  "public_operations": [
+    {
+      "name": "query",
+      "description": "Query the assigned lane-local graph.",
+      "input_schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {"question": {"type": "string"}},
+        "required": ["question"]
+      },
+      "argument_policy": {"question": {"kind": "text"}},
+      "argv_template": ["${EXECUTABLE_REALPATH}", "query", "{question}", "--graph", "${SCRATCH_ROOT}/graph/graph.json"]
+    },
+    {
+      "name": "explain",
+      "description": "Explain one graph node from the assigned lane-local graph.",
+      "input_schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {"node": {"type": "string"}},
+        "required": ["node"]
+      },
+      "argument_policy": {"node": {"kind": "text"}},
+      "argv_template": ["${EXECUTABLE_REALPATH}", "explain", "{node}", "--graph", "${SCRATCH_ROOT}/graph/graph.json"]
+    },
+    {
+      "name": "path",
+      "description": "Find a path between two nodes in the assigned lane-local graph.",
+      "input_schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "source": {"type": "string"},
+          "target": {"type": "string"}
+        },
+        "required": ["source", "target"]
+      },
+      "argument_policy": {
+        "source": {"kind": "text"},
+        "target": {"kind": "text"}
+      },
+      "argv_template": ["${EXECUTABLE_REALPATH}", "path", "{source}", "{target}", "--graph", "${SCRATCH_ROOT}/graph/graph.json"]
+    },
+    {
+      "name": "affected",
+      "description": "List graph nodes affected by one node.",
+      "input_schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {"node": {"type": "string"}},
+        "required": ["node"]
+      },
+      "argument_policy": {"node": {"kind": "text"}},
+      "argv_template": ["${EXECUTABLE_REALPATH}", "affected", "{node}", "--graph", "${SCRATCH_ROOT}/graph/graph.json"]
+    },
+    {
+      "name": "god_nodes",
+      "description": "Report high-degree nodes in the assigned lane-local graph.",
+      "input_schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {},
+        "required": []
+      },
+      "argument_policy": {},
+      "argv_template": ["${EXECUTABLE_REALPATH}", "god-nodes", "--graph", "${SCRATCH_ROOT}/graph/graph.json"]
+    },
+    {
+      "name": "diagnose",
+      "description": "Run local graph diagnostics against the assigned lane-local graph.",
+      "input_schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {},
+        "required": []
+      },
+      "argument_policy": {},
+      "argv_template": ["${EXECUTABLE_REALPATH}", "diagnose", "multigraph", "--graph", "${SCRATCH_ROOT}/graph/graph.json"]
+    },
+    {
+      "name": "benchmark",
+      "description": "Run the local corpus-query token estimate for the assigned lane-local graph.",
+      "input_schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {},
+        "required": []
+      },
+      "argument_policy": {},
+      "argv_template": ["${EXECUTABLE_REALPATH}", "benchmark", "--graph", "${SCRATCH_ROOT}/graph/graph.json"]
+    }
+  ],
+  "expected_surface": {
+    "tools": ["query", "explain", "path", "affected", "god_nodes", "diagnose", "benchmark"],
+    "resources": [],
+    "resource_templates": [],
+    "prompts": [],
+    "capabilities": ["tools"],
+    "instructions_sha256": null
+  },
+  "expected_surface_digests": {},
+  "allowed_tool_names": ["query", "explain", "path", "affected", "god_nodes", "diagnose", "benchmark"],
+  "allowed_mcp_methods": ["initialize", "notifications/initialized", "ping", "tools/list", "tools/call"],
+  "denied_content_sha256": []
+}

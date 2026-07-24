@@ -1,0 +1,133 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Materialized evaluated-interface policy",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "policy_version",
+    "policy_digest",
+    "tool_lane",
+    "mode",
+    "fixture_root",
+    "scratch_root",
+    "cwd",
+    "environment",
+    "executable",
+    "command_template",
+    "expected_surface",
+    "expected_surface_digests",
+    "allowed_tool_names",
+    "allowed_mcp_methods",
+    "denied_content_sha256"
+  ],
+  "properties": {
+    "policy_version": {"const": "1.0"},
+    "policy_digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "tool_lane": {"enum": ["codegraph", "cbm", "graphify"]},
+    "mode": {"enum": ["cli", "native_mcp"]},
+    "fixture_root": {"type": "string", "pattern": "^/"},
+    "scratch_root": {"type": "string", "pattern": "^/"},
+    "cwd": {"type": "string", "pattern": "^/"},
+    "environment": {
+      "type": "object",
+      "additionalProperties": {"type": "string"}
+    },
+    "executable": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["realpath", "sha256"],
+      "properties": {
+        "realpath": {"type": "string", "pattern": "^/"},
+        "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      }
+    },
+    "command_template": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"type": "string"}
+    },
+    "public_operations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "description",
+          "input_schema",
+          "argument_policy",
+          "argv_template"
+        ],
+        "properties": {
+          "name": {"type": "string", "minLength": 1},
+          "description": {"type": "string"},
+          "input_schema": {"type": "object"},
+          "argument_policy": {"type": "object"},
+          "argv_template": {
+            "type": "array",
+            "minItems": 1,
+            "items": {"type": "string"}
+          }
+        }
+      }
+    },
+    "expected_surface": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "tools",
+        "resources",
+        "resource_templates",
+        "prompts",
+        "capabilities",
+        "instructions_sha256"
+      ],
+      "properties": {
+        "tools": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+        "resources": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+        "resource_templates": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+        "prompts": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+        "capabilities": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+        "instructions_sha256": {
+          "type": ["string", "null"],
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      }
+    },
+    "expected_surface_digests": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["initialize", "tools", "resources", "resource_templates", "prompts"],
+      "properties": {
+        "initialize": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "tools": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "resources": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "resource_templates": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "prompts": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      }
+    },
+    "allowed_tool_names": {
+      "type": "array",
+      "items": {"type": "string"},
+      "uniqueItems": true
+    },
+    "allowed_mcp_methods": {
+      "type": "array",
+      "items": {
+        "enum": [
+          "initialize",
+          "notifications/initialized",
+          "ping",
+          "tools/list",
+          "tools/call"
+        ]
+      },
+      "uniqueItems": true
+    },
+    "denied_content_sha256": {
+      "type": "array",
+      "items": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+      "uniqueItems": true
+    }
+  }
+}
