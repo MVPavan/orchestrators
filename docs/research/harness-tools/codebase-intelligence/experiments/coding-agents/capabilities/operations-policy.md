@@ -47,6 +47,19 @@ The runner validates the JSON Schema and then runs
 more than 24 operations, or non-contiguous/duplicate operation sequence values
 is invalid rather than silently normalized.
 
+The evaluated interface independently enforces the limit before dispatch:
+requests one through 24 may reach the configured public server or command;
+request 25 is logged as `CALL_LIMIT_REJECTED` and returned as an error without
+execution. Native lanes use a stdio JSON-RPC proxy. CLI lanes use only an
+explicit public-operation allowlist and argv templates, executed without a
+shell. Configured executables and cwd must be absolute, the cwd must be the
+isolated fixture, and credential-like environment fields are rejected.
+
+The generated provider schema is only a transport adapter. Passing requires
+provider-schema validation, canonical-schema validation, and the canonical
+sequence validator. Provider JSONL, usage, interface audit, final validation,
+and a fail-closed contamination/status artifact are retained for every run.
+
 ## Contamination and exclusions
 
 A capability probe is contaminated and excluded if the agent sees another

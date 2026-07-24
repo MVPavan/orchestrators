@@ -91,4 +91,4 @@ Record verified, likely-to-recur patterns in `.codex/project/learnings.md` (form
 
 ## Beads Issue Tracker
 
-This project uses **bd (beads)** for issue tracking. Workflow, rules, agent context profiles, and the session-completion protocol live in **[`.beads/beads.md`](.beads/beads.md)**. Run `bd prime` for runtime context.
+This project uses **bd (beads)** for any task lifecycle, issue tracking. Workflow, rules, agent context profiles, and the session-completion protocol live in **[`.beads/beads.md`](.beads/beads.md)**. Run `bd prime` for runtime context.

@@ -1,6 +1,6 @@
 # Pi and Codex Learning and Code-Graph Tool Evaluation Plan
 
-**Status:** Approved on 2026-07-24; execution not started
+**Status:** Approved on 2026-07-24; Phase 0 capability discovery in progress
 
 **Execution boundary:** Planning and Beads setup are approved. Do not begin repository analysis, indexing, tool experiments, or lessons as part of this plan-finalization task.
 
@@ -693,24 +693,34 @@ Large graph databases, raw event streams, copied repositories, and generated vis
 
 ## 14. Beads Execution Structure
 
-The approved execution is tracked by epic `orch-8sk`. Its work items are:
+The approved execution is tracked by epic `orch-8sk`. Its current direct children are:
 
-1. `orch-8sk.1` — Finalize this approved systems-level plan and model routing.
+1. `orch-8sk.1` — Finalize approved systems-level plan and model routing.
 2. `orch-8sk.2` — Verify isolated tool runtimes and model readiness.
-3. `orch-8sk.17` — Freeze Pi experiment protocol and runner surfaces.
-4. `orch-8sk.3` — Build Pi systems reference map.
-5. `orch-8sk.4` — Run Pi CodeGraph experiment.
-6. `orch-8sk.5` — Run Pi CBM experiment.
-7. `orch-8sk.6` — Run Pi Graphify experiment.
-8. `orch-8sk.7` — Synthesize Pi results and token accounting.
-9. `orch-8sk.8` — Teach and review Pi to its systems mastery gate.
-10. `orch-8sk.9` — Build Codex systems reference map.
-11. `orch-8sk.10` — Run Codex CodeGraph experiment.
-12. `orch-8sk.11` — Run Codex CBM experiment.
-13. `orch-8sk.12` — Run Codex Graphify experiment.
-14. `orch-8sk.13` — Synthesize Codex results and token accounting.
-15. `orch-8sk.14` — Teach and review Codex to its systems mastery gate.
-16. `orch-8sk.15` — Produce cross-repository and cross-tool systems synthesis.
+3. `orch-8sk.3` — Build Pi tracer reference and scoring anchor.
+4. `orch-8sk.4` — Run remaining Pi CodeGraph experiments.
+5. `orch-8sk.5` — Run remaining Pi CBM experiments.
+6. `orch-8sk.6` — Run remaining Pi Graphify experiments.
+7. `orch-8sk.7` — Synthesize Pi systems results and token accounting.
+8. `orch-8sk.8` — Teach and review Pi to systems mastery gate.
+9. `orch-8sk.9` — Build Codex tracer reference and scoring anchor.
+10. `orch-8sk.10` — Run remaining Codex CodeGraph experiments.
+11. `orch-8sk.11` — Run remaining Codex CBM experiments.
+12. `orch-8sk.12` — Run remaining Codex Graphify experiments.
+13. `orch-8sk.13` — Synthesize Codex systems results and token accounting.
+14. `orch-8sk.14` — Teach and review Codex to systems mastery gate.
+15. `orch-8sk.15` — Produce cross-repository and cross-tool systems synthesis.
+16. `orch-8sk.16` — Discover and validate code-graph tool capabilities.
+17. `orch-8sk.17` — Freeze Pi experiment protocol and runner surfaces.
+18. `orch-8sk.18` — Run Pi tracer bullet and approve lesson format.
+19. `orch-8sk.19` — Run remaining Pi source-only controlled baselines.
+20. `orch-8sk.20` — Run Codex tracer bullet and approve method transfer.
+21. `orch-8sk.21` — Run remaining Codex source-only controlled baselines.
+22. `orch-8sk.22` — Run cross-repository spaced retrieval and transfer review.
+23. `orch-8sk.23` — Verify complete study against approved plan.
+24. `orch-8sk.24` — Complete Pi systems reference map after tracer gate.
+25. `orch-8sk.25` — Complete Codex systems reference map after tracer gate.
+26. `orch-8sk.26` — Reconcile approved plan with audited Beads execution graph.
 
 Capability discovery is tracked as nested epic `orch-8sk.16`:
 
@@ -718,13 +728,20 @@ Capability discovery is tracked as nested epic `orch-8sk.16`:
 2. `orch-8sk.16.2` — Discover and validate CodeGraph capabilities.
 3. `orch-8sk.16.3` — Discover and validate CBM capabilities.
 4. `orch-8sk.16.4` — Discover and validate Graphify capabilities.
-5. `orch-8sk.16.5` — Produce the cross-tool capability matrix and freeze experiment surfaces.
+5. `orch-8sk.16.5` — Produce cross-tool capability matrix and freeze experiment surfaces.
+6. `orch-8sk.16.6` — Freeze capability fixture and agent probe battery.
+7. `orch-8sk.16.7` — Repair provider-compatible capped Terra probe runner.
+8. `orch-8sk.16.8` — Repair shared capability fixture freeze regression.
 
-Runtime/isolation readiness (`orch-8sk.2`) and the discovery protocol (`orch-8sk.16.1`) precede the three per-tool runtime-discovery tasks. Those three tasks can then run independently. Their synthesis feeds the Pi experiment-protocol freeze (`orch-8sk.17`), which must complete before the Pi systems reference (`orch-8sk.3`) begins.
+`orch-8sk.1` and `orch-8sk.2` are the completed Phase 0A prerequisites. Phase 0B starts with the discovery protocol (`orch-8sk.16.1`) and the shared fixture/probe battery (`orch-8sk.16.6`). The fixture-freeze repair (`orch-8sk.16.8`) and provider-compatible capped Terra runner repair (`orch-8sk.16.7`) must restore the common probe foundation before the three per-tool discovery tasks (`orch-8sk.16.2`–`.16.4`) complete. Their capability matrix (`orch-8sk.16.5`) then gates Phase 0C's Pi protocol and runner-surface freeze (`orch-8sk.17`).
 
-The three per-tool experiment tasks for each repository can run independently after that repository's anchors and rubric are frozen. Teaching depends on validated synthesis, not raw tool output. Codex tasks depend on the Pi learning gate.
+The authoritative subject sequence is: Phase 0B → Phase 0C → Pi tracer reference (`orch-8sk.3`) → Pi tracer and interactive lesson-format gate (`orch-8sk.18`) → post-tracer Pi reference (`orch-8sk.24`) plus the remaining Pi source-only and three tool lanes (`orch-8sk.19`, `.4`, `.5`, `.6`) → Pi synthesis (`orch-8sk.7`) → Pi mastery (`orch-8sk.8`) → Codex tracer reference (`orch-8sk.9`) → Codex tracer and interactive method-transfer gate (`orch-8sk.20`) → post-tracer Codex reference (`orch-8sk.25`) plus the remaining Codex source-only and three tool lanes (`orch-8sk.21`, `.10`, `.11`, `.12`) → Codex synthesis (`orch-8sk.13`) → Codex mastery (`orch-8sk.14`) → cross-repository synthesis (`orch-8sk.15`) → spaced retrieval and transfer review (`orch-8sk.22`) → final audit (`orch-8sk.23`). The final audit is gated by both the spaced review (`orch-8sk.22`) and this plan/graph reconciliation (`orch-8sk.26`).
 
-Creating this task graph records the approved work; it does not start Phase 0 or authorize paid services, upstream changes, or a push.
+There are explicit user-interaction pauses at the Pi tracer gate: the learner must complete teach-back/transfer and approve or revise the lesson format before the post-tracer Pi work begins. There is a second explicit user-interaction pause at the Codex tracer gate: the learner must complete teach-back/transfer and accept or request correction to the method before the post-tracer Codex work begins. The spaced review is also interactive; unresolved misconceptions create targeted follow-up lessons rather than being silently passed.
+
+The remaining source-only and three per-tool experiment tasks for each repository can run independently only after that repository's post-tracer reference anchors and scoring keys are frozen. Teaching depends on validated synthesis, not raw tool output. Codex subject indexing or analysis remains prohibited until the Pi mastery gate passes.
+
+This task graph records the approved work; it does not by itself authorize paid services, upstream changes, or a push.
 
 ## 15. Risks and Mitigations
 

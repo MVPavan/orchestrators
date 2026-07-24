@@ -20,10 +20,15 @@ schemas, and the allowed-operation boundary. It does not report any tool result.
 | `expected-anchors.json` | Curator-only scoring anchors; never passed to a probe agent |
 | `probe-prompt.md` | Identical questions and one-turn/24-call budget for all tools |
 | `probe-output.schema.json` | Required agent answer shape |
+| `probe-output.provider.schema.json` | Generated Codex transport schema; canonical validation still wins |
+| `generate-provider-schema.py` | Deterministic provider adapter and semantic-equivalence check |
 | `metrics.schema.json` | Runner-measured provider, artifact, operation, time, and contamination fields |
 | `operations-policy.md` | Allowed, restricted, identical-run, and exclusion rules |
 | `prepare-fixture.sh` | Deterministic generation and verification of three isolated Git repositories |
 | `validate-probe-output.py` | Portable semantic check for question order and unique contiguous operation sequences |
+| `evaluated-interface.py` | Pre-dispatch 24-call gate for native MCP and allowlisted CLI lanes |
+| `run-terra-probe.py` | Clean Terra invocation, JSONL/usage capture, and fail-closed validation |
+| `test_runner.py` | Fake-server/command and output-validation self-tests |
 
 ## Fixture coverage
 
@@ -93,6 +98,20 @@ All three runs use a fresh ephemeral Codex CLI session with:
 - `probe-output.schema.json`;
 - one answer turn, no repair turn, and at most 24 evaluated-interface calls.
 
+`probe-output.schema.json` remains canonical. The generated transport schema
+removes provider-unsupported `allOf` and tuple-array constructs, adds required
+types to constants, and preserves the required fields and all status, evidence,
+operation, and Q01-Q11 values. The provider accepts a fixed-length homogeneous
+answer array; the canonical schema and `validate-probe-output.py` remain the
+second gate that enforces exact Q01-Q11 order and unique contiguous sequences.
+
+The runner uses the isolated fixture as cwd with `--ephemeral`,
+`--ignore-user-config`, `--ignore-rules`, read-only sandboxing, and unrelated
+built-in tool features disabled. Its only configured MCP is the evaluated
+interface. Native MCP servers pass through a stdio JSON-RPC counter; CLI-only
+lanes expose explicitly configured public operations and argv templates
+without a shell. Both reject and audit call 25 before dispatch.
+
 The adapter may translate a question to a public tool name but cannot provide
 extra source, anchors, hints, questions, calls, turns, or another tool. Missing
 capabilities use `NOT_APPLICABLE`, `UNAVAILABLE`, or abstention as defined in
@@ -105,9 +124,15 @@ because its in-process app-server client could not initialize on the read-only
 filesystem; the unsandboxed retry was rejected before execution by the approval
 reviewer. The exact command, zero-byte JSONL, stderr, rejection, and
 `UNKNOWN` usage fields are retained under
-`scratchpad/code-intelligence/sessions/capability-fixture/`. Actual Terra
-execution remains pending explicit approval and must not be represented as a
-completed model review or a tool capability result.
+`scratchpad/code-intelligence/sessions/capability-fixture/`. That design-review
+attempt remains incomplete and must not be represented as a completed model
+review or a tool capability result.
+
+The later synthetic no-tool setup smoke is retained separately under
+`scratchpad/code-intelligence/sessions/capability-runner/` as
+`SMOKE_EXCLUDED`. It reached one Terra-medium completion and passed the
+provider schema, canonical schema, and sequence validator without repository
+or tool content; its provider usage is recorded in the status artifact.
 
 ## Measurement and contamination
 

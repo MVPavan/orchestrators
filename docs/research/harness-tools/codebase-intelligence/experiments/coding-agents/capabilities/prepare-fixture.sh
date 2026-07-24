@@ -16,6 +16,7 @@ canonical="$script_dir/fixture"
 patch="$script_dir/synthetic-change.patch"
 manifest="$script_dir/fixture-manifest.sha256"
 manifest_digest_file="$script_dir/fixture-manifest.digest"
+expected_commit_file="$script_dir/fixture-commit.sha1"
 output_root="$repo_root/scratchpad/code-intelligence/fixtures"
 fixed_date="2026-07-24T00:00:00Z"
 lanes=(codegraph cbm graphify)
@@ -45,11 +46,7 @@ verify_manifest() {
 
 prepare_lane() {
   local lane="$1"
-  local target="$output_root/$lane"
-  if [[ -e "$target" ]]; then
-    echo "refusing to replace existing fixture: $target" >&2
-    exit 73
-  fi
+  local target="$2"
 
   mkdir -p "$target"
   cp -a "$canonical/." "$target/"
@@ -73,9 +70,19 @@ prepare_lane() {
   )
 }
 
-verify_lane() {
+verify_lane() (
   local lane="$1"
-  local target="$output_root/$lane"
+  local target="$2"
+  local verify_root expected_inventory actual_inventory roundtrip
+  verify_root="$(mktemp -d "$output_root/.verify-${lane}.XXXXXX")"
+  trap 'rm -rf -- "$verify_root"' EXIT
+  expected_inventory="$verify_root/expected-inventory"
+  actual_inventory="$verify_root/actual-inventory"
+  {
+    cut -d ' ' -f 3- "$manifest"
+    printf '%s\n' .fixture-manifest.digest .fixture-source.sha256
+  } | LC_ALL=C sort > "$expected_inventory"
+
   test -d "$target/.git"
   (
     cd "$target"
@@ -84,22 +91,74 @@ verify_lane() {
       "$(tr -d '\n' < "$manifest_digest_file")"
     test "$(git rev-parse --show-object-format)" = sha1
     test -z "$(git status --porcelain=v1 --untracked-files=all)"
-    test "$(git rev-parse HEAD)" = "$(cat .git/fixture-commit)"
+    test "$(git rev-parse HEAD)" = "$(tr -d '\n' < "$expected_commit_file")"
+    test "$(tr -d '\n' < .git/fixture-commit)" = \
+      "$(tr -d '\n' < "$expected_commit_file")"
+    git ls-files | LC_ALL=C sort > "$actual_inventory"
+    diff -u "$expected_inventory" "$actual_inventory"
+    find . -path './.git' -prune -o \( -type f -o -type l \) -printf '%P\n' |
+      LC_ALL=C sort > "$actual_inventory"
+    diff -u "$expected_inventory" "$actual_inventory"
     git apply --check synthetic-change.patch
   )
-}
+
+  roundtrip="$verify_root/roundtrip"
+  mkdir "$roundtrip"
+  (
+    cp -a "$target/." "$roundtrip/"
+    cd "$roundtrip"
+    git apply synthetic-change.patch
+    git apply --check --reverse synthetic-change.patch
+    git apply --reverse synthetic-change.patch
+    test -z "$(git status --porcelain=v1 --untracked-files=all)"
+    test "$(git rev-parse HEAD)" = "$(tr -d '\n' < "$expected_commit_file")"
+  )
+)
 
 verify_manifest
 
 if [[ "$mode" == prepare ]]; then
   mkdir -p "$output_root"
   for lane in "${lanes[@]}"; do
-    prepare_lane "$lane"
+    target="$output_root/$lane"
+    if [[ -e "$target" ]]; then
+      echo "refusing to replace existing fixture: $target" >&2
+      exit 73
+    fi
   done
+
+  staging_root="$(mktemp -d "$output_root/.prepare.XXXXXX")"
+  published=()
+  cleanup_prepare() {
+    local status=$?
+    if [[ $status -ne 0 ]]; then
+      for target in "${published[@]}"; do
+        rm -rf -- "$target"
+      done
+    fi
+    rm -rf -- "$staging_root"
+    return "$status"
+  }
+  trap cleanup_prepare EXIT
+
+  for lane in "${lanes[@]}"; do
+    prepare_lane "$lane" "$staging_root/$lane"
+  done
+  for lane in "${lanes[@]}"; do
+    verify_lane "$lane" "$staging_root/$lane"
+  done
+  for lane in "${lanes[@]}"; do
+    target="$output_root/$lane"
+    mv -T -- "$staging_root/$lane" "$target"
+    published+=("$target")
+  done
+  published=()
+  trap - EXIT
+  rmdir "$staging_root"
 fi
 
 for lane in "${lanes[@]}"; do
-  verify_lane "$lane"
+  verify_lane "$lane" "$output_root/$lane"
 done
 
 reference="$output_root/${lanes[0]}"

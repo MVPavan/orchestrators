@@ -1,6 +1,6 @@
 # CBM capability discovery
 
-Status: **DONE_WITH_CONCERNS**
+Status: **IN_PROGRESS**
 
 Tool: `codebase-memory-mcp` (CBM)
 
@@ -12,9 +12,10 @@ Discovery date: 2026-07-24
 
 ## Executive result
 
-The runtime exposes exactly 14 MCP tools, and all 14 were exercised through the
-public interface on the isolated mixed TypeScript/Rust fixture. Eight are
-`VERIFIED`, four are `PARTIAL`, and two are `BROKEN` for their advertised
+The runtime exposes exactly 14 MCP tools, and all 14 were re-exercised through
+the public interface on the repaired, isolated mixed TypeScript/Rust fixture at
+`e7ddad2c44321f7b50e60c923b8f0733fb757874`. Eight are `VERIFIED`, five are
+`PARTIAL`, and one is `BROKEN` for its advertised
 purpose.
 
 CBM is strongest at repository indexing, ranked or structural discovery,
@@ -25,8 +26,8 @@ architecture summary. The important caveats are:
 - incremental refresh lost 22 edges (`211 -> 189`) after a three-file patch and
   did not restore them when the patch was reversed; only delete plus fresh
   reindex restored the original graph;
-- `detect_changes` found the three modified files but returned no impacted
-  symbols, risk, or blast radius;
+- `detect_changes` found the three modified files and 20 directly contained
+  symbols, but returned no transitive blast-radius or risk fields;
 - grouped aggregate Cypher results were collapsed into incorrect totals;
 - `trace_path` accepted three modes, but this fixture did not demonstrate
   distinct `data_flow` or `cross_service` semantics;
@@ -49,7 +50,9 @@ this directory. Runtime MCP discovery is authoritative over the README, then
 source and tests explain runtime behavior. The live external submodule was not
 modified or queried as a subject.
 
-The disposable source checkout and fixture remained at their frozen revisions.
+The disposable source checkout and fixture remained at their frozen revisions
+except for the authorized patch/apply/reverse sequence inside the CBM fixture.
+The final verifier and Git status confirm the fixture was restored exactly.
 All CBM state was redirected to the dedicated ignored lane under
 `scratchpad/code-intelligence/`. An executable `curl` blocker was prepended to
 the isolated process path because this environment cannot create a network
@@ -67,10 +70,10 @@ Raw evidence is retained in these ignored locations:
 ## Final deterministic-completeness audit
 
 The final audit independently re-read the retained runtime `tools/list` result,
-the frozen source registry, and the fixture verifier.  The runtime list has
+the frozen source registry, and the fixture verifier. The runtime list has
 exactly 14 object-shaped tool schemas; the 14 names match the registry at
 `src/mcp/mcp.c:273-447` exactly, with no runtime-only or source-only negotiated
-tool.  Every negotiated tool has a representative retained deterministic probe
+tool. Every negotiated tool has a representative retained deterministic probe
 in the raw-output ledger, and the report separately inventories non-tool MCP
 surfaces, CLI modes, config/environment controls, optional UI, languages, and
 Hybrid-LSP dispatch.
@@ -83,8 +86,14 @@ whitespace-clean context, refreshing its hashes, and recreating all three
 disposable repositories. `prepare-fixture.sh verify` now passes at
 `e7ddad2c44321f7b50e60c923b8f0733fb757874`, with manifest digest
 `fc12b07aa2219f346ee1e00f52875efae8c52bbb12dc410456e9457ea1b58e24`.
-The fixture source files used for the retained CBM runtime responses did not
-change; future controlled and incremental reruns use the repaired identity.
+All fixture-dependent deterministic probes were then rerun against that exact
+identity in fresh `cbm-e7dd-*` cache lanes. The run reproduced full,
+moderate, and fast indexes; query/path/schema/architecture/search/project/ADR/
+trace behavior; the grouped-Cypher defect; and the `211 -> 189` incremental
+edge-loss defect. It also corrected one stale result: `detect_changes` now
+returns 20 directly contained impacted symbols rather than zero. The final
+fixture verifier passes and the fixture worktree is clean. Terra remains
+intentionally unrun until the runner gate is repaired.
 
 ## Frozen runtime inventory
 
@@ -95,11 +104,11 @@ change; future controlled and incremental reruns use the repaired identity.
 | MCP server version | initialize reports `0.10.0` | `PARTIAL`: version surfaces disagree |
 | MCP capabilities | `tools` only | `VERIFIED` |
 | MCP tools | exactly 14, matching the source registry | `VERIFIED` |
-| MCP resources | `resources/list` returns JSON-RPC `-32601 Method not found` | `NOT_EXPOSED` |
-| MCP prompts | `prompts/list` returns JSON-RPC `-32601 Method not found` | `NOT_EXPOSED` |
-| Server instructions | absent | `NOT_EXPOSED` |
+| MCP resources | `resources/list` returns JSON-RPC `-32601 Method not found`; resources are not a negotiated CBM capability | `NOT APPLICABLE` |
+| MCP prompts | `prompts/list` returns JSON-RPC `-32601 Method not found`; prompts are not a negotiated CBM capability | `NOT APPLICABLE` |
+| Server instructions | absent from initialize; no declared instruction surface | `NOT APPLICABLE` |
 | CLI | MCP server default, `cli`, install/uninstall/update/config, UI flags | `VERIFIED` inventory |
-| Hidden command | source dispatches `hook-augment`, but public help omits it | internal, excluded from public matrix |
+| Hidden command | source dispatches `hook-augment`, but public help omits it; internal install component, excluded from public matrix | `NOT APPLICABLE` |
 | Languages | README advertises 158 distinct language names. Source has 159 dialect enum members and 159 name entries, but only 158 distinct display names because both CFScript and CFML display as `CFML`. There is no runtime list command. | `PARTIAL`: source inventory reconciled; quality was not tested across all languages |
 | Hybrid LSP | README names nine families. TypeScript and Rust per-file analysis ran on the fixture; the production cross-file dispatcher covers eight documented families but omits Rust even though Rust cross-file code and direct tests exist. | `PARTIAL` |
 
@@ -122,15 +131,52 @@ The detailed tables use:
 - **S** — frozen source: registry `src/mcp/mcp.c:273-447`, dispatch
   `src/mcp/mcp.c:4215-4266`, CLI `src/main.c:183-366`, UI routes
   `src/ui/http_server.c:1231-1303`.
-- **R** — runtime inventory in
-  `raw-output/capability-discovery/cbm/mcp/` and CLI/UI/config evidence.
-- **P** — fixture probe in
-  `raw-output/capability-discovery/cbm/probes/`, `modes/`, or the named
-  surface directory.
+- **R** — non-fixture runtime inventory in the exact artifacts listed in the
+  capability-to-artifact ledger.
+- **P** — current-fixture runtime probes under the exact
+  `scratchpad/code-intelligence/raw-output/capability-discovery/cbm/e7ddad2/`
+  artifact paths listed below.
 
 There are no declared MCP output schemas. Output shapes below are therefore
 observed runtime contracts, not schema guarantees. Schema byte/token counts are
 the compact runtime `inputSchema` only.
+
+## Capability-to-artifact ledger
+
+The machine-readable ledger is
+`scratchpad/code-intelligence/raw-output/capability-discovery/cbm/e7ddad2/artifact-ledger.tsv`;
+its checksum is in the adjacent `artifact-ledger.sha256`. The following paths
+are exact, repository-relative evidence paths rather than directory shorthand.
+
+| Public tool | Primary exact retained artifact |
+|---|---|
+| `index_repository` | `scratchpad/code-intelligence/raw-output/capability-discovery/cbm/e7ddad2/full/index-refresh-restored.json` |
+| `search_graph` | `scratchpad/code-intelligence/raw-output/capability-discovery/cbm/e7ddad2/full/search-semantic-keywords.json` |
+| `query_graph` | `scratchpad/code-intelligence/raw-output/capability-discovery/cbm/e7ddad2/full/query-group-labels.json` |
+| `trace_path` | `scratchpad/code-intelligence/raw-output/capability-discovery/cbm/e7ddad2/full/trace-data-flow-exact.json` |
+| `get_code_snippet` | `scratchpad/code-intelligence/raw-output/capability-discovery/cbm/e7ddad2/full/snippet-normalize-ambiguous.json` |
+| `get_graph_schema` | `scratchpad/code-intelligence/raw-output/capability-discovery/cbm/e7ddad2/full/graph-schema.json` |
+| `get_architecture` | `scratchpad/code-intelligence/raw-output/capability-discovery/cbm/e7ddad2/full/architecture-all.json` |
+| `search_code` | `scratchpad/code-intelligence/raw-output/capability-discovery/cbm/e7ddad2/full/search-code-full.json` |
+| `list_projects` | `scratchpad/code-intelligence/raw-output/capability-discovery/cbm/e7ddad2/full/list-projects.json` |
+| `delete_project` | `scratchpad/code-intelligence/raw-output/capability-discovery/cbm/e7ddad2/full/delete-project.json` |
+| `index_status` | `scratchpad/code-intelligence/raw-output/capability-discovery/cbm/e7ddad2/full/status-restored-stale.json` |
+| `detect_changes` | `scratchpad/code-intelligence/raw-output/capability-discovery/cbm/e7ddad2/full/changes-patched.json` |
+| `manage_adr` | `scratchpad/code-intelligence/raw-output/capability-discovery/cbm/e7ddad2/full/adr-get.json` |
+| `ingest_traces` | `scratchpad/code-intelligence/raw-output/capability-discovery/cbm/e7ddad2/full/ingest-one-trace.json` |
+
+Other public-surface claims map as follows:
+
+| Claim family | Exact retained artifacts |
+|---|---|
+| Fixture/source identity and final cleanliness | `scratchpad/code-intelligence/raw-output/capability-discovery/cbm/e7ddad2/fixture-verify-final.stdout` |
+| MCP initialize, tools, schemas, missing resources/prompts | `scratchpad/code-intelligence/raw-output/capability-discovery/cbm/mcp/discovery.jsonl` |
+| CLI help/version/install/uninstall/update | `scratchpad/code-intelligence/raw-output/capability-discovery/cbm/cli/install-plan.stdout` |
+| Persistent config | `scratchpad/code-intelligence/raw-output/capability-discovery/cbm/config/list-final.stdout` |
+| Environment behavior | `scratchpad/code-intelligence/raw-output/capability-discovery/cbm/env/workers-999.stderr` |
+| Standard-build UI behavior | `scratchpad/code-intelligence/raw-output/capability-discovery/cbm/ui/standard-ui.stderr` |
+| Custom extension | `scratchpad/code-intelligence/raw-output/capability-discovery/cbm/e7ddad2/custom-extension/search-custom-extension.json` |
+| Per-tool deterministic cost | `scratchpad/code-intelligence/raw-output/capability-discovery/cbm/e7ddad2/tool-metrics.json` |
 
 ## Tool-by-tool capability matrix
 
@@ -152,19 +198,19 @@ operation returned but did not perform its advertised core effect.
 | `list_projects` | No inputs -> projects, roots, node/edge counts and Git metadata. | Reads cache directory only. | D381; S420; R schema; P isolated inventory. | Contamination/isolation check before measured arms; not an understanding tool. | `VERIFIED` |
 | `delete_project` | Required `project` -> deleted project/status. | Destructively deletes the selected cache DB; no subject write or network. | D382; S422; R schema; P delete/list/status/fresh restore. | Reliable cleanup for fresh experimental arms. Must be scoped to disposable cache. | `VERIFIED` |
 | `index_status` | Required `project` -> readiness, root, nodes/edges and Git identity. | Reads cache/Git metadata. | D383; S426; R schema; P ready and after-delete error. | Required preflight to pin subject identity and graph freshness. It does not prove semantic graph correctness. | `VERIFIED` |
-| `detect_changes` | Required `project`; optional base/since/scope/depth -> changed files, impacted symbols and advertised risk/blast radius. | Reads cache and local Git/diff; may invoke Git. No subject write/network credential. | D391; S430,3886-4014; R schema; P clean and frozen three-file patch. | Intended impact-analysis aid, but unusable for scoring here: three files found, zero impacted symbols, no useful risk/blast radius. | `BROKEN` |
+| `detect_changes` | Required `project`; optional base/since/scope/depth -> changed files and impacted symbols. | Reads cache and local Git/diff; may invoke Git. No subject write/network credential. | D391; S430,3886-4014; R schema; current P clean and frozen three-file patch. It returned the exact three files plus 20 directly contained symbols. | Direct containment impact now works, correcting the stale zero-symbol result. No transitive dependent, risk, or blast-radius fields were returned, despite the impact-oriented purpose and `depth=3`. | `PARTIAL` |
 | `manage_adr` | Required `project`; `mode` plus optional content/sections -> stored content or section list. | Reads/writes ADR data inside selected cache DB; no subject/network. | D397; S437; R schema; P empty/update/sections/get round-trip. | Could preserve human/system insights across lessons, but would contaminate independent experiment arms unless reset. Schema exposes `get/update/sections`; runtime hint also says undocumented `store`. | `VERIFIED` |
 | `ingest_traces` | Required `project`,`traces` -> accepted status/count/note. | Declared graph enhancement would write cache; current handler only counts input. No network/credential. | D398; S443,4200-4203; R schema; P one synthetic trace. | Dynamic evidence could validate cross-service flows, but current runtime explicitly does not create edges. | `BROKEN` |
 
-Summary: **8 VERIFIED, 4 PARTIAL, 2 BROKEN**.
+Summary: **8 VERIFIED, 5 PARTIAL, 1 BROKEN**.
 
 Two callable compatibility aliases are outside the negotiated `tools/list`
 surface:
 
 | Alias | Discovery/runtime result | Effects | Disposition |
 |---|---|---|---|
-| tool name `trace_call_path` | README documents it; source dispatches it to `trace_path`; exact fixture invocation returned the expected 10 callees and two callers | cache read only | `VERIFIED_ALIAS`, but clients cannot discover it from MCP |
-| `manage_adr(mode="store")` | omitted from the input-schema enum, but source treats it as `update`; isolated custom-cache round-trip returned the stored content | cache DB write | `VERIFIED_ALIAS`, schema-invalid for strict clients |
+| tool name `trace_call_path` | README documents it; source dispatches it to `trace_path`; exact fixture invocation returned the expected 10 callees and two callers | cache read only | `VERIFIED`; compatibility alias, but clients cannot discover it from MCP |
+| `manage_adr(mode="store")` | omitted from the input-schema enum, but source treats it as `update`; isolated cache round-trip returned the stored content | cache DB write | `VERIFIED`; compatibility alias, but schema-invalid for strict clients |
 
 ### Per-tool schema, timing, output, and token mapping
 
@@ -174,23 +220,23 @@ estimates; model/provider tokens are **N/A** because no model was used.
 
 | Tool | Input schema bytes / tok | Representative setup/query | Wall s | Peak RSS KiB | Output bytes / tok | Model tokens |
 |---|---:|---|---:|---:|---:|---|
-| `index_repository` | 968 / 215 | full setup | 0.08 | 35,644 | 522 / 119 | N/A deterministic |
-| `search_graph` | 1,622 / 363 | qualified collision query | 0.01 | 11,640 | 2,821 / 677 | N/A deterministic |
-| `query_graph` | 320 / 73 | call-edge query | 0.01 | 11,724 | 5,747 / 1,300 | N/A deterministic |
-| `trace_path` | 1,032 / 243 | exact workflow trace | 0.01 | 11,572 | 2,536 / 575 | N/A deterministic |
-| `get_code_snippet` | 268 / 56 | workflow snippet | 0.01 | 11,628 | 2,948 / 911 | N/A deterministic |
-| `get_graph_schema` | 83 / 19 | schema query | 0.01 | 11,628 | 5,056 / 1,158 | N/A deterministic |
-| `get_architecture` | 136 / 33 | all-aspects query | 0.01 | 11,636 | 7,375 / 1,818 | N/A deterministic |
-| `search_code` | 942 / 222 | compact literal query | 0.01 | 12,032 | 1,150 / 285 | N/A deterministic |
-| `list_projects` | 33 / 9 | inventory query | 0.02 | 11,508 | 717 / 198 | N/A deterministic |
+| `index_repository` | 968 / 215 | full setup | 0.08 | 35,636 | 522 / 119 | N/A deterministic |
+| `search_graph` | 1,622 / 363 | qualified collision query | 0.01 | 11,960 | 689 / 165 | N/A deterministic |
+| `query_graph` | 320 / 73 | call-edge query | 0.01 | 11,736 | 6,009 / 1,380 | N/A deterministic |
+| `trace_path` | 1,032 / 243 | exact workflow trace | 0.01 | 11,684 | 2,536 / 575 | N/A deterministic |
+| `get_code_snippet` | 268 / 56 | workflow snippet | 0.01 | 11,636 | 2,948 / 911 | N/A deterministic |
+| `get_graph_schema` | 83 / 19 | schema query | 0.01 | 12,032 | 5,056 / 1,158 | N/A deterministic |
+| `get_architecture` | 136 / 33 | all-aspects query | 0.01 | 11,732 | 7,375 / 1,818 | N/A deterministic |
+| `search_code` | 942 / 222 | compact literal query | 0.01 | 11,648 | 4,235 / 1,019 | N/A deterministic |
+| `list_projects` | 33 / 9 | inventory query | 0.02 | 11,776 | 717 / 196 | N/A deterministic |
 | `delete_project` | 83 / 19 | cleanup operation | 0.01 | 10,752 | 147 / 37 | N/A deterministic |
-| `index_status` | 83 / 19 | status query | 0.02 | 12,032 | 701 / 189 | N/A deterministic |
-| `detect_changes` | 305 / 88 | patched-tree query | 0.01 | 11,520 | 220 / 55 | N/A deterministic |
-| `manage_adr` | 225 / 54 | update operation | 0.05 | 12,032 | 64 / 18 | N/A deterministic |
+| `index_status` | 83 / 19 | status query | 0.02 | 12,032 | 701 / 187 | N/A deterministic |
+| `detect_changes` | 305 / 88 | patched-tree query | 0.01 | 11,520 | 2,087 / 451 | N/A deterministic |
+| `manage_adr` | 225 / 54 | update operation | 0.01 | 11,776 | 64 / 18 | N/A deterministic |
 | `ingest_traces` | 144 / 36 | one-trace operation | 0.01 | 10,496 | 154 / 35 | N/A deterministic |
 
 Machine-readable mapping:
-`scratchpad/code-intelligence/metrics/capability-discovery/cbm/tool-probe-metrics.json`.
+`scratchpad/code-intelligence/raw-output/capability-discovery/cbm/e7ddad2/tool-metrics.json`.
 
 ## Fixture index modes and graph coverage
 
@@ -201,9 +247,9 @@ trees were clean after indexing; all writes stayed in their lane caches.
 
 | Mode | Files | Nodes / edges | Internal pipeline ms | Wall s | Peak RSS KiB | Cache bytes | Result bytes / local tok | Observed limitation |
 |---|---:|---:|---:|---:|---:|---:|---:|---|
-| `full` | 18 | 108 / 211 | 65 | 0.08 | 35,644 | 1,912,832 | 522 / 119 | Includes documentation and builds similarity/semantic data; zero similarity/semantic edges on this small fixture. |
-| `moderate` | 15 | 96 / 196 | 63 | 0.07 | 35,568 | 1,900,544 | 539 / 124 | Excluded `docs` and `.git`; similarity and semantic passes ran but added zero edges. |
-| `fast` | 15 | 96 / 196 | 24 | 0.03 | 24,128 | 1,769,472 | 535 / 122 | Excluded `docs` and `.git`; skipped similarity/semantic passes. |
+| `full` | 18 | 108 / 211 | 64 | 0.08 | 35,636 | 1,900,544 | 522 / 119 | Includes documentation and builds similarity/semantic data; zero similarity/semantic edges on this small fixture. |
+| `moderate` | 15 | 96 / 196 | 65 | 0.08 | 34,740 | 1,900,544 | 530 / 121 | Excluded `docs` and `.git`; similarity and semantic passes ran but added zero edges. |
+| `fast` | 15 | 96 / 196 | 23 | 0.04 | 24,576 | 1,769,472 | 530 / 121 | Excluded `docs` and `.git`; skipped similarity/semantic passes. |
 
 The runtime result does not expose indexed file count or elapsed time. File
 count and internal time therefore come from deterministic pipeline logs; wall
@@ -213,12 +259,11 @@ must not be interpreted as the requested mode. On this fixture moderate and
 fast produced identical node/edge counts; moderate's only observable benefit
 was the additional semantic/vector work and larger DB.
 
-The full lane's 1,912,832-byte total includes a 12,288-byte `_config.db`; its
-project DB is 1,900,544 bytes. The dedicated mode lanes contain only their
-project DBs, so full and moderate project-DB sizes are equal at this scale.
+All three new mode lanes contain only their project DB. Full and moderate are
+both 1,900,544 bytes at this scale; fast is 1,769,472 bytes.
 
-The fresh rebuild after the incremental-drift experiment took 0.19 seconds,
-peaked at 35,708 KiB, and reproduced 108 nodes/211 edges.
+The fresh rebuild after the incremental-drift experiment took 0.08 seconds,
+peaked at 35,468 KiB, and reproduced 108 nodes/211 edges.
 
 Node counts were:
 
@@ -250,7 +295,8 @@ The synthetic-change sequence was:
 
 1. Confirm a clean fixture and 108/211 fresh graph.
 2. Apply the frozen patch to `contracts.ts`, `handlers.ts`, and `workflow.ts`.
-3. Confirm `detect_changes` reports exactly those three paths.
+3. Confirm `detect_changes` reports exactly those three paths and 20 symbols
+   contained directly in those files, but no transitive blast-radius/risk data.
 4. Re-run default indexing: 108/189.
 5. Reverse the patch and confirm the fixture is clean.
 6. Re-run default indexing: still 108/189.
@@ -263,23 +309,47 @@ fixture was returned to its exact clean revision.
 ## CLI and operational surface
 
 The runtime help, source flag parsers, public README, and safe dry runs were
-reconciled. The binary's help names nine agents, while the README and install
-source support eleven; VS Code and OpenClaw are the two omitted from runtime
-help.
+reconciled. The binary's help names nine agents. The README names eleven,
+adding VS Code and OpenClaw. The frozen source detects twelve, adding
+undocumented Cursor. Thus help, README, and implementation are three distinct
+inventories: 9, 11, and 12.
 
 | Surface / flags | Purpose and output | Effects / prerequisites | Runtime result and limitation | Disposition |
 |---|---|---|---|---|
 | no subcommand | MCP JSON-RPC server on stdio | Reads/writes selected cache; may watch indexed repositories; initialize-time update check can use network | Initialize/tools worked offline with update `curl` blocked. | `VERIFIED` |
-| `--help`, `-h`, `--version` | Help/version text | Read-only | Version `0.9.0+SHA`; MCP version separately says `0.10.0`. | `VERIFIED_WITH_MISMATCH` |
+| `--help`, `-h`, `--version` | Help/version text | Read-only | Commands work, but CLI version is `0.9.0+SHA`, MCP version says `0.10.0`, and help lists only 9 of 12 implemented profiles. | `PARTIAL` |
 | `cli [--progress] [--json] TOOL [JSON]` | One public MCP call; progress to stderr; envelope JSON with `--json` | Tool-dependent | Both flags are in source usage. README's `--raw` example is stale and unsupported. | `VERIFIED` |
-| `install [-y|--yes|-n|--no] [--force] [--dry-run] [--plan]` | Detect/configure 11 agents, hooks, instructions and skills | Real run writes user/agent config; may inspect PATH/home. No network required for already-installed binary. | `--plan` had zero writes. `-n --dry-run` stayed isolated; `_config.db` was incorrectly counted as an existing project index. | dry run `VERIFIED`; real run `RESTRICTED` |
-| `uninstall [-y|--yes|-n|--no] [--dry-run]` | Remove CBM entries/hooks/instructions, not binary or graph DBs | Real run mutates multiple agent configs | Dry run stayed isolated but also counted `_config.db` as a project index. | dry run `VERIFIED`; real run `RESTRICTED` |
-| `update [-y|--yes|-n|--no] [--dry-run] [--standard|--ui] [--force]` | Select release variant, delete incompatible indexes, download/check/replace binary | Real run is networked and destructive to indexes/binary; checksum verification required | Standard dry run printed URL/target only. `CBM_DOWNLOAD_URL` override changed URL without network. Help omits variant/force/dry-run detail. | dry run `VERIFIED`; real run `RESTRICTED` |
-| `config list|get|set|reset` | Persistent key/value settings in `_config.db` | Writes only lane cache for set/reset | Round-trip worked. Any arbitrary key/value is accepted even though list displays only two supported keys. | `VERIFIED_WITH_LIMITATION` |
-| `--ui=true|false`, `--port=N` | Persist visualization enablement/port, then start UI with MCP server | Writes `config.json`; a UI build opens loopback listener | Standard binary persisted flags but cannot start UI. Invalid non-`true` values silently mean false; ports outside 1-65534 are ignored. | persistence `VERIFIED`; visualization `UNAVAILABLE_IN_BUILD` |
-| `--profile` / `CBM_PROFILE` | Enable internal timing profiler | Source-only; may add stderr output/overhead | Parsed but omitted from public help/README. | `INTERNAL_NOT_PUBLIC` |
-| `hook-augment` | Claude PreToolUse graph-context shim | Reads stdin/cache and emits hook JSON | Dispatched by source but omitted from public help; installed indirectly. | `INTERNAL_INSTALL_COMPONENT` |
+| `install [-y|--yes|-n|--no] [--force] [--dry-run] [--plan]` | Detect/configure 12 agents, hooks, instructions and skills | Real run writes user/agent config; may inspect PATH/home. No network required for an already-installed binary. | All 12 profiles were separately detected through `--plan` and `-n --dry-run`, with empty before/after file diffs. Real config application was not run. | `PARTIAL` |
+| `uninstall [-y|--yes|-n|--no] [--dry-run]` | Remove CBM entries/hooks/instructions, not binary or graph DBs | Real run mutates multiple agent configs | Dry run stayed isolated but counted `_config.db` as a project index. Real removal was not run. | `PARTIAL` |
+| `update [-y|--yes|-n|--no] [--dry-run] [--standard|--ui] [--force]` | Select release variant, delete incompatible indexes, download/check/replace binary | Real run is networked and destructive to indexes/binary; checksum verification required | Standard dry run printed URL/target only. `CBM_DOWNLOAD_URL` override changed URL without network. Help omits variant/force/dry-run detail; real update was not run. | `PARTIAL` |
+| `config list|get|set|reset` | Persistent key/value settings in `_config.db` | Writes only lane cache for set/reset | Round-trip worked, but any arbitrary key/value is accepted even though list displays only two supported keys. | `PARTIAL` |
+| `--ui=true|false`, `--port=N` | Persist visualization enablement/port, then start UI with MCP server | Writes `config.json`; a UI build opens loopback listener | Standard binary persisted flags but cannot start UI. Invalid non-`true` values silently mean false; ports outside 1-65534 are ignored. | `PARTIAL` |
+| `--profile` / `CBM_PROFILE` | Enable internal timing profiler | Source-only; may add stderr output/overhead | Parsed but omitted from public help/README; not separately runtime-probed. | `UNTESTED` |
+| `hook-augment` | Claude PreToolUse graph-context shim | Reads stdin/cache and emits hook JSON | Dispatched by source but omitted from public help; installed indirectly; not separately runtime-probed. | `UNTESTED` |
 | distribution `install.sh --ui|--standard --dir[=]PATH --skip-config` | Download/install selected release asset | Network, binary write, optional config mutation | Source/docs inventory only; not safe offline and separate from installed binary command. | `RESTRICTED` |
+
+### Integration profiles
+
+Each profile was detected in its own isolated `HOME`/config/cache tree. Both
+`install --plan` and `install -n --dry-run` exited zero; every plan reports
+`writes_started=false` and `network_after_install=false`; every before/after
+file diff is empty. The disposition below applies to the dry-run/plan surface.
+Real installation remains restricted because it would mutate user configuration.
+
+| Profile | Planned target/effect | Detection caveat | Exact plan artifact | Dry-run disposition |
+|---|---|---|---|---|
+| Claude Code | `.claude/.mcp.json`, `.claude.json`, `settings.json`, skills, PreToolUse and SessionStart hook scripts | Help/README/source agree | `scratchpad/code-intelligence/raw-output/capability-discovery/cbm/e7ddad2/profiles/claude-code/install-plan.json` | `VERIFIED` |
+| Codex CLI | `.codex/config.toml`, `.codex/AGENTS.md`, SessionStart entry in config | Help/README/source agree | `scratchpad/code-intelligence/raw-output/capability-discovery/cbm/e7ddad2/profiles/codex/install-plan.json` | `VERIFIED` |
+| Gemini CLI | `.gemini/settings.json`, `.gemini/GEMINI.md`, BeforeTool and SessionStart entries | Help/README/source agree | `scratchpad/code-intelligence/raw-output/capability-discovery/cbm/e7ddad2/profiles/gemini/install-plan.json` | `VERIFIED` |
+| Zed | `.config/zed/settings.json` MCP entry | Help/README/source agree | `scratchpad/code-intelligence/raw-output/capability-discovery/cbm/e7ddad2/profiles/zed/install-plan.json` | `VERIFIED` |
+| OpenCode | `.config/opencode/opencode.json`, `.config/opencode/AGENTS.md` | Detected from executable on isolated PATH | `scratchpad/code-intelligence/raw-output/capability-discovery/cbm/e7ddad2/profiles/opencode/install-plan.json` | `VERIFIED` |
+| Antigravity | shared `.gemini/config/mcp_config.json`, `antigravity-cli/AGENTS.md`, SessionStart settings | Its directory necessarily also detects Gemini, so the plan includes both profiles | `scratchpad/code-intelligence/raw-output/capability-discovery/cbm/e7ddad2/profiles/antigravity/install-plan.json` | `VERIFIED` |
+| Aider | `CONVENTIONS.md`; no MCP target | Detected from executable on isolated PATH | `scratchpad/code-intelligence/raw-output/capability-discovery/cbm/e7ddad2/profiles/aider/install-plan.json` | `VERIFIED` |
+| KiloCode | `mcp_settings.json`, `.kilocode/rules/codebase-memory-mcp.md` | Its detection directory necessarily also detects VS Code, so the plan includes both profiles | `scratchpad/code-intelligence/raw-output/capability-discovery/cbm/e7ddad2/profiles/kilocode/install-plan.json` | `VERIFIED` |
+| VS Code | `.config/Code/User/mcp.json` using the VS Code `servers`/stdio shape | Omitted from help, present in README/source | `scratchpad/code-intelligence/raw-output/capability-discovery/cbm/e7ddad2/profiles/vscode/install-plan.json` | `VERIFIED` |
+| Cursor | `.cursor/mcp.json` | Present in source only; omitted from both help and README | `scratchpad/code-intelligence/raw-output/capability-discovery/cbm/e7ddad2/profiles/cursor/install-plan.json` | `VERIFIED` |
+| OpenClaw | `.openclaw/openclaw.json` | Omitted from help, present in README/source | `scratchpad/code-intelligence/raw-output/capability-discovery/cbm/e7ddad2/profiles/openclaw/install-plan.json` | `VERIFIED` |
+| Kiro | `.kiro/settings/mcp.json` | Help/README/source agree | `scratchpad/code-intelligence/raw-output/capability-discovery/cbm/e7ddad2/profiles/kiro/install-plan.json` | `VERIFIED` |
 
 Representative non-MCP metrics (stdout plus stderr tokens, local o200k; no
 model/provider tokens):
@@ -309,12 +379,12 @@ already-indexed subject projects and the frozen comparison battery defines one.
 
 | Config surface | Default / accepted input | Effect and storage | Offline probe | Limitation / disposition |
 |---|---|---|---|---|
-| `auto_index` | `false`; bool parser recognizes `true/1/on` and `false/0/off` | `_config.db`; enables session-start indexing/watcher registration | set `true`, get `true`, reset -> `false` | CLI set does not validate values; `VERIFIED` round-trip |
-| `auto_index_limit` | `50000`; integer consumer | `_config.db`; caps automatic indexing by file count | set `123`, get `123`, reset -> `50000` | CLI set accepts arbitrary strings/ranges; `VERIFIED` storage, validation `PARTIAL` |
-| arbitrary keys | no documented default | `_config.db` | `arbitrary_key=arbitrary_value` stored/read/reset successfully | Hidden from `config list`; unconstrained store, `UNDOCUMENTED_ACCEPTED` |
-| UI `ui_enabled`,`ui_port` | false/9749 for standard build; UI build auto-enables if config absent | separate cache `config.json` written by `--ui=`/`--port=` | persisted `true`/19749 exactly | Separate from `config` CLI; standard build still persists unusable enablement |
+| `auto_index` | `false`; bool parser recognizes `true/1/on` and `false/0/off` | `_config.db`; enables session-start indexing/watcher registration | set `true`, get `true`, reset -> `false` | `PARTIAL`; round-trip works, but CLI set does not validate values |
+| `auto_index_limit` | `50000`; integer consumer | `_config.db`; caps automatic indexing by file count | set `123`, get `123`, reset -> `50000` | `PARTIAL`; storage works, but CLI accepts arbitrary strings/ranges |
+| arbitrary keys | no documented default | `_config.db` | `arbitrary_key=arbitrary_value` stored/read/reset successfully | `VERIFIED`; hidden from `config list` and unconstrained |
+| UI `ui_enabled`,`ui_port` | false/9749 for standard build; UI build auto-enables if config absent | separate cache `config.json` written by `--ui=`/`--port=` | persisted `true`/19749 exactly | `PARTIAL`; storage works, but the standard build cannot use the enabled UI |
 | project `extra_extensions` | JSON map in `.codebase-memory.json` | Changes discovery for that repository; reads subject config, no external network | `.cbmprobe -> typescript` indexed `customExtensionProbe` as a Function and source search found it | `VERIFIED`; project overrides global |
-| global `extra_extensions` | JSON map in `$XDG_CONFIG_HOME/codebase-memory-mcp/config.json` | Applies to all subjects in that environment | Source/docs reconciled; not separately mutated because project-level runtime proves parser path | `SOURCE_VERIFIED` |
+| global `extra_extensions` | JSON map in `$XDG_CONFIG_HOME/codebase-memory-mcp/config.json` | Applies to all subjects in that environment | Source/docs reconciled; not separately runtime-probed | `UNTESTED` |
 
 Custom extension values are case-insensitive language aliases, but the mapping
 table contains 73 aliases for only 64 language enums, not every advertised
@@ -333,14 +403,14 @@ inventoried so they cannot silently contaminate an experiment.
 |---|---|---|---|---|
 | `CBM_CACHE_DIR` | home cache path; any path | Redirects all DB/config state; write effect | Every lane wrote only its dedicated cache | `VERIFIED`, required isolation control |
 | `CBM_DIAGNOSTICS` | false; `1` or `true` | Periodic process JSON in temp directory; local write every 5s, removed on clean stop | Start message observed and file cleaned on exit | `VERIFIED` |
-| `CBM_DOWNLOAD_URL` | GitHub releases | Changes real update/check download destination; network/remote trust risk | Dry-run override produced the exact custom base URL, no download | `VERIFIED` dry run; real network `RESTRICTED` |
+| `CBM_DOWNLOAD_URL` | GitHub releases | Changes real update/check download destination; network/remote trust risk | Dry-run override produced the exact custom base URL, no download; real network use was restricted | `PARTIAL` |
 | `CBM_LOG_LEVEL` | `info`; debug/info/warn/error/none or 0-4 | Stderr verbosity and artifact/token noise | debug server startup emitted 59 bytes; none emitted 0 | `VERIFIED` |
 | `CBM_WORKERS` | detected; integer 1-256 | Parallelism, memory/time and potentially nondeterministic ordering | `1` accepted; `999` warned and fell back to detection | `VERIFIED` |
-| `CBM_PROFILE` | off; any nonempty/nonzero | Internal profiling overhead/output | Source parser and hidden `--profile` found; no public docs | `INTERNAL_NOT_PUBLIC` |
-| `CBM_DISABLE_LSP_CROSS` | unset; any presence disables | Removes cross-file LSP resolution, materially changing graph | Source `pipeline.c:677-690`; not set in probes | `INTERNAL_CONTAMINATION_CONTROL` |
-| `CBM_SEMANTIC_THRESHOLD` | compiled threshold; numeric `(0,1]` | Changes semantic-edge selection | Source parser found; not documented or varied | `INTERNAL_CONTAMINATION_CONTROL` |
-| `CBM_SEMANTIC_ENABLED` | disabled unless first char is `1` | Function exists but has no production caller at this revision | Source-only dead/unwired switch | `INTERNAL_UNWIRED` |
-| `CBM_SQLITE_MMAP_SIZE` | 67,108,864 bytes; negative -> 0 | Changes SQLite memory mapping and resource profile | Source and tests reconcile; not varied | `INTERNAL_RESOURCE_CONTROL` |
+| `CBM_PROFILE` | off; any nonempty/nonzero | Internal profiling overhead/output | Source parser and hidden `--profile` found; no public docs and not runtime-probed | `UNTESTED` |
+| `CBM_DISABLE_LSP_CROSS` | unset; any presence disables | Removes cross-file LSP resolution, materially changing graph | Source `pipeline.c:677-690`; deliberately not set in probes | `UNTESTED` |
+| `CBM_SEMANTIC_THRESHOLD` | compiled threshold; numeric `(0,1]` | Changes semantic-edge selection | Source parser found; not documented or varied | `UNTESTED` |
+| `CBM_SEMANTIC_ENABLED` | disabled unless first char is `1` | Function exists but has no production caller at this revision | Source-only dead/unwired switch | `NOT APPLICABLE` |
+| `CBM_SQLITE_MMAP_SIZE` | 67,108,864 bytes; negative -> 0 | Changes SQLite memory mapping and resource profile | Source and tests reconcile; not varied | `UNTESTED` |
 
 Standard platform variables (`HOME`, `XDG_CONFIG_HOME`, `PATH`, `TMPDIR`,
 `CLAUDE_CONFIG_DIR`) also affect path detection/install integration but are not
@@ -364,18 +434,18 @@ layer:
 
 | UI route | Purpose / output | Effects | Runtime disposition |
 |---|---|---|---|
-| `GET /`, `/assets/*` | Embedded 3D frontend/static assets | read embedded bytes | `UNAVAILABLE_IN_STANDARD_BUILD` |
-| `POST /rpc` | JSON-RPC bridge to the same 14 MCP tools | tool-dependent read/write/delete | `SOURCE_VERIFIED_ONLY` |
-| `GET /api/layout` | 3D graph layout | read project DB; potentially large output | `SOURCE_VERIFIED_ONLY` |
-| `POST /api/index` | Start background repository indexing | reads chosen path; writes DB; process/thread work | `SOURCE_VERIFIED_ONLY` |
-| `GET /api/index-status` | All UI index jobs | read process state | `SOURCE_VERIFIED_ONLY` |
-| `DELETE /api/project` | Delete selected graph DB | destructive cache delete | `SOURCE_VERIFIED_ONLY` |
-| `GET /api/browse` | Directory picker | reads local filesystem directory names | `SOURCE_VERIFIED_ONLY`, privacy-sensitive |
-| `GET /api/adr`, `POST /api/adr` | Read/write ADR | cache DB read/write | `SOURCE_VERIFIED_ONLY` |
-| `GET /api/project-health` | SQLite integrity/health | reads project DB | `SOURCE_VERIFIED_ONLY` |
-| `GET /api/processes` | Enumerate CBM processes via `ps` | reads process metadata | `SOURCE_VERIFIED_ONLY` |
-| `GET /api/logs` | Recent in-memory logs | may expose local paths/query metadata | `SOURCE_VERIFIED_ONLY` |
-| `POST /api/process-kill` | Kill selected CBM PID | destructive process signal | `SOURCE_VERIFIED_ONLY`, `RESTRICTED` |
+| `GET /`, `/assets/*` | Embedded 3D frontend/static assets | read embedded bytes | `UNAVAILABLE`; standard build contains no UI assets |
+| `POST /rpc` | JSON-RPC bridge to the same 14 MCP tools | tool-dependent read/write/delete | `UNAVAILABLE`; route exists in source but the standard build cannot start the UI server |
+| `GET /api/layout` | 3D graph layout | read project DB; potentially large output | `UNAVAILABLE`; source-only in this build |
+| `POST /api/index` | Start background repository indexing | reads chosen path; writes DB; process/thread work | `UNAVAILABLE`; source-only in this build |
+| `GET /api/index-status` | All UI index jobs | read process state | `UNAVAILABLE`; source-only in this build |
+| `DELETE /api/project` | Delete selected graph DB | destructive cache delete | `UNAVAILABLE`; source-only in this build |
+| `GET /api/browse` | Directory picker | reads local filesystem directory names | `UNAVAILABLE`; source-only and privacy-sensitive |
+| `GET /api/adr`, `POST /api/adr` | Read/write ADR | cache DB read/write | `UNAVAILABLE`; source-only in this build |
+| `GET /api/project-health` | SQLite integrity/health | reads project DB | `UNAVAILABLE`; source-only in this build |
+| `GET /api/processes` | Enumerate CBM processes via `ps` | reads process metadata | `UNAVAILABLE`; source-only in this build |
+| `GET /api/logs` | Recent in-memory logs | may expose local paths/query metadata | `UNAVAILABLE`; source-only in this build |
+| `POST /api/process-kill` | Kill selected CBM PID | destructive process signal | `RESTRICTED`; source-only, unavailable in this build, and destructive |
 
 The UI is optional operational tooling, not part of the controlled MCP study
 surface. If later used, it needs its own build hash, endpoint/CORS/security
@@ -387,9 +457,9 @@ The README's benchmark tiers name 35 languages:
 
 | Advertised tier | Count | Names | Evidence status |
 |---|---:|---|---|
-| Excellent (>=90%) | 17 | Lua, Kotlin, C++, Perl, Objective-C, Groovy, C, Bash, Zig, Swift, CSS, YAML, TOML, HTML, SCSS, HCL, Dockerfile | documentation benchmark claim only |
-| Good (75-89%) | 16 | Python, TypeScript, TSX, Go, Rust, Java, R, Dart, JavaScript, Erlang, Elixir, Scala, Ruby, PHP, C#, SQL | documentation benchmark claim only |
-| Functional (<75%) | 2 | OCaml, Haskell | documentation benchmark claim only |
+| Excellent (>=90%) | 17 | Lua, Kotlin, C++, Perl, Objective-C, Groovy, C, Bash, Zig, Swift, CSS, YAML, TOML, HTML, SCSS, HCL, Dockerfile | `UNTESTED`; documentation benchmark claim only |
+| Good (75-89%) | 16 | Python, TypeScript, TSX, Go, Rust, Java, R, Dart, JavaScript, Erlang, Elixir, Scala, Ruby, PHP, C#, SQL | `UNTESTED`; documentation benchmark claim only |
+| Functional (<75%) | 2 | OCaml, Haskell | `UNTESTED`; documentation benchmark claim only |
 
 The README additionally names 117 "supported, not yet benchmarked" entries:
 Ada, Agda, Apex, Assembly (NASM), Astro, AWK, Beancount, BibTeX, Bicep,
@@ -419,14 +489,14 @@ The nine documented Hybrid-LSP families are:
 
 | Family | Documented resolver scope | Source/runtime reconciliation | Disposition |
 |---|---|---|---|
-| Python | imports, dataclasses, typing/narrowing, common stdlib | wired in production per-file and cross-file dispatcher; not in fixture | `SOURCE_VERIFIED`, runtime quality untested |
-| TypeScript / JavaScript / JSX / TSX | generics, JSX/JSDoc, declarations/re-exports, chaining | production per-file/cross-file; 12 TS files processed in fixture cross pass | `PARTIAL_RUNTIME_VERIFIED` |
-| PHP | namespaces, traits, PHPDoc, binding/inference | production per-file/cross-file; not fixture-tested | `SOURCE_VERIFIED` |
-| C# | namespaces/records/LINQ/async/generics/BCL | production prebuilt/cross-file path; not fixture-tested | `SOURCE_VERIFIED` |
-| Go | package registry, generics, embedding/interfaces/imports | production prebuilt/cross-file path; not fixture-tested | `SOURCE_VERIFIED` |
-| C / C++ | macros/typedef/header linking/templates/namespaces/inference | production cross-file includes CUDA; not fixture-tested | `SOURCE_VERIFIED` |
-| Java | imports/hierarchy/generics/overloads/lambdas/JDK | production fallback cross-file path; not fixture-tested | `SOURCE_VERIFIED` |
-| Kotlin | imports/classes/extensions/nullability/scope functions | production fallback cross-file path; not fixture-tested | `SOURCE_VERIFIED` |
+| Python | imports, dataclasses, typing/narrowing, common stdlib | wired in production per-file and cross-file dispatcher; not in fixture | `UNTESTED`; source-wired, runtime quality not exercised |
+| TypeScript / JavaScript / JSX / TSX | generics, JSX/JSDoc, declarations/re-exports, chaining | production per-file/cross-file; 12 TS files processed in fixture cross pass, but not every advertised semantic behavior was isolated | `PARTIAL` |
+| PHP | namespaces, traits, PHPDoc, binding/inference | production per-file/cross-file; not fixture-tested | `UNTESTED`; source-wired only |
+| C# | namespaces/records/LINQ/async/generics/BCL | production prebuilt/cross-file path; not fixture-tested | `UNTESTED`; source-wired only |
+| Go | package registry, generics, embedding/interfaces/imports | production prebuilt/cross-file path; not fixture-tested | `UNTESTED`; source-wired only |
+| C / C++ | macros/typedef/header linking/templates/namespaces/inference | production cross-file includes CUDA; not fixture-tested | `UNTESTED`; source-wired only |
+| Java | imports/hierarchy/generics/overloads/lambdas/JDK | production fallback cross-file path; not fixture-tested | `UNTESTED`; source-wired only |
+| Kotlin | imports/classes/extensions/nullability/scope functions | production fallback cross-file path; not fixture-tested | `UNTESTED`; source-wired only |
 | Rust | use/module paths, impl/traits/generics/operators/derive/UFCS/std | per-file resolver runs, and cross-file implementation/direct tests exist, but production `cbm_pxc_has_cross_lsp` omits Rust; source test explicitly records it as never called | `PARTIAL`, advertised cross-file quality not wired |
 
 The full index log reported 12 files processed by the production cross-LSP
@@ -447,16 +517,19 @@ These counts are local artifact estimates using
 | `get_architecture` result | 7,375 | 1,818 |
 | `get_graph_schema` result | 5,056 | 1,158 |
 | Fresh index result | 522 | 119 |
-| Qualified `normalize` search | 2,821 | 677 |
+| `normalize` graph search | 689 | 165 |
+| Semantic-keyword search | 6,046 | 1,410 |
 | Exact workflow trace | 2,536 | 575 |
 | Workflow snippet | 2,948 | 911 |
 
-Across the 53 deterministic core/alias probe JSON files, raw output totaled
-91,626 bytes and 22,441 local o200k tokens. This total is discovery/setup evidence and must
-not be compared to controlled experiment usage. In particular, the semantic
-search response was 26,857 bytes/6,526 local tokens, showing that broad
-defaults can be expensive. Practical callers should select narrow labels,
-qualified names, limits, and compact output where possible.
+Across the 54 current-fixture deterministic JSON artifacts in the full,
+moderate, fast, and custom-extension groups, raw output totaled 75,909 bytes
+and 18,564 local o200k tokens. This total is discovery/setup evidence and must
+not be compared to controlled experiment usage. The semantic-keyword response
+was 6,046 bytes/1,410 local tokens despite `limit=10`, and reported
+`total=108`, showing that broad semantic defaults still need explicit output
+budgeting. Practical callers should select narrow labels, qualified names,
+limits, and compact output where possible.
 
 Provider usage for the Terra probe remains:
 
@@ -467,7 +540,7 @@ Provider usage for the Terra probe remains:
 | Completion obtained | no |
 | CBM calls | 0 |
 | Input/cached/output/reasoning tokens | `UNKNOWN` |
-| Classification | `SMOKE_EXCLUDED`, pending authorized rerun |
+| Disposition | `UNTESTED`; the failed setup attempt remains smoke-excluded |
 
 ## Terra-medium probe blocker
 
@@ -480,9 +553,11 @@ outputs. That request was rejected before launch due to missing
 payload-specific authorization.
 
 No alternate model, network workaround, independent source access, or relaxed
-isolation was used. The comparable agent-mediated capability judgment is
-therefore `UNKNOWN/pending`; deterministic capability evidence above remains
-valid and complete.
+isolation was used. The comparable agent-mediated capability disposition is
+therefore `UNTESTED`; deterministic capability evidence above remains valid.
+The earlier failed setup metric references the historical `faa03d6...`
+fixture and remains only a smoke-excluded failure record. A valid controlled
+Terra run must use the current `e7ddad2...` fixture and cannot reuse that file.
 
 ## Reproduction outline
 
@@ -492,17 +567,20 @@ Use repository-relative paths and the isolated runner:
 repo_root="$(git rev-parse --show-toplevel)"
 fixture="$repo_root/scratchpad/code-intelligence/fixtures/cbm"
 binary="$repo_root/scratchpad/code-intelligence/runtime/rebuild-cbm/source/build/c/codebase-memory-mcp"
-lane="$repo_root/scratchpad/code-intelligence/runtime/lanes/cbm-capability-discovery"
+blocker_dir="$repo_root/scratchpad/code-intelligence/runtime/lanes/cbm-capability-discovery/bin"
 
-CODE_INTEL_EXTRA_PATH="$lane/bin" \
+CODE_INTEL_EXTRA_PATH="$blocker_dir" \
   "$repo_root/docs/research/harness-tools/codebase-intelligence/experiments/coding-agents/run-isolated.sh" \
-  cbm "$binary" cli --json index_repository \
+  cbm-e7dd-repro "$binary" cli --json index_repository \
   "{\"repo_path\":\"$fixture\",\"mode\":\"full\"}"
 ```
 
-The full command/output ledger is the ignored raw-evidence directory named
-above. Reproduction must keep `CBM_CACHE_DIR` on the CBM lane and must not run
-real install/update/uninstall or enable fixture persistence.
+The exact full rerun is scripted in
+`scratchpad/code-intelligence/raw-output/capability-discovery/cbm/rerun-e7ddad2.sh`;
+the script and ledger pin source, fixture, manifest, and patch identities and
+refuse cache/evidence reuse. Reproduction must keep `CBM_CACHE_DIR` on an
+isolated CBM lane and must not run real install/update/uninstall or enable
+fixture persistence.
 
 ## Recommendation for controlled Pi/Codex experiments
 

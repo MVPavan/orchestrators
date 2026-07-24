@@ -39,7 +39,9 @@ checkout was clean before and after discovery.
 | Local exports | HTML, call-flow HTML, tree HTML, Obsidian, wiki, GraphML, local Neo4j/FalkorDB Cypher | `VERIFIED` |
 | SVG | exposed, but `matplotlib` is absent | `UNAVAILABLE` |
 | Incremental update | completed, but did not preserve the code-only corpus and changed source-path spelling | `PARTIAL` |
+| Update flags | `--force` completed but no shrink case was induced; `--no-cluster` produced zero communities and no report/HTML | `PARTIAL` / `VERIFIED` |
 | Cargo introspection | works when the scan root contains `Cargo.toml`; fails at the mixed fixture root where the manifest is nested | `PARTIAL` |
+| Provider registry reads | isolated empty `provider list` exited 0; missing `provider show` exited 1 without creating a config file | `VERIFIED` |
 | MCP | source registers 10 tools and 6 resources; the isolated environment lacks the `mcp` extra, so no runtime handshake/list was possible | `UNAVAILABLE` |
 | Semantic labeling/extraction | requires a model backend, credentials, or local model service | `RESTRICTED` |
 | Remote/global/integration writes | network, GitHub, external DB, global graph, hook/platform config, or destructive effects | `RESTRICTED` |
@@ -126,7 +128,8 @@ before `--graph`; for example, `graphify explain WorkResult --graph GRAPH`.
 | Neo4j/FalkorDB `--push` | needs external database, network, and normally credentials | `RESTRICTED` |
 | `merge-graphs` | merged baseline and crate graph to 122 nodes/188 edges | `VERIFIED` |
 | `merge-driver` | union-merged disposable graph copies | `VERIFIED` |
-| `global add/remove/list/path` and `extract --global` | writes a user-global graph | `RESTRICTED` |
+| `global list/path` | read an empty lane-local global registry and printed its path | `VERIFIED` |
+| `global add/remove` and `extract --global` | write a user-global graph | `RESTRICTED` |
 
 ### Acquisition, PR, provider, hook, and platform integration
 
@@ -135,7 +138,8 @@ before `--graph`; for example, `graphify explain WorkResult --graph GRAPH`.
 | `clone` | network plus clone below user storage | `RESTRICTED` |
 | `add` | fetch URL, write corpus, update graph | `RESTRICTED` |
 | `prs` and MCP PR tools | `gh`, GitHub authentication/network; triage can also use a configured backend | `RESTRICTED` |
-| `provider add/list/show/remove` | reads/writes project or `~/.graphify/providers.json`; providers are used for remote/local model calls | `RESTRICTED` |
+| `provider list`; `provider show NAME` | read the lane-local global provider registry; list created only its parent directory, and missing show exited 1 | `VERIFIED`; `provider-read-only.txt` |
+| `provider add/remove` | mutate `~/.graphify/providers.json`; a configured endpoint receives corpus content and its configured key | `RESTRICTED` |
 | `hook status` | fixture read-only status reported all hooks absent | `VERIFIED` |
 | `hook install/uninstall` | modifies Git hooks and merge-driver config | `RESTRICTED` |
 | top-level `install`/`uninstall` | writes or deletes host integration files; `--purge` deletes graph output | `RESTRICTED` |
@@ -157,9 +161,9 @@ dormant semantic/model control affected a code-only run.
 | --- | --- | --- | --- |
 | global CLI | `-h`, `--help`, `-?`, `-v`, `--version`, `version` | read-only help/version; universal help guard applies to most subcommands | `VERIFIED`; `help.txt`, `version.txt` |
 | `extract` corpus/output | positional path; `--out`/`--output`; `--code-only`; `--no-gitignore`; repeatable `--exclude`; `--google-workspace`; `--postgres`; `--cargo`; `--global`; `--as` | selects corpus/output and optional local or external sources; Google/Postgres/global need integration access | local flags `VERIFIED`; integrations `RESTRICTED`; `extract-code-only.txt`, `extract-safe-flags.txt`, Cargo evidence |
-| `extract` pipeline | `--backend`, `--model`, `--mode deep`, `--force`, `--no-cluster`, `--dedup-llm`, `--allow-partial`, `--timing` | force bypasses manifest/semantic cache; no-cluster writes raw graph; deep/dedup require model backend; allow-partial permits guarded partial output | safe flags `VERIFIED`; model modes `RESTRICTED`; `extract-safe-flags.txt` |
+| `extract` pipeline | `--backend`, `--model`, `--mode deep`, `--force`, `--no-cluster`, `--dedup-llm`, `--allow-partial`, `--timing` | force bypasses manifest/semantic cache; no-cluster writes raw graph; deep/dedup require model backend; allow-partial permits guarded partial output | force/no-cluster/timing `VERIFIED`; allow-partial parser acceptance `VERIFIED` but guarded behavior `UNTESTED`; model modes `RESTRICTED`; `extract-safe-flags.txt` |
 | `extract` tuning | positive `--max-workers`, `--token-budget`, `--max-concurrency`, `--api-timeout`, `--resolution`; numeric `--exclude-hubs` | AST process count; semantic chunk budget/concurrency/request timeout; clustering resolution/hub exclusion | parser and code-only acceptance `VERIFIED`; semantic effect `UNTESTED`; `extract-safe-flags.txt` |
-| `update` | path, `--force`, `--no-cluster` | local AST rebuild; force allows shrink; no-cluster skips community pass | unflagged update `PARTIAL` (corpus/path continuity); `--force` and `--no-cluster` are `VERIFIED` on `extract`, but not separately on `update`; `update-synthetic-change.txt`, `extract-safe-flags.txt` |
+| `update` | path, `--force`, `--no-cluster` | local AST rebuild; force allows shrink; no-cluster skips community pass | all three command paths executed; update remains `PARTIAL` for corpus/path continuity, force shrink override is `UNTESTED`, and no-cluster effect is `VERIFIED`; `update-synthetic-change.txt`, `update-force.txt`, `update-no-cluster.txt` |
 | `cluster-only` | path; `--graph`; `--no-viz`; `--no-label`; `--backend`; `--model`; `--resolution`; `--exclude-hubs`; `--max-concurrency`; `--batch-size`; `--min-community-size`; `--timing` | local recluster/report; optional model labels | deterministic no-label/no-viz `VERIFIED`; labeling `RESTRICTED`; `cluster-only.txt` |
 | `label` | path; `--graph`; `--missing-only`; `--backend`; `--model`; `--max-concurrency`; `--batch-size`; `--min-community-size`; `--timing` | names all or only missing communities with model | `RESTRICTED` |
 | `query` | question; `--dfs`; repeatable `--context`; `--budget`; `--graph` | BFS default or DFS; explicit edge-context filter; approximate output-token cap | variants `VERIFIED`; `query-lifecycle.txt`, `query-dfs-context-budget.txt`, `query-multi-context-budget.txt` |
@@ -178,7 +182,7 @@ dormant semantic/model control affected a code-only run.
 | other local exports | `obsidian --graph --labels --dir`; `wiki/svg --graph --labels`; `graphml --graph` | writes local artifacts; SVG needs matplotlib | all except SVG `VERIFIED`; SVG `UNAVAILABLE`; `export-*.txt` |
 | DB exports | `neo4j`/`falkordb`: `--graph`; optional `--push`, `--user`, `--password` or password env | no-push writes Cypher; push writes remote DB | local `VERIFIED`; push `RESTRICTED`; `export-neo4j.txt`, `export-falkordb.txt` |
 | `global` | `add GRAPH --as`; `remove TAG`; `list`; `path` | add/remove write user-global graph; list/path are read-only | list/path `VERIFIED`; writes `RESTRICTED`; `global-read-only.txt` |
-| `provider` | `list`; `show NAME`; `add NAME --base-url --default-model --env-key [--pricing-input --pricing-output]`; `remove NAME` | reads/writes global provider config; later model/network use | `RESTRICTED` |
+| `provider` | `list`; `show NAME`; `add NAME --base-url --default-model --env-key [--pricing-input --pricing-output]`; `remove NAME` | list/show read global provider config; add/remove write it; configured endpoints later receive corpus/key data | list and missing-show behavior `VERIFIED`; add/remove `RESTRICTED`; `provider-read-only.txt` |
 | `prs` | `--triage`; `--worktrees`; `--conflicts`; `--wrong-base`; `--base`/`-b`; `--repo`/`-R`; `--graph` | invokes Git/`gh`; triage may invoke model | `RESTRICTED` |
 | `clone`, `add` | clone URL with `--branch`, `--out`; add URL with `--author`, `--contributor`, `--dir` | network plus corpus writes | `RESTRICTED` |
 | hooks/watch/update check | `hook install|uninstall|status`; `watch PATH`; `check-update PATH` | install/uninstall mutate Git config/hooks; watch is unbounded and needs watchdog; status/check are local | status/check `VERIFIED`; writes `RESTRICTED`; watch `UNAVAILABLE` |
@@ -204,8 +208,8 @@ provider-specific `GRAPHIFY_{GEMINI,DEEPSEEK,OPENAI,AZURE,BEDROCK}_MODEL`,
 and `GRAPHIFY_API_KEY`. `GRAPHIFY_CHANGED`, `GRAPHIFY_REPO_ROOT`,
 `GRAPHIFY_PYTHON`, and `GRAPHIFY_BIN` are hook/launcher handoff variables;
 `GRAPHIFY_OUT_NAME` is an internal constant rather than an operator setting.
-Credential-bearing provider variables are deliberately not printed by the
-discovery lane.
+Credential and endpoint variable names are inventoried below; no credential
+values were inherited, printed, or supplied.
 
 ### Additional safe-mode probes
 
@@ -236,6 +240,13 @@ returned ten, demonstrating the reach control. Isolated `global list` and
 `query-multi-context-budget.txt`, `affected-relation-depth.txt`, and
 `global-read-only.txt`.
 
+In a separate isolated home, `provider list` printed “No custom providers
+registered.” and exited 0 in 0.05 s. It created only the lane-local
+`~/.graphify/` parent directory, not `providers.json`. `provider show
+missing-provider` printed a not-found diagnostic and exited 1 in 0.05 s. These
+read/failure paths are `VERIFIED`; add/remove remain `RESTRICTED` writes.
+Evidence: `provider-read-only.txt`.
+
 ### Extraction modes and backends
 
 The verified offline lane used `extract PATH --code-only`. The following
@@ -250,7 +261,7 @@ advertised variants were inventoried but not activated:
 | `--cargo` | local Cargo manifest introspection | `PARTIAL` |
 | `--no-cluster` | raw graph without community analysis | produced 108 nodes/177 edges without communities in the safe-flags extraction | `VERIFIED` |
 | `--force` | bypasses manifest/semantic-cache reads | emitted the full-rescan notice in the safe-flags extraction | `VERIFIED` |
-| `--allow-partial` | permits guarded partial output | parser accepted it, but no partial-build condition was safely induced | `UNTESTED` |
+| `--allow-partial` | permits guarded partial output | parser accepted it, but no partial-build condition was safely induced | parser acceptance `VERIFIED`; guarded behavior `UNTESTED` |
 | `--no-gitignore`, excludes | changes corpus selection | `--no-gitignore` was accepted and `--exclude docs` removed `docs/architecture.md` | `VERIFIED` |
 
 `--cargo` at the mixed fixture root failed because it looked for
@@ -591,6 +602,21 @@ functional but `PARTIAL` for this study's strict stale-index/change contract.
 The post-update graph was retained separately, the patch was reversed, and the
 fixture returned to its frozen clean state.
 
+Two fresh lane-local fixture copies and output trees then isolated the update
+flags from that synthetic-change run:
+
+| Variant | Baseline | Result | Elapsed / peak RSS | Disposition |
+| --- | --- | --- | --- | --- |
+| `update --force` | 108 nodes, 173 edges, 10 communities | 112 nodes, 175 edges, 11 communities; regenerated graph, HTML, report, and labels | 0.22 s / 43,044 KiB | command path `VERIFIED`; smaller-graph overwrite semantics `UNTESTED` because no shrink was induced |
+| `update --no-cluster` | 108 nodes, 173 edges, 10 communities | 112 nodes, 179 edges, zero assigned communities; no HTML, report, or labels | 0.20 s / 41,920 KiB | no-cluster effect `VERIFIED` |
+
+Both variants retained the same update limitation: they reintroduced
+`README.md` and `docs/architecture.md` into the code-only baseline and rewrote
+source paths to lane-relative parent-repository paths. Both fixture copies
+remained clean at commit
+`e7ddad2c44321f7b50e60c923b8f0733fb757874`. Evidence:
+`update-force.txt` and `update-no-cluster.txt`.
+
 ## Optional dependencies and restricted surfaces
 
 Installed in the isolated environment: core Graphify, NetworkX, tree-sitter and
@@ -607,6 +633,29 @@ Absent optional packages observed directly:
 | `graspologic` (`leiden`) | absent; core clustering still worked |
 | `openai`, `tiktoken`, `boto3`, `anthropic` | absent |
 
+The complete frozen headless semantic-backend prerequisite map below
+reconciles `pyproject.toml`, `graphify.llm.BACKENDS`, dispatch, maintained
+README guidance, and backend/provider tests. Variable names are evidence; no
+secret values, endpoints, services, or model calls were activated.
+
+| Backend | Package/extra | Credential and endpoint configuration | Service prerequisite | Disposition |
+| --- | --- | --- | --- | --- |
+| Gemini | `graphifyy[gemini]` → `openai`, `tiktoken` | `GEMINI_API_KEY` or `GOOGLE_API_KEY`; optional `GEMINI_BASE_URL`, `GRAPHIFY_GEMINI_MODEL` | Google OpenAI-compatible endpoint by default, or an explicitly configured compatible endpoint | `RESTRICTED` |
+| Kimi | `graphifyy[kimi]` → `openai`, `tiktoken` | `MOONSHOT_API_KEY`; optional `KIMI_BASE_URL`; model override is `--model` | Moonshot OpenAI-compatible endpoint by default, or an explicitly configured compatible endpoint | `RESTRICTED` |
+| Claude API | `graphifyy[anthropic]` → `anthropic` | `ANTHROPIC_API_KEY`; optional `ANTHROPIC_BASE_URL`, `ANTHROPIC_MODEL` | Anthropic API by default, or an Anthropic-compatible endpoint | `RESTRICTED` |
+| Claude CLI | no Python extra; `claude` executable on `PATH` | optional `GRAPHIFY_CLAUDE_CLI_MODEL` | installed/authenticated Claude Code subscription | `RESTRICTED` |
+| OpenAI | `graphifyy[openai]` → `openai`, `tiktoken` | `OPENAI_API_KEY`; optional `OPENAI_BASE_URL`, `OPENAI_MODEL`, `GRAPHIFY_OPENAI_MODEL` | OpenAI API or running OpenAI-compatible service; local services still need a non-empty client key value | `RESTRICTED` |
+| DeepSeek | no dedicated extra; OpenAI-compatible dispatch needs `openai` from `graphifyy[openai]` | `DEEPSEEK_API_KEY`; optional `DEEPSEEK_BASE_URL`, `GRAPHIFY_DEEPSEEK_MODEL` | DeepSeek API by default, or an explicitly configured OpenAI-compatible endpoint | `RESTRICTED` |
+| Ollama | `graphifyy[ollama]` → `openai` | optional `OLLAMA_API_KEY`; `OLLAMA_BASE_URL` or `OLLAMA_HOST`; optional `OLLAMA_MODEL` and `GRAPHIFY_OLLAMA_*` tuning | running Ollama OpenAI-compatible service, loopback port 11434 by default; missing API key uses a visible sentinel warning | `RESTRICTED` |
+| Azure OpenAI | README calls this the Azure capability, but `pyproject.toml` declares no `azure` extra; install `graphifyy[openai]` | `AZURE_OPENAI_API_KEY`, `AZURE_OPENAI_ENDPOINT`; optional `AZURE_OPENAI_API_VERSION`, `AZURE_OPENAI_DEPLOYMENT`, `GRAPHIFY_AZURE_MODEL` | reachable Azure OpenAI resource and deployment | `RESTRICTED` |
+| AWS Bedrock | `graphifyy[bedrock]` → `boto3` | standard AWS credential chain/`AWS_PROFILE`; optional `AWS_REGION`, `AWS_DEFAULT_REGION`, `GRAPHIFY_BEDROCK_MODEL` | AWS access, region, Bedrock model entitlement, reachable Bedrock Runtime | `RESTRICTED` |
+| Custom OpenAI-compatible | no dedicated extra; needs `openai` from `graphifyy[openai]` | provider-defined `env_key`, `base_url`, and `default_model` in global or project config; project-local loading requires `GRAPHIFY_ALLOW_LOCAL_PROVIDERS=1` | reachable configured endpoint, which receives corpus content and its configured key | `RESTRICTED` |
+
+The machine-readable counterpart is `backend-prerequisites.json`. The source
+has two noteworthy packaging mismatches: DeepSeek has no named extra despite
+using the OpenAI-compatible client, and the README names an Azure capability
+whose install path is the `openai` extra rather than a declared `azure` extra.
+
 Other declared extras include PDF/Markdown conversion, office, Google
 workspace, PostgreSQL, video/transcription, Chinese segmentation, SQL,
 Pascal, DreamMaker, and Terraform parsers. Missing extras are
@@ -620,37 +669,50 @@ provider credentials, and the code-only lane made no observed network calls.
 
 ## Capability evidence, cost, and agent applicability
 
-`UNKNOWN` means that quantity was not instrumented for that individual
-operation; it is not a zero. Provider tokens and local artifact estimates are
-kept separate.
+`artifact-item-metrics.json` mechanically measures UTF-8 bytes and local
+`o200k_base` tokens for every retained TXT/JSON evidence artifact. The
+bytes/tokens below are sums of the named evidence bundle, not necessarily raw
+stdout alone and never provider usage. Elapsed time is `UNKNOWN` only where the
+retained artifact has no explicit timing field; filesystem timestamps are not
+substituted. Provider tokens and local artifact estimates stay separate.
 
 | Capability | Primary evidence | Timing; output bytes; local o200k tokens; model tokens | Pi / Codex applicability | Main limitation |
 | --- | --- | --- | --- | --- |
-| clustered code-only extraction | `extract-code-only.txt`, `graph-summary.json`, `runtime-manifest.json` | 0.32 s; 143,288-byte initial output tree/95,965-byte graph; per-operation tokens `UNKNOWN`; provider 0 in/0 out | CLI usable by both | structural AST graph, incomplete dynamic/data flow |
-| safe flags/no-cluster | `extract-safe-flags.txt` | 0.17 s; output bytes/tokens `UNKNOWN`; provider 0/0 | CLI usable by both | semantic tuning flags dormant in code-only; allow-partial failure path not triggered |
-| BFS query | `query-lifecycle.txt`, `query-normalize.txt` | timing/bytes/tokens `UNKNOWN`; provider 0/0 | strong orientation primitive for both | label collision and approximate token budget |
-| DFS/context/budget query | `query-dfs-context-budget.txt`, `query-multi-context-budget.txt` | 0.15/0.16 s; evidence-file bytes/tokens included in aggregate only; provider 0/0 | usable by both | 250-token output truncated 16/25 nodes |
-| explain/path | `explain-core-normalize.txt`, `explain-gateway-normalize.txt`, `path-lifecycle.txt`, `path-impossible.txt` | timing/bytes/tokens `UNKNOWN`; provider 0/0 | usable by both; exact IDs recommended | missing targets exit 0; label-only first match |
-| affected variants | `affected-workresult.txt`, `affected-relation-depth.txt` | 0.12-0.13 s for variants; bytes/tokens `UNKNOWN`; provider 0/0 | useful to both for graph blast radius | not patch-aware and misses object-literal constructors |
-| hubs/diagnostics/benchmark | `god-nodes.json`, `diagnose-multigraph.json`, `benchmark.txt` | timing/bytes/tokens `UNKNOWN`; provider 0/0 | local diagnostics usable by both | benchmark is an estimate, not measured provider saving |
-| cluster-only | `cluster-only.txt` | timing/bytes/tokens `UNKNOWN`; provider 0/0 with no-label | usable by both | labels need model; clustering can alter graph structure |
-| local HTML/tree/wiki/Obsidian/GraphML exports | `tree.txt`, `export-html.txt`, `export-callflow.txt`, `export-obsidian.txt`, `export-wiki.txt`, `export-graphml.txt` | tree 20,797 bytes; callflow 63,090 bytes; other timing/bytes/tokens `UNKNOWN`; provider 0/0 | human orientation artifacts for both | derived views; not additional source truth |
-| local Cypher exports | `export-neo4j.txt`, `export-falkordb.txt` | 35,136 bytes each; timing/tokens `UNKNOWN`; provider 0/0 | usable by both without push | DB push restricted |
-| SVG export | `export-svg.txt` | failed before output; tokens/provider 0 | unavailable to both frozen lanes | matplotlib absent |
-| memory/reflection | `save-result.txt`, `reflect.txt` | timing/bytes/tokens `UNKNOWN`; provider 0/0 | persistent hints consumable by both | overlay can contaminate controlled probes |
-| graph merge | `merge-graphs.txt`, `merge-driver.txt` | merged graph 122 nodes/188 edges; timing/bytes/tokens `UNKNOWN`; provider 0/0 | usable by both on disposable copies | union semantics, not semantic reconciliation |
-| Cargo introspection | `extract-code-only-cargo.txt`, `extract-cargo-crate-root.txt`, `cargo-crate-root-nodes.txt` | timing/bytes/tokens `UNKNOWN`; provider 0/0 | usable by both | nested manifest not discovered from mixed root |
-| incremental update | `update-synthetic-change.txt`, `post-update-summary.json`, impact evidence | 0.20 s; 112 nodes/175 edges, 42,772 KiB peak RSS; bytes/tokens `UNKNOWN`; provider 0/0 | usable by both through adapter below | code-only/path continuity not preserved |
-| global list/path | `global-read-only.txt` | 0.12/0.13 s; tiny text output, exact bytes/tokens `UNKNOWN`; provider 0/0 | usable by both in isolated home | add/remove are global writes |
-| MCP tools/resources | `mcp-source-registry.json`, `mcp-item-metrics.json`, `mcp-runtime-attempt.txt` | tools 5,798 bytes/1,234 tokens; resources 790/176; model tokens 0 | Pi/Codex can both consume MCP when installed/configured | runtime unavailable; PR tools need GitHub |
-| semantic extraction/labeling | source/help inventory | timing/output/tokens `UNKNOWN`; model usage would be nonzero | both can invoke CLI | credentials/backend/network restricted |
-| host installation | help/source inventory | timing/output/tokens/model `UNKNOWN` | explicit Pi and Codex installers exist | mutates user/project agent configuration |
-| remote PR/clone/add/DB push | help/source inventory | timing/output/tokens/model `UNKNOWN` | callable by either agent with authority | network/auth/external writes restricted |
+| clustered code-only extraction | `extract-code-only.txt`, `graph-summary.json`, `runtime-manifest.json` | 0.32 s; evidence 7,200 bytes/2,534 tokens; generated tree 143,288 bytes, graph 95,965; provider 0/0 | CLI usable by both | structural AST graph, incomplete dynamic/data flow |
+| safe extract flags/no-cluster | `extract-safe-flags.txt` | 0.17 s; evidence 1,465 bytes/409 tokens; provider 0/0 | CLI usable by both | semantic tuning dormant; allow-partial failure behavior untested |
+| BFS query | `query-lifecycle.txt`, `query-normalize.txt` | elapsed `UNKNOWN` (not retained); evidence 11,301 bytes/2,929 tokens; provider 0/0 | strong orientation primitive for both | label collision and approximate token budget |
+| DFS/context/budget query | `query-dfs-context-budget.txt`, `query-multi-context-budget.txt` | 0.15/0.16 s; evidence 1,072 bytes/304 tokens; provider 0/0 | usable by both | 250-token output truncated 16/25 nodes |
+| explain/path | six success/boundary artifacts | elapsed `UNKNOWN` (not retained); evidence 1,498 bytes/418 tokens; provider 0/0 | usable by both; exact IDs recommended | missing targets exit 0; label-only first match |
+| affected variants | `affected-workresult.txt`, `affected-relation-depth.txt` | 0.12-0.13 s where retained; evidence 1,168 bytes/318 tokens; provider 0/0 | useful to both for graph blast radius | not patch-aware; misses object-literal constructors |
+| hubs/diagnostics/benchmark | `god-nodes.json`, `diagnose-multigraph.json`, `benchmark.txt` | elapsed `UNKNOWN` (not retained); evidence 4,368 bytes/1,256 tokens; provider 0/0 | local diagnostics usable by both | benchmark is estimate, not measured provider saving |
+| cluster-only | `cluster-only.txt` | elapsed `UNKNOWN` (not retained); evidence 1,322 bytes/383 tokens; provider 0/0 with no-label | usable by both | labels need model; clustering alters graph structure |
+| local HTML/tree/wiki/Obsidian/GraphML exports | six export artifacts | elapsed `UNKNOWN` (not retained); evidence 1,623 bytes/410 tokens; generated tree 20,797 and callflow 63,090 bytes; provider 0/0 | human orientation artifacts for both | derived views; not additional source truth |
+| local Cypher exports | `export-neo4j.txt`, `export-falkordb.txt` | elapsed `UNKNOWN` (not retained); evidence 444 bytes/116 tokens; generated scripts 35,136 bytes each; provider 0/0 | usable by both without push | DB push restricted |
+| SVG export | `export-svg.txt` | failed before generated output; evidence 1,241 bytes/322 tokens; provider 0 | unavailable to both frozen lanes | matplotlib absent |
+| memory/reflection | `save-result.txt`, `reflect.txt` | elapsed `UNKNOWN` (not retained); evidence 302 bytes/79 tokens; provider 0/0 | persistent hints consumable by both | overlay can contaminate controlled probes |
+| graph merge | `merge-graphs.txt`, `merge-driver.txt` | elapsed `UNKNOWN` (not retained); evidence 148 bytes/39 tokens; merged graph 122 nodes/188 edges; provider 0/0 | usable by both on disposable copies | union, not semantic reconciliation |
+| Cargo introspection | three Cargo artifacts | elapsed `UNKNOWN` (not retained); evidence 4,728 bytes/1,380 tokens; provider 0/0 | usable by both | nested manifest not discovered from mixed root |
+| update variants | synthetic update plus force/no-cluster evidence | 0.20/0.22/0.20 s; evidence 5,708 bytes/1,670 tokens; provider 0/0 | usable by both through adapter below | code-only/path continuity not preserved; force shrink behavior untested |
+| global list/path | `global-read-only.txt` | 0.12/0.13 s; evidence 337 bytes/102 tokens; provider 0/0 | usable by both in isolated home | add/remove remain separate restricted writes |
+| provider list/missing show | `provider-read-only.txt` | 0.05/0.05 s; evidence 1,590 bytes/393 tokens; provider 0/0 | safe configuration orientation for both | list creates lane-local parent directory; add/remove restricted |
+| MCP tools/resources | three MCP registry/runtime artifacts | runtime attempt elapsed `UNKNOWN`; evidence 12,058 bytes/2,900 tokens; tools 5,798/1,234, resources 790/176; model 0 | Pi/Codex can consume MCP when installed/configured | runtime unavailable; PR tools need GitHub |
+| semantic backend inventory | `backend-prerequisites.json` | no execution elapsed; evidence 4,672 bytes/1,190 tokens; model 0 | both can invoke CLI when provisioned | credentials/backend/network restricted |
+| CLI/host/remote inventory | `help.txt`, `help-command-families.txt` plus source dispatch | no execution elapsed retained; help evidence 12,801 bytes/2,923 tokens; model 0 | host installers and remote commands exist | writes/network/auth intentionally restricted |
 
-The aggregate deterministic raw evidence is 59 files, 93,120 bytes, and
-25,054 local `o200k_base` tokens. This aggregate includes inventories and
-diagnostics, not just graph answers, so it is not a measure of prompt context
-that Pi or Codex must consume.
+The current primary deterministic evidence is 63 TXT/JSON files, 103,396
+bytes, and 27,810 local `o200k_base` tokens. Including the current
+`artifact-metrics.json` summary itself, the per-item inventory covers 64 files,
+105,379 bytes, and 28,358 tokens. These aggregates include inventories and
+diagnostics, not just graph answers, so they are not a measure of prompt
+context that Pi or Codex must consume. The generated per-item/output metrics
+files and measurement script are excluded from the primary aggregate.
+
+`generated-output-metrics.json` separately enumerates all 268 regular files
+under the retained Graphify output roots: 2,181,808 bytes and 612,551 local
+`o200k_base` tokens. Different retained snapshots are counted separately.
+Those token counts measure decodable artifact text; they do not mean the files
+were placed into model context. Per-file elapsed is `NOT_APPLICABLE`; elapsed
+belongs to the producing command and is reported from command evidence above.
 
 ## Safe update adapter requirements
 
@@ -697,7 +759,8 @@ Two ignored metrics artifacts validate against `metrics.schema.json`:
 
 - `deterministic-discovery.metrics.json` is `DISCOVERY_SETUP`. Provider usage
   and operation totals are `UNKNOWN`; its 170 ms elapsed value is explicitly
-  the final safe-flags completeness probe, not aggregate discovery time.
+  the final safe-flags completeness probe, not aggregate discovery time. Its
+  artifact estimate now reflects the 63-file primary deterministic inventory.
 - `terra-invalid.metrics.json` is the actual `CAPABILITY_PROBE`, with provider
   usage, 26 tool calls, invalid-schema/call-cap contamination, and 301,000 ms
   elapsed derived from prompt/output filesystem birth times because JSONL
@@ -778,15 +841,17 @@ capability failures and not controlled-experiment usage.
 
 ## Resource and token accounting
 
-Deterministic discovery is excluded from later controlled comparisons. At the
-last pre-Terra measurement:
+Deterministic discovery is excluded from later controlled comparisons. The
+Terra row preserves provider usage from the invalid historical attempt; the
+deterministic rows reflect the completed inventory:
 
 | Quantity | Value | Source |
 | --- | ---: | --- |
 | MCP source-schema bytes | 5,798 | canonical JSON serialization |
 | MCP source-schema tokens | 1,234 | local `o200k_base` |
-| Deterministic raw-output files | 59 | filesystem |
-| Deterministic raw-output bytes/tokens | 93,120 bytes / 25,054 tokens | local bytes and `o200k_base` |
+| Primary deterministic raw output | 63 files; 103,396 bytes / 27,810 tokens | regenerated `artifact-metrics.json`; generated metrics files excluded |
+| Per-item deterministic inventory | 64 files; 105,379 bytes / 28,358 tokens | `artifact-item-metrics.json`; includes `artifact-metrics.json` itself |
+| Retained generated outputs | 268 files; 2,181,808 bytes / 612,551 local tokens | `generated-output-metrics.json`; duplicate snapshots counted separately |
 | Graphify code-only provider/model tokens | 0 / 0 | `.graphify_analysis.json` |
 | Terra provider usage | 637,486 input; 609,536 cached input; 5,761 output; 1,625 reasoning output | provider completion event |
 
@@ -824,11 +889,18 @@ Most discriminating retained artifacts:
 - `mcp-source-registry.json`
 - `mcp-item-metrics.json`
 - `artifact-metrics.json`
+- `artifact-item-metrics.json`
+- `generated-output-metrics.json`
+- `measure-artifacts.js`
+- `backend-prerequisites.json`
 - `extract-safe-flags.txt`
 - `query-dfs-context-budget.txt`
 - `query-multi-context-budget.txt`
 - `affected-relation-depth.txt`
 - `global-read-only.txt`
+- `provider-read-only.txt`
+- `update-force.txt`
+- `update-no-cluster.txt`
 - `deterministic-discovery.metrics.json`
 - `terra-invalid.metrics.json`
 - `terra-events.jsonl`
@@ -853,3 +925,7 @@ material:
    outside the graph;
 7. the fixed Terra attempt is not comparison-valid because it exceeded the
    call cap, failed schema validation, and saw a prior learning overlay.
+
+The deterministic Graphify lane is complete. The only remaining execution is
+the fixed Terra-medium retry after the shared capped runner is repaired under
+`orch-8sk.16.7`; it is not a deterministic capability gap and was not run here.

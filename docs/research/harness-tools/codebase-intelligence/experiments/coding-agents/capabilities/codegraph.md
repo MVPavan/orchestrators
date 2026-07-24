@@ -13,12 +13,18 @@ This report covers CodeGraph only. Discovery used the disposable checkout at
 `scratchpad/code-intelligence/fixtures/codegraph`, and CodeGraph-only ignored
 indexes, outputs, metrics, and sessions. It did not inspect Pi, Codex, another
 graph tool, or another tool's output. No fetch, package install, credentialed
-operation, global integration write, destructive operation, or live-submodule
-mutation was performed.
+operation, global integration write, or live-submodule mutation was performed.
+Delete-capable operations were confined to explicitly disposable CodeGraph
+indexes, a stale lock, and a synthetic isolated Codex integration target below
+the CodeGraph raw-output lane.
 
-Every invocation ran through
+The original inventory invocations ran through
 `docs/research/harness-tools/codebase-intelligence/experiments/coding-agents/run-isolated.sh`
 with lane-local home, cache, config, state, temp, and output directories. The
+completion probes reproduced the same credential-free environment directly
+with every writable path below
+`scratchpad/code-intelligence/raw-output/capability-discovery/codegraph/completion-v2/`.
+The
 frozen tool revision was
 `03666584ed9836d7954cbb19e2252081b96fcad9`; its package version was `1.0.1`.
 The fixture revision was
@@ -41,7 +47,7 @@ The tool checkout remained clean.
 | JavaScript library API | 38 runtime exports and the full `CodeGraph` facade were probed; direct per-file parsing from an opened facade exposed a grammar-loading limitation | `VERIFIED`, with `PARTIAL` methods |
 | Installer integrations | config generation for eight targets worked; host writes were not authorized | `PARTIAL` |
 | Upgrade, telemetry transmission, remote reasoning | network, host mutation, credentials, or an unexposed internal path | `RESTRICTED` |
-| Fixed Terra probe | provider rejected the frozen output schema before model execution | `BLOCKED` as a probe, not a CodeGraph failure |
+| Fixed Terra probe | no valid probe has run; an earlier schema-rejected setup attempt is excluded | `PENDING` |
 
 The systems-level conclusion is that CodeGraph is a strong low-cost structural
 navigation layer when its answers are treated as graph-backed evidence rather
@@ -63,12 +69,39 @@ operation.
 | Node | 22.22 in the frozen tool lane |
 | Fixture commit | `e7ddad2c44321f7b50e60c923b8f0733fb757874` |
 | Fixture manifest digest | `fc12b07aa2219f346ee1e00f52875efae8c52bbb12dc410456e9457ea1b58e24` |
+| Synthetic patch SHA-256 | `17f48230009d36b4140213ed39e38fccb9a42a0045483e8798d27f5f996bf408` |
 | Artifact tokenizer | `gpt-tokenizer@3.4.0:o200k_base` |
 
-Initialization wrote only `.codegraph/` in the disposable fixture. The SQLite
-database used the `node-sqlite` backend and WAL journal mode. The final cleanup
-removed that index; the fixture's tracked hashes and Git status were then
-checked against the frozen baseline.
+Fresh completion probes copied this authoritative fixture into the CodeGraph
+raw lane and reproduced 14 files, 93 nodes, and 211 edges. Initialization wrote
+only the chosen CodeGraph data directory in each copy. The SQLite database used
+the `node-sqlite` backend and WAL journal mode. Cleanup removed the indexes from
+the copies only; the authoritative fixture and frozen tool checkout remained
+clean.
+
+Post-probe audits found two generated `.codegraph/` directories in the shared
+CodeGraph template. Both were moved intact—not discarded—to
+`completion-v2/shared-fixture-leak-codegraph/` (294,912-byte database plus
+generated `.gitignore`) and
+`completion-v2/shared-fixture-leak-codegraph-2/` (290,816-byte database plus
+generated `.gitignore`). After the second archive, no CodeGraph process
+referenced the template, all three lanes had empty Git status, and
+`prepare-fixture.sh verify` passed at the identity above.
+
+Shared fixture lanes are now guarded immutable templates. The independent
+CodeGraph work copy is
+`scratchpad/code-intelligence/work/codegraph-completion-fixture` at the same
+clean `e7ddad2c...` HEAD. Every completion probe script sources a realpath guard
+that rejects the CodeGraph, CBM, and Graphify shared paths as either cwd or
+target. Guard evidence records exit 0 for the work copy and exit 86 for the
+shared CodeGraph path in `completion-v2/run/guard-*.{stdout,stderr,exit}`.
+
+Some older raw files were produced against retired setup identity
+`faa03d6bb4e0855f57f76b0485a46a54f4d83d62` / manifest
+`f9cf965fd10a1852f80c7713479e0c1935baa70607dbed66d3b0606fe5338bf9`.
+They remain useful for command behavior and failure text, but they are
+`DISCOVERY_SETUP` evidence and are not the frozen fixture identity. Current
+fixture counts, option completion, and identity claims cite `completion-v2/`.
 
 ## Public CLI inventory
 
@@ -91,18 +124,18 @@ installer; that host-mutating path was restricted.
 | `node` | exact symbol and file/range retrieval worked; missing symbol gave guidance | `VERIFIED` |
 | `files` | flat, grouped, tree, language, and directory views worked; invalid format was silently accepted | `PARTIAL` |
 | `daemon` / `daemons` | manager/list path worked; server socket was denied by the sandbox | `PARTIAL` |
-| `unlock` | safe no-lock case returned success | `VERIFIED` |
+| `unlock` | safe no-lock and disposable stale-lock deletion worked | `VERIFIED` |
 | `callers` | useful, but the CLI merges multiple same-name definitions | `PARTIAL` |
 | `callees` | recovered the fixture's principal lifecycle callees | `VERIFIED` |
 | `impact` | useful reverse traversal, but broad and same-name aggregating | `PARTIAL` |
-| `affected` | accepts changed file paths and finds dependent tests; no tests exist in the fixture | `PARTIAL` |
+| `affected` | positional/stdin input, quiet output, JSON, depth, and distinct unit/e2e filters found transitive dependent tests in a disposable targeted fixture | `VERIFIED` |
 | `install` | `--print-config` worked for eight targets; host writes were restricted | `PARTIAL` |
-| `uninstall` | isolated no-op behavior is safe; real host removal was not needed | `VERIFIED` |
+| `uninstall` | target/location/yes, no-op, unsupported-local, and selective deletion worked in an isolated synthetic Codex home while preserving unrelated config | `VERIFIED` |
 | `telemetry` | status/off worked in lane-local state; transmission was not enabled | `PARTIAL` |
 | `upgrade` | requires package/network/host mutation | `RESTRICTED` |
 | `version` | reported `1.0.1` | `VERIFIED` |
 
-CLI count: 11 `VERIFIED`, 8 `PARTIAL`, and 1 `RESTRICTED`.
+CLI count: 12 `VERIFIED`, 7 `PARTIAL`, and 1 `RESTRICTED`.
 
 The CLI's argument validation is permissive in two places. `query --kind
 bogus` returned an empty array with exit 0, while `files --format bogus --json`
@@ -384,18 +417,19 @@ artifact costs, not provider billing.
 | Frozen probe prompt | 4,133 | 856 |
 | CLI explore output | 11,058 | 2,626 |
 | Entire direct default MCP evidence JSONL | 18,953 | 5,006 |
-| Failed Terra event stream | 801 | 237 |
+| Excluded schema-rejection event stream | 801 | 237 |
 
 The 5,006-token MCP number is the complete JSONL evidence stream, including
 initialize/list/schema traffic and response framing; it must not be read as
 the explore tool's standalone answer size. Measured indexing resource numbers
 appear in [Fixture indexing and corpus coverage](#fixture-indexing-and-corpus-coverage).
 
-## Agent-mediated Terra probe
+## Agent-mediated Terra probe — pending
 
-Exactly one fresh `gpt-5.6-terra` medium-effort, ephemeral, read-only Codex
-session was attempted. It was configured with only CodeGraph MCP, direct mode,
-the default `explore` tool, the fixed prompt, and the frozen output schema.
+No valid `gpt-5.6-terra` medium-effort CodeGraph probe has run. One earlier
+ephemeral session was attempted with CodeGraph MCP, direct mode, the default
+`explore` tool, the fixed prompt, and an earlier output schema. The provider
+rejected that request before model execution:
 
 The provider rejected the request before model execution:
 
@@ -404,7 +438,9 @@ invalid_request_error: Invalid schema for response_format
 'codex_output_schema': In context=(), 'allOf' is not permitted.
 ```
 
-Consequences:
+That artifact is classified `DISCOVERY_SETUP` and `SMOKE_EXCLUDED`, not a
+capability result, controlled probe, failed CodeGraph run, or fixture result.
+Its consequences were:
 
 - no model answer was generated;
 - no CodeGraph tool was called;
@@ -414,10 +450,11 @@ Consequences:
 - the event stream is only 801 bytes because it contains setup and the schema
   rejection.
 
-The frozen protocol allowed no retry. This is a shared probe-schema
-compatibility defect, not a negative finding about CodeGraph. The deterministic
-capability discovery remains complete, so the overall status is
-`DONE_WITH_CONCERNS` rather than `BLOCKED`.
+The valid fixed Terra probe remains pending the shared runner. Until it runs
+and passes both schemas, the agent-mediated gate and any provider-token or
+answer-quality claim are incomplete. The deterministic inventory is
+substantially complete with explicitly dispositioned residuals below; this
+report does not claim the full Phase 0B gate has passed.
 
 ## Reproduction pattern
 
@@ -447,7 +484,7 @@ Representative operations:
 CODEGRAPH_NO_DAEMON=1 CODEGRAPH_MCP_TOOLS=explore \
   .../run-isolated.sh codegraph node \
   scratchpad/code-intelligence/tools/codegraph/dist/bin/codegraph.js serve \
-  scratchpad/code-intelligence/fixtures/codegraph
+  --mcp -p scratchpad/code-intelligence/fixtures/codegraph
 ```
 
 The literal `.../run-isolated.sh` abbreviation above means the tracked wrapper
@@ -459,6 +496,7 @@ Ignored reproducibility evidence is under:
 
 - `scratchpad/code-intelligence/raw-output/capability-discovery/codegraph/help/`
 - `scratchpad/code-intelligence/raw-output/capability-discovery/codegraph/runtime/`
+- `scratchpad/code-intelligence/raw-output/capability-discovery/codegraph/completion-v2/`
 - `scratchpad/code-intelligence/raw-output/capability-discovery/codegraph/vite-leak/`
 - `scratchpad/code-intelligence/metrics/capability-discovery/codegraph/`
 - `scratchpad/code-intelligence/sessions/capability-discovery/codegraph/`
@@ -473,9 +511,25 @@ Notable files include:
 - `runtime/targeted-tests-tool-cwd.txt`
 - `runtime/update-stale-status.json`
 - `runtime/update-sync-time.txt`
+- `completion-v2/run/authoritative-fixture.commit`
+- `completion-v2/run/authoritative-fixture.sha256`
+- `completion-v2/run/exit-summary.tsv`
+- `completion-v2/run/sdk-completeness.stdout`
+- `completion-v2/run/exports-followup.stdout`
+- `completion-v2/run/affected-*.stdout`
+- `completion-v2/run/uninstall.*`
+- `completion-v2/run/telemetry-*.stdout`
+- `completion-v2/run/mcp-watch-env.stderr`
+- `completion-v2/run/mcp-watchdog-*-v3.stderr`
+- `completion-v2/run/guard-*`
 - `artifact-token-counts.json`
 - `terra-probe-metrics.json`
 - `events.jsonl`
+
+The last two session/metric files are the excluded schema-rejection setup
+artifact described above. The two `mcp-watchdog-*.exit` files without a `-v3`
+suffix also record an early malformed command-line setup attempt; the corrected
+`-v3` probes initialized successfully and are authoritative for those controls.
 
 No ignored artifact is a substitute for the tracked conclusions in this
 report. The raw files exist so later reviewers can reproduce counts, inspect
@@ -499,8 +553,8 @@ AST/SQLite operations and no model backend was invoked.
 | Surface | Complete arguments/options | Coverage, effects, limits, and final disposition | Evidence; representative output |
 | --- | --- | --- | --- |
 | root | `-V/--version`, `-h/--help`; no command enters interactive installer | help/version `VERIFIED`; no-command installer `RESTRICTED` because it writes host agent configuration | `help/root.txt`, `help/version.txt`; help output size not separately counted |
-| `init [path]` | `-i/--index` deprecated compatibility flag; `-f/--force`; `-v/--verbose`; help | normal and verbose initial index `VERIFIED`; deprecated `--index` `UNTESTED` because indexing is already unconditional; unsafe-path refusal `VERIFIED`; `--force` `RESTRICTED` because its meaningful purpose is bypassing that safety guard | `runtime/init-verbose-time.txt` 2,120 B/738 tok; `boundary-unsafe-home.txt` 330 B/78 tok |
-| `uninit [path]` | `-f/--force`; help | `--force` `VERIFIED` on disposable index; deletes only `.codegraph/` | final cleanup console evidence; output bytes/tokens `UNKNOWN` |
+| `init [path]` | `-i/--index` deprecated compatibility flag; `-f/--force`; `-v/--verbose`; help | normal, verbose, and deprecated `--index` compatibility form `VERIFIED`; unsafe-path refusal `VERIFIED`; using `--force` to bypass that guard remains `RESTRICTED` | `runtime/init-verbose-time.txt`; `boundary-unsafe-home.txt`; `completion-v2/run/init-current-index-compat.*` |
+| `uninit [path]` | `-f/--force`; help | `--force` `VERIFIED` on disposable default and alternate-directory indexes; deletes the selected CodeGraph data directory only | `completion-v2/run/uninit-alt-force.*`, `alt-dir.*.state`, `uninit-current-force.*` |
 | `index [path]` | `-f/--force`, `-q/--quiet`, `-v/--verbose`; help | normal and `--quiet` full index `VERIFIED`; verbose worker reporting `PARTIAL` via equivalent init path; `--force` `RESTRICTED` for unsafe-root bypass | `runtime/full-reindex-time.txt` 1,022 B/303 tok; 0.24 s, 108,076 KB |
 | `sync [path]` | `-q/--quiet`; help | clean, changed, and quiet sync `VERIFIED`; updates index only | `sync-clean.txt` 290 B/99 tok; `update-sync-time.txt` 1,287 B/441 tok; changed sync 0.17 s |
 | `status [path]` | `-j/--json`; help | text, JSON, stale, and uninitialized modes `VERIFIED`; read-only | `status-json.txt` 958 B/265 tok; `status-text.txt` 857 B/297 tok; `update-stale-status.json`; elapsed `UNKNOWN` |
@@ -509,22 +563,24 @@ AST/SQLite operations and no model backend was invoked.
 | `node <name>` | `-p/--path`, `-f/--file`, `--offset`, `--limit`, `--symbols-only`; help | symbol, disambiguated file, whole-file, range, and symbols-only modes `VERIFIED`; file mode reads current disk while graph relationships can be stale | `node-workflow.txt` 1,209 B/282 tok; `node-file-range.txt` 541 B/122 tok; `node-file-symbols-correct.txt` 1,004 B/244 tok |
 | `files` | `-p/--path`, `--filter`, `--pattern`, `--format` enum tree/flat/grouped default tree, `--max-depth`, `--no-metadata`, `-j/--json`; help | every filtering/format family `VERIFIED`; invalid format fallback makes validation `PARTIAL` | `files-tree.txt` 1,321 B/441 tok; `files-grouped.txt` 1,846 B/578 tok; `files-core.txt` 889 B/266 tok; `files-ts.txt` 1,632 B/502 tok |
 | `daemon` / `daemons` | help only; interactive selection stops a daemon | empty-manager/list behavior `VERIFIED`; live daemon start/stop `UNAVAILABLE` here because Unix socket bind returned `EPERM` | `daemon-list.txt` 43 B/17 tok; daemon failure in MCP runtime evidence |
-| `unlock [path]` | help only | no-lock case `VERIFIED`; stale-lock deletion `UNTESTED` because no safe stale lock existed at probe time | `unlock-no-lock.txt` 50 B/19 tok |
+| `unlock [path]` | help only | no-lock and synthetic stale-lock deletion cases `VERIFIED`; deletion was confined to the disposable index | `unlock-no-lock.txt`; `completion-v2/run/unlock-stale.*`, `unlock-stale.state` |
 | `callers <symbol>` | `-p/--path`, `-l/--limit` default 20, `-j/--json`; help | options and ordinary symbol `VERIFIED`; ambiguous CLI name aggregation `PARTIAL` | `callers-run.txt` 351 B/94 tok; `callers-normalize.txt` 762 B/213 tok |
 | `callees <symbol>` | `-p/--path`, `-l/--limit` default 20, `-j/--json`; help | options and lifecycle call set `VERIFIED` | `callees-run.txt` 1,160 B/326 tok |
 | `impact <symbol>` | `-p/--path`, `-d/--depth` default 2, `-j/--json`; help | options and reverse traversal `VERIFIED`; patch semantics and ambiguous CLI names `PARTIAL` | `impact-workresult.txt` 3,535 B/1,021 tok; `impact-normalize.txt` 1,356 B/393 tok |
-| `affected [files...]` | `-p/--path`, `--stdin`, `-d/--depth` default 5, `-f/--filter`, `-j/--json`, `-q/--quiet`; help | positional path/depth/JSON and changed-list operation `VERIFIED`; stdin/filter/quiet variants `UNTESTED` because the fixture has no tests with which to distinguish their behavior; capability remains `PARTIAL` | `affected-contracts.txt` 288 B/72 tok; `update-stale-affected.txt` 361 B/90 tok |
+| `affected [files...]` | `-p/--path`, `--stdin`, `-d/--depth` default 5, `-f/--filter`, `-j/--json`, `-q/--quiet`; help | every input/output variant `VERIFIED` in a disposable project with both unit and e2e tests: positional and stdin returned the same two paths, while each filter selected only its matching test family | `completion-v2/run/affected-*.stdout` and `.exit`; older fixture evidence had no tests |
 | `install` | `-t/--target` comma list or auto/all/none; `-l/--location` global/local; `-y/--yes`; `--no-permissions`; `--print-config <id>`; help | write-free `--print-config` for all eight targets and invalid target `VERIFIED`; target/location/yes/no-permissions actual writes `RESTRICTED` because they mutate host/project integration configuration | eight `install-print-config-*.txt`, 198–352 B and 53–97 tok each |
-| `uninstall` | `-t/--target` list/all; `-l/--location` global/local; `-y/--yes`; help | all three options `VERIFIED` as a lane-local global no-op across eight unconfigured agents; deletion of a real host integration `RESTRICTED` | isolated console evidence; output bytes/tokens `UNKNOWN` |
-| `telemetry [action]` | actions `status`, `on`, `off`; help | status/off `VERIFIED` in lane-local state; on/transmission `RESTRICTED` by no-network/no-telemetry policy | telemetry lane state; output bytes/tokens `UNKNOWN` |
+| `uninstall` | `-t/--target` list/all; `-l/--location` global/local; `-y/--yes`; help | options, global deletion, unsupported local target, and all-target no-op `VERIFIED` inside a synthetic isolated home; CodeGraph blocks were removed while unrelated TOML and Markdown survived; real host deletion remains `RESTRICTED` | `completion-v2/run/uninstall-*`, plus before/after files |
+| `telemetry [action]` | actions `status`, `on`, `off`; help | status/off and persisted lane-local state `VERIFIED`; `on`/transmission `RESTRICTED` by no-network/no-telemetry policy | `completion-v2/run/telemetry-*`, `telemetry-config.json` |
 | `upgrade [version]` | optional version; `--check`; `-f/--force`; help | all actions `RESTRICTED`: even check contacts package/release endpoints; install mutates package files | `help/upgrade.txt`; output/query/model usage `UNKNOWN`/`UNKNOWN`/0 |
 | `version` | help; aliases root `-v/--version` | command and alias `VERIFIED`, reports 1.0.1 | `help/version.txt`; runtime output bytes/tokens `UNKNOWN` |
 | hidden `serve` | `-p/--path`, `--mcp`, `--no-watch`; help | all flags `VERIFIED` in direct stdio mode; shared daemon unavailable in sandbox | `serve-info.txt` 765 B/262 tok and MCP JSONL files |
-| hidden `prompt-hook` | stdin JSON `{prompt,cwd}`; help | structural prompt case `VERIFIED`; writes no source | `prompt-hook-structural.txt` 6,141 B/1,458 tok |
+| hidden `prompt-hook` | stdin JSON `{prompt,cwd}`; help | structural prompt and `CODEGRAPH_NO_PROMPT_HOOK=1` suppression `VERIFIED`; writes no source | `prompt-hook-structural.txt`; `completion-v2/run/prompt-hook-{default,disabled}.*` |
 | help router | `help [command]` and every command `--help` | root, 20 public, and 2 hidden help surfaces `VERIFIED`, all exit 0 | `help/*.txt` |
 
-Safe unexercised variants are explicitly `UNTESTED`; unsafe or externally
-effective variants are explicitly `RESTRICTED`.
+Remaining `UNTESTED` or `PARTIAL` controls below state the exact missing
+activation condition. Unsafe or externally effective variants are
+`RESTRICTED`; unregistered internal paths are `INVENTORIED`, not silently
+treated as public capabilities.
 
 ## Appendix B: configuration-control ledger
 
@@ -534,50 +590,63 @@ control exists; runtime verification is stated separately.
 
 | Control | Meaning/default/validation | Runtime status and applicability | Evidence |
 | --- | --- | --- | --- |
-| `CODEGRAPH_DIR` | plain directory name only; default `.codegraph`; invalid path separator, absolute path, or `..` falls back | `UNTESTED`; useful for Windows/WSL dual indexes; changes index location | `src/directory.ts:12-78`, README around line 722 |
+| `CODEGRAPH_DIR` | plain directory name only; default `.codegraph`; invalid path separator, absolute path, or `..` falls back | `VERIFIED` with `.codegraph-alt`: init/status selected it and `uninit --force` removed it without touching source | `completion-v2/run/init-alt-dir.*`, `status-alt-dir.*`, `alt-dir.*.state` |
 | `CODEGRAPH_MCP_TOOLS` | comma allowlist; ordinary default lists explore only | `VERIFIED` for default, all-eight proxy, and tiny-repo dynamic list | `runtime/mcp-default.jsonl`, `mcp-expanded.jsonl`, direct probes |
 | `CODEGRAPH_NO_DAEMON` | truthy selects direct MCP | `VERIFIED`; required in this sandbox | `src/mcp/index.ts:125-267`, direct MCP JSONL |
 | `CODEGRAPH_NO_WATCH` | `1` disables watcher | `VERIFIED` through `serve --no-watch`; makes index manually synchronized | `src/sync/watch-policy.ts:78-88`, MCP direct setup |
-| `CODEGRAPH_FORCE_WATCH` | `1` overrides automatic watch suppression | `UNTESTED`; needs a platform condition that would otherwise suppress watch | `src/sync/watch-policy.ts:78-88` |
-| `CODEGRAPH_WATCH_DEBOUNCE_MS` | integer 100–60,000 ms; invalid value ignored; default 2,000 ms | `PARTIAL`; SDK watcher ran with explicit 100 ms option, env override not separately run | `src/mcp/engine.ts:269-289`, SDK output |
-| `CODEGRAPH_MAX_DIR_WATCHES` | positive integer, default 50,000 | `UNTESTED`; only relevant to large Linux directory trees | `src/sync/watcher.ts:123-137` |
-| `CODEGRAPH_EXPLORE_LINENUMS` | default on; `0` disables line numbers | `PARTIAL`; default line-number output verified, disabled form untested | `src/mcp/tools.ts:268-272`, explore evidence |
-| `CODEGRAPH_ADAPTIVE_EXPLORE` | default on; `0`/`false` disables adaptive sizing | `PARTIAL`; tiny-repo adaptive cap observed, disabled form untested | `src/mcp/tools.ts:285-288`, direct `tools/list` |
-| `CODEGRAPH_RANK_NO_MULTITERM` | `1` disables multi-term ranking contribution | `UNTESTED`; ranking diagnostic/escape hatch | `src/mcp/tools.ts:2532-2534` |
-| `CODEGRAPH_VALUE_REFS` | default on; `0` disables value-reference edges | `PARTIAL`; default graph includes reference edges, disabled extraction untested | `src/extraction/tree-sitter.ts:324-329` |
-| `CODEGRAPH_RESOLVER_CACHE_SIZE` | positive integer, default 5,000 per resolver cache | `UNTESTED`; only materially distinguishable on large resolution batches | `src/resolution/index.ts:51-61` |
+| `CODEGRAPH_FORCE_WATCH` | `1` overrides automatic watch suppression | `UNTESTED` conclusively: this Linux path already permits watching, so the override cannot change behavior; proof requires WSL `/mnt`, macOS CI, or another path where auto-policy disables watching | `src/sync/watch-policy.ts:78-88` |
+| `CODEGRAPH_WATCH_DEBOUNCE_MS` | integer 100–60,000 ms; invalid value ignored; default 2,000 ms | `VERIFIED`; direct MCP logged the 100 ms environment value and activated watching; SDK edit evidence also observed pending state then automatic indexing | `completion-v2/run/mcp-watch-env.stderr`, `sdk-completeness.stdout` |
+| `CODEGRAPH_MAX_DIR_WATCHES` | positive integer, default 50,000 | `VERIFIED`; value 1 capped the Linux directory watch tree, emitted the documented warning, retained a root watcher, and still indexed a root edit | `completion-v2/run/sdk-completeness.stdout` |
+| `CODEGRAPH_EXPLORE_LINENUMS` | default on; `0` disables line numbers | `VERIFIED`; paired outputs differ only as expected in source-line prefixes/related explanatory text | `completion-v2/run/explore-lines-{default,disabled}.stdout` |
+| `CODEGRAPH_ADAPTIVE_EXPLORE` | default on; `0`/`false` disables adaptive sizing | `PARTIAL`; both modes ran safely, but even a targeted four-implementation fixture produced byte-identical output because CodeGraph did not classify an eligible off-spine polymorphic family; conclusive proof needs a graph that satisfies all internal flow/spine/uniqueness gates | `completion-v2/run/adaptive-{default,disabled}.stdout` |
+| `CODEGRAPH_RANK_NO_MULTITERM` | `1` disables multi-term ranking contribution | `PARTIAL`; both modes ran but were byte-identical on the fixture; a conclusive probe requires multiple competing result clusters with nonzero multi-term ranking mass | `completion-v2/run/explore-rank-{default,no-multiterm}.stdout` |
+| `CODEGRAPH_VALUE_REFS` | default on; `0` disables value-reference edges | `PARTIAL`; disabled indexing completed at 93/211, identical to default because this fixture has no independently identified value-reference anchor; such an anchor is required to prove edge removal | `completion-v2/run/init-value-refs-disabled.*`, `status-value-refs-disabled.stdout` |
+| `CODEGRAPH_RESOLVER_CACHE_SIZE` | positive integer, default 5,000 per resolver cache | `PARTIAL`; value 1 completed a full 14-file resolution pass with identical counts; externally visible eviction/performance effects require a corpus that overflows a resolver cache with repeat lookups | `completion-v2/run/init-resolver-cache-one.*`, `status-resolver-cache-one.stdout` |
 | `CODEGRAPH_TELEMETRY` | environment override for telemetry policy | disabled form `VERIFIED`; enabled/transmit form `RESTRICTED` | `src/bin/codegraph.ts:2054-2071`, telemetry lane |
 | `DO_NOT_TRACK` | standard telemetry opt-out | `VERIFIED`; wrapper forces it | wrapper and README around line 613 |
-| `CODEGRAPH_ASCII` / `CODEGRAPH_UNICODE` | terminal glyph override | `UNTESTED`; presentation only | `src/ui/glyphs.ts:14-23` |
-| `CODEGRAPH_DEBUG` | include stack/detail in error rendering | `UNTESTED`; diagnostics only | `src/errors.ts:181` |
-| `CODEGRAPH_MCP_DEBUG` | MCP/watchdog diagnostic stderr | `UNTESTED`; diagnostics only | `src/mcp/index.ts:329`, liveness watchdog |
-| `CODEGRAPH_MCP_LOG_ATTACH` | proxy attach logging diagnostic | `UNTESTED`; diagnostics only | `src/mcp/proxy.ts:44` |
+| `CODEGRAPH_ASCII` / `CODEGRAPH_UNICODE` | terminal glyph override | `VERIFIED`; status emitted `[OK]`/ASCII dash versus `✓`/Unicode em dash | `completion-v2/run/status-{ascii,unicode}.stdout` |
+| `CODEGRAPH_DEBUG` | enables default logger debug output | `VERIFIED`; default logger suppressed the off case and emitted only the enabled message; logger replacement was also exercised | `completion-v2/run/sdk-completeness.stdout` |
+| `CODEGRAPH_MCP_DEBUG` | MCP/watchdog diagnostic stderr | `VERIFIED`; direct-mode and watchdog diagnostics appeared only in the enabled probes | `completion-v2/run/mcp-watchdog-*-v3.stderr` |
+| `CODEGRAPH_MCP_LOG_ATTACH` | proxy attach logging diagnostic | `UNAVAILABLE`; it fires only after successful shared-daemon attachment, but Unix socket creation is denied with `EPERM`; direct mode has no attach event | `src/mcp/proxy.ts:44`, daemon failure evidence |
 | `CODEGRAPH_DAEMON_IDLE_TIMEOUT_MS` | nonnegative integer; default 300,000 ms | `UNAVAILABLE` with daemon socket blocked | `src/mcp/daemon.ts:60,506-511` |
 | `CODEGRAPH_DAEMON_MAX_IDLE_MS` | nonnegative integer; default 1,800,000 ms; 0 disables | `UNAVAILABLE` with daemon socket blocked | `src/mcp/daemon.ts:70,514-519` |
 | `CODEGRAPH_DAEMON_CLIENT_SWEEP_MS` | nonnegative integer; default 30,000 ms; 0 disables | `UNAVAILABLE` with daemon socket blocked | `src/mcp/daemon.ts:73,522-527` |
-| `CODEGRAPH_PPID_POLL_MS` | nonnegative integer; default 5,000 ms | `PARTIAL`; parent liveness path existed but timing override untested | `src/mcp/index.ts:63,103-107` |
-| `CODEGRAPH_NO_WATCHDOG` | truthy disables main-thread watchdog | `UNTESTED`; long-lived daemon only | `src/mcp/liveness-watchdog.ts:35-109` |
-| `CODEGRAPH_WATCHDOG_TIMEOUT_MS` | positive number; default 60,000 ms | `UNTESTED`; long-lived daemon only | `src/mcp/liveness-watchdog.ts:49-66` |
-| `CODEGRAPH_NO_PROMPT_HOOK` / `CODEGRAPH_PROMPT_HOOK=0` | disables installed Claude front-load hook | default hook logic `VERIFIED`; disable override `UNTESTED` | `src/bin/codegraph.ts:1041`, prompt-hook evidence |
+| `CODEGRAPH_PPID_POLL_MS` | nonnegative integer; default 5,000 ms | `PARTIAL`; value 0 ran in valid direct MCP sessions; proving parent-death timing requires terminating a supervising process and is outside this short-lived stdio probe | `completion-v2/run/mcp-watchdog-*-v3.*` |
+| `CODEGRAPH_NO_WATCHDOG` | truthy disables main-thread watchdog | `VERIFIED`; paired valid MCP sessions showed an armed child by default and no child diagnostic when disabled | `completion-v2/run/mcp-watchdog-*-v3.stderr` |
+| `CODEGRAPH_WATCHDOG_TIMEOUT_MS` | positive number; default 60,000 ms | `VERIFIED`; debug output recorded `timeoutMs=1000` and derived `checkMs=200` | `completion-v2/run/mcp-watchdog-enabled-v3.stderr` |
+| `CODEGRAPH_NO_PROMPT_HOOK` / `CODEGRAPH_PROMPT_HOOK=0` | disables installed Claude front-load hook | `VERIFIED`; the default structural prompt emitted 5,817 bytes while the disable override emitted zero | `completion-v2/run/prompt-hook-{default,disabled}.stdout` |
 | `CODEGRAPH_ALLOW_UNSAFE_NODE` | bypasses supported Node-version refusal | `RESTRICTED`; intentionally bypasses runtime safety check | `src/bin/node-version-check.ts`, `src/bin/codegraph.ts:71-81` |
-| `CODEGRAPH_NO_RELAUNCH` | disables WASM/V8 flag relaunch | `UNTESTED`; process-runtime escape hatch | `src/extraction/wasm-runtime-flags.ts:87-95` |
+| `CODEGRAPH_NO_RELAUNCH` | disables WASM/V8 flag relaunch | `PARTIAL`; version command accepted the control, but Node 22.22 already has the required flags, so a conclusive no-relaunch delta needs a runtime that would otherwise relaunch | `completion-v2/run/no-relaunch-version.*` |
 
 Internal/environment plumbing is also fully accounted for:
 
 | Internal control | Meaning/default | Disposition |
 | --- | --- | --- |
-| `CODEGRAPH_DAEMON_INTERNAL` | marks the detached daemon child and selects socket-listen behavior | `UNAVAILABLE` here because socket bind is denied; internal, not user-facing |
-| `CODEGRAPH_HOST_PPID` | carries the original host parent PID across WASM relaunch | `UNTESTED`; internal liveness plumbing |
-| `CODEGRAPH_WASM_RELAUNCHED` | one-time relaunch guard | `UNTESTED`; internal process plumbing |
-| `CODEGRAPH_INSTALL_DIR` | preserves a custom install directory across upgrade | `RESTRICTED`; upgrade/network/host mutation |
-| `CODEGRAPH_VERSION` | upgrade version pin alternative to positional version | `RESTRICTED`; upgrade/network/host mutation |
+| `CODEGRAPH_DAEMON_INTERNAL` | marks the detached daemon child and selects socket-listen behavior | `INVENTORIED`; activating it reaches the shared socket path that is `UNAVAILABLE` here |
+| `CODEGRAPH_HOST_PPID` | carries the original host parent PID across WASM relaunch | `INVENTORIED`; internal child-process plumbing, not a supported user capability |
+| `CODEGRAPH_WASM_RELAUNCHED` | one-time relaunch guard | `INVENTORIED`; internal child-process plumbing, not a supported user capability |
 | `CODEGRAPH_LOGIN_URL` | test/override base for dormant device login | `RESTRICTED`; network and no registered public login command |
-| `CODEGRAPH_OFFLOAD_DISABLE` | disables dormant reasoning offload | `UNTESTED`; no registered public offload command |
+| `CODEGRAPH_OFFLOAD_DISABLE` | disables dormant reasoning offload | `INVENTORIED`; no registered public offload command exists to exercise |
 | `CODEGRAPH_OFFLOAD_URL`, `CODEGRAPH_OFFLOAD_KEY`, `CODEGRAPH_OFFLOAD_MODEL` | BYO endpoint, credential, and model; managed default model or `gpt-oss-120b` depending origin | `RESTRICTED`; network/credential path and unregistered publicly |
 | `CODEGRAPH_OFFLOAD_EFFORT`, `CODEGRAPH_OFFLOAD_STYLE` | defaults `low` and `plain` | `RESTRICTED`; unregistered model path |
 | `CODEGRAPH_OFFLOAD_TIMEOUT_MS`, `CODEGRAPH_OFFLOAD_MAXTOKENS` | defaults 20,000 ms and 12,000 tokens | `RESTRICTED`; unregistered model path |
-| `CODEGRAPH_OFFLOAD_STRIP`, `CODEGRAPH_OFFLOAD_DEBUG` | response stripping and diagnostics, enabled by `1` | `UNTESTED`; unregistered model path |
+| `CODEGRAPH_OFFLOAD_STRIP`, `CODEGRAPH_OFFLOAD_DEBUG` | response stripping and diagnostics, enabled by `1` | `INVENTORIED`; no public offload command exists, so there is no offline public result to transform or debug |
 | `CODEGRAPH_OFFLOAD_USAGE_LOG` | append-only per-call usage JSONL path | `RESTRICTED`; only meaningful if offload/network executes |
+
+### Standalone installer and upgrade controls
+
+The standalone shell installer, not the Node CLI dispatcher, declares three
+public environment controls:
+
+| Control | Source/default and effects | Disposition |
+| --- | --- | --- |
+| `CODEGRAPH_INSTALL_DIR` | default `$HOME/.codegraph`; installation creates `versions/<version>` and `current`, while `--uninstall` recursively deletes the selected install directory | `RESTRICTED`; download and recursive deletion were not run |
+| `CODEGRAPH_BIN_DIR` | default `$HOME/.local/bin`; install creates/replaces the `codegraph` symlink to `<install>/versions/<version>/bin/codegraph`, warns if the directory is absent from `PATH`, and `--uninstall` deletes that symlink | `RESTRICTED`; source behavior is exact, but the global/standalone installer was not executed |
+| `CODEGRAPH_VERSION` | optional release tag; otherwise installer resolves latest over GitHub and upgrade accepts it as an alternate pin | `RESTRICTED`; requires network and mutates the install tree |
+
+Evidence is `install.sh:17-27,80-91` and `src/upgrade/index.ts`. The ordinary
+CLI `uninstall` tested above removes agent integration entries only; it does
+not delete the standalone bundle or symlink.
 
 `CODEGRAPH_SECTION_START`, `CODEGRAPH_SECTION_END`,
 `CODEGRAPH_INSTRUCTIONS_BLOCK`, and their `CODEGRAPH_START`/`CODEGRAPH_END`
@@ -707,9 +776,9 @@ The entire probe took 0.80 s, peaked at 133,264 KB RSS, and produced a
 | Method group | Every method in group | Result, effects, and disposition |
 | --- | --- | --- |
 | static lifecycle | `init`, `initSync`, `open`, `openSync`, `isInitialized` | all `VERIFIED` using fixture or lane-home temporary projects; init/open can create/open SQLite and index |
-| handle lifecycle | `reopenIfReplaced`, `close`, `destroy`, `uninitialize`, `getProjectRoot` | `close`, `destroy`, `uninitialize`, root `VERIFIED`; replacement-healing false case `VERIFIED`, actual inode-replacement case `UNTESTED`; uninitialize deletes only the temporary project's index |
+| handle lifecycle | `reopenIfReplaced`, `close`, `destroy`, `uninitialize`, `getProjectRoot` | all `VERIFIED`; an actual disposable database inode replacement returned true and reopened, while uninitialize deletes only the temporary project's index |
 | indexing | `indexAll`, `indexFiles`, `sync`, `isIndexing` | full index via `init({index:true})`, sync, and state `VERIFIED`; `indexFiles` `PARTIAL` because an opened facade returned `parser_error` for TypeScript despite CLI/full init support |
-| watcher | `watch`, `unwatch`, `isWatching`, `isWatcherDegraded`, `getWatcherDegradedReason`, `getPendingFiles`, `waitUntilWatcherReady` | lifecycle and healthy empty state `VERIFIED`; actual edit event/degraded watcher `UNTESTED` |
+| watcher | `watch`, `unwatch`, `isWatching`, `isWatcherDegraded`, `getWatcherDegradedReason`, `getPendingFiles`, `waitUntilWatcherReady` | lifecycle and an actual edit event `VERIFIED`: pending state appeared, then the new symbol became searchable after debounce; a genuinely degraded state remains `UNTESTED` because it requires OS `EMFILE`/`ENFILE`/inotify exhaustion or repeated live lock contention |
 | freshness | `getChangedFiles`, `getLastIndexedAt`, `getIndexBuildInfo`, `isIndexStale` | clean state and build stamp `VERIFIED`; stale state independently verified by CLI |
 | extraction/resolution | `extractFromSource`, `resolveReferences`, `resolveReferencesBatched`, `getDetectedFrameworks`, `reinitializeResolver` | resolver calls and empty framework result `VERIFIED`; direct virtual TypeScript extraction `PARTIAL` because it returned zero nodes in the opened facade |
 | statistics/backend | `getStats`, `getBackend`, `getJournalMode` | `VERIFIED`: 93/211 before SDK mutation, node-sqlite, WAL |
@@ -725,15 +794,15 @@ The entire probe took 0.80 s, peaked at 133,264 KB RSS, and produced a
 | Runtime exports | Capability and final disposition |
 | --- | --- |
 | `CodeGraph`, `default` | facade/default alias presence and methods `VERIFIED` |
-| `DatabaseConnection`, `QueryBuilder`, `getDatabasePath` | embedded database building blocks exported `VERIFIED`; direct low-level query construction `UNTESTED` because facade coverage was sufficient |
-| `getCodeGraphDir`, `isInitialized`, `findNearestCodeGraphRoot`, `CODEGRAPH_DIR` | directory helpers exported `VERIFIED`; facade/static initialization exercised; alternate-dir and nearest-root variants `UNTESTED` |
-| `detectLanguage`, `isLanguageSupported`, `isGrammarLoaded`, `getSupportedLanguages`, `initGrammars`, `loadGrammarsForLanguages`, `loadAllGrammars` | grammar API exports `VERIFIED` as present; initialization was exercised indirectly; per-language loaders are `UNTESTED` for the 29 absent languages |
-| `CodeGraphError`, `FileError`, `ParseError`, `DatabaseError`, `SearchError`, `VectorError`, `ConfigError` | error class exports `VERIFIED` as present; individual construction/formatting paths `UNTESTED` |
+| `DatabaseConnection`, `QueryBuilder`, `getDatabasePath` | `VERIFIED` directly: open/path/backend/journal/schema/close plus query-builder stats and search all ran against the disposable database |
+| `getCodeGraphDir`, `isInitialized`, `findNearestCodeGraphRoot`, `CODEGRAPH_DIR` | `VERIFIED`: default snapshot, alternate CLI directory, initialized state, database path, and nearest-root lookup from a nested directory |
+| `detectLanguage`, `isLanguageSupported`, `isGrammarLoaded`, `getSupportedLanguages`, `initGrammars`, `loadGrammarsForLanguages`, `loadAllGrammars` | callable API behavior `VERIFIED`: initialization/all-load completed and TypeScript/Rust detection/support/load state was true; semantic accuracy for absent languages remains `UNTESTED` for the specific fixture prerequisites in Appendix D |
+| `CodeGraphError`, `FileError`, `ParseError`, `DatabaseError`, `SearchError`, `VectorError`, `ConfigError` | all constructors `VERIFIED` with their runtime names and error codes |
 | `Logger` | type-only TypeScript export; no runtime value, therefore `NOT_APPLICABLE` as a JavaScript callable |
-| `setLogger`, `getLogger`, `silentLogger`, `defaultLogger` | logger runtime exports `VERIFIED` as present; logger replacement `UNTESTED` |
-| `Mutex`, `FileLock` | exports `VERIFIED`; used indirectly by indexing; direct contention behavior `UNTESTED` |
-| `processInBatches`, `debounce`, `throttle`, `MemoryMonitor` | utility exports `VERIFIED` as present; direct utility semantics `UNTESTED` |
-| `FileWatcher`, `LockUnavailableError` | exports `VERIFIED`; watcher used through facade; direct constructor/lock-error path `UNTESTED` |
+| `setLogger`, `getLogger`, `silentLogger`, `defaultLogger` | `VERIFIED`: replacement/restore, silent logger selection, and debug-off/debug-on behavior ran |
+| `Mutex`, `FileLock` | `VERIFIED` directly: mutex serialization, live-PID contention error, release, and lock-file deletion |
+| `processInBatches`, `debounce`, `throttle`, `MemoryMonitor` | `VERIFIED` directly with ordered batch completions, last-call debounce, leading/queued throttle, and sampled peak/threshold callbacks |
+| `FileWatcher`, `LockUnavailableError` | direct watcher start/readiness/healthy stop and error construction `VERIFIED`; facade edit/sync behavior separately verified |
 | `MCPServer` | export and direct stdio runtime `VERIFIED`; shared-daemon transport unavailable in sandbox |
 | `LANGUAGES`, `NODE_KINDS` | runtime constants `VERIFIED` and exhaustively dispositioned in Appendix D |
 | `IndexProgress`, `IndexResult`, `SyncResult`, `ResolutionResult`, `WatchOptions`, `PendingFile`, and `export * from './types'` interfaces | type-only compile-time surfaces; `NOT_APPLICABLE` as runtime JavaScript callables |
@@ -744,6 +813,10 @@ when called on both sync-opened and async-opened instances, while CLI
 initialization and `CodeGraph.init(...,{index:true})` indexed TypeScript. That
 is a public embedded-API prerequisite or defect requiring focused upstream
 investigation before relying on per-file SDK indexing.
+
+Completion evidence for these rows is
+`completion-v2/run/sdk-completeness.stdout` and
+`completion-v2/run/exports-followup.stdout`; both exited 0.
 
 ## Appendix F: per-capability evidence and measurement interpretation
 
@@ -761,8 +834,9 @@ content or tool claims.
 | callers/callees/impact/affected | shared | `UNKNOWN` | 288–3,535 B; 72–1,021 tok | 0 | read-only | dependency traversal; ambiguous names/diff-awareness limits |
 | explore | shared | `UNKNOWN` | 8,225–11,058 B; 1,934–2,626 tok CLI | 0 | reads index and source | best orientation, but synthesized edge needs confirmation |
 | MCP | shared plus handshake `UNKNOWN` | `UNKNOWN` | per-tool table in Appendix C | 0 | read-only | direct mode verified; daemon unavailable |
-| SDK facade | shared | 0.80 s complete probe | 5,435 B/1,591 tok | 0 | reads/writes disposable indexes; temporary clear/uninitialize | broad embedded API, per-file parser caveat |
-| installer config | none beyond CLI | `UNKNOWN` | 198–352 B; 53–97 tok | 0 | print only | actual integration writes restricted |
-| telemetry off/status | none beyond CLI | `UNKNOWN` | `UNKNOWN` | 0 | lane-local config/buffer | transmission restricted |
+| SDK facade | shared | 0.80 s original probe; completion time `UNKNOWN` | original 5,435 B/1,591 tok; completion output not tokenized | 0 | reads/writes disposable indexes; temporary replacement/watcher/clear/uninitialize | broad embedded API, per-file parser caveat |
+| installer/uninstaller | none beyond CLI | `UNKNOWN` | print configs 198–352 B; deletion outputs not tokenized | 0 | print only for install; uninstall mutated synthetic isolated Codex files | real host install/uninstall restricted |
+| telemetry off/status | none beyond CLI | `UNKNOWN` | durable stdout/state, not tokenized | 0 | lane-local config/buffer | transmission restricted |
 | upgrade | not run | `UNKNOWN` | `UNKNOWN` | `UNKNOWN` because no operation occurred | network/package mutation | restricted |
-| Terra probe | MCP index ready | 2.487 s rejection | 801 B/237 tok event stream | provider usage `UNKNOWN` | no tool call/read/write | invalid frozen schema; no retry in this task |
+| excluded schema setup | MCP index ready | 2.487 s rejection | 801 B/237 tok event stream | provider usage `UNKNOWN` | no tool call/read/write | `DISCOVERY_SETUP` / `SMOKE_EXCLUDED`; not a Terra probe result |
+| valid Terra probe | pending | `UNKNOWN` | `UNKNOWN` | `UNKNOWN` | not run | gated on the shared runner |
