@@ -125,13 +125,14 @@ The experiment will therefore use the least expensive assignment that preserves 
 
 | Work | Model and effort | Reason |
 | --- | --- | --- |
-| Indexing, token counting, manifests, metrics, CSV transforms, and other deterministic work | No model | A model adds cost without adding evidence. |
-| Bounded extraction or normalization with an explicit source and output schema | Luna low | Cheapest suitable lane; no central causal inference is delegated to it. |
+| CLI/MCP capability enumeration, schema capture, indexing, token counting, manifests, metrics, CSV transforms, and other deterministic work | No model | A model adds cost without adding evidence. |
+| Bounded capability-schema or evidence normalization with an explicit source and output schema, only when a deterministic transform is insufficient | Luna low | Cheapest suitable lane; its output is mechanically checked and no capability judgment is delegated to it. |
 | Scan-only repository orientation or candidate-file discovery | Terra low | Efficient broad reading before deeper analysis. |
+| Comparable agent-mediated capability probes and the cross-tool capability matrix | Terra medium | Natural-language tool use needs a capable agent, and one fixed configuration keeps tool comparisons fair. |
 | Source-only and all three graph-assisted controlled runs | Terra medium | Same capable, balanced configuration in every arm prevents model choice from confounding the tool comparison. |
 | Routine tool-lane investigation, lesson drafting, teaching dialogue, and first-pass blind scoring | Terra medium | Best default balance of reading quality, reasoning, and cost. |
 | Reference architecture, central lifecycle reconstruction, anchor selection, and final systems synthesis | Sol medium | These decisions define ground truth and require the strongest causal systems reasoning. |
-| Disputed claims or mastery/quality adjudication | Sol low first, Sol medium if needed | Escalate only the contested portion. |
+| Disputed capability evidence, fairness decisions, or mastery/quality adjudication | Sol low first, Sol medium if needed | Escalate only the contested portion. |
 | A failed quality gate or irreconcilable evidence | Sol high, then xhigh only if measured benefit is still needed | Higher effort is an exception with a recorded reason and before/after result. |
 
 `max` is reserved for an exceptional unresolved systems question after `xhigh` proves insufficient. `ultra` is excluded from the experiment because its delegated execution changes the independence and cost structure being measured. Although public API guidance discusses a `none` effort in some contexts, the current local Codex catalog advertises `low`, `medium`, `high`, `xhigh`, and `max` for all three models, plus `ultra` for Sol and Terra; Phase 0 must revalidate the live CLI rather than assume `none` is available.
@@ -162,6 +163,7 @@ Current readiness observations, to be revalidated in Phase 0:
 - CodeGraph has a local built CLI reporting `1.0.1`.
 - CBM's expected `build/c/codebase-memory-mcp` executable is currently absent and must be built or otherwise provisioned after approval.
 - Graphify has local virtual environments, but its import, package version, and exact supported command surface must be smoke-tested.
+- Source registries currently show eight CodeGraph MCP tools, fourteen CBM tools, and ten Graphify MCP tools plus Graphify resources; these are preliminary source observations, not runtime-verified capability counts.
 - Pi is primarily a TypeScript monorepo; Codex is substantially larger and primarily a Rust workspace with additional TypeScript surfaces.
 
 These observations are setup facts, not experiment results.
@@ -215,7 +217,7 @@ Each subject clone and tool clone must:
 
 - resolve to the same frozen commit;
 - contain its own `.git`, preventing CBM from walking into the parent repository;
-- have its own tool-local `HOME`, cache, index, and output paths;
+- have its own explicitly configured cache, state, index, and output paths;
 - start with a clean `git status`;
 - record a tracked-file manifest before the run;
 - be checked for unexpected tracked-source changes and new files after the run.
@@ -287,24 +289,80 @@ Codex begins only after the Pi learning gate. Its map will test and refine:
 
 The Codex scope will be divided into smaller lessons than Pi because the repository is materially larger. Breadth must not replace a traceable mental model.
 
-## 8. Tool-Native Runbooks
+## 8. Capability Discovery and Tool-Native Runbooks
 
 Exact commands and versions will be captured in the Phase 0 runbook after live `--help` checks. The intended operations are:
 
-### 8.1 CodeGraph
+### 8.1 Complete public-capability discovery
+
+“Complete capabilities” means every public capability exposed by the frozen tool revision:
+
+- documented CLI commands, subcommands, flags, and configuration;
+- runtime-registered MCP tools, input schemas, resources, prompts, and server instructions;
+- supported languages, file types, graph entities/relationships, index/update modes, and query modes;
+- installation, health, status, export, visualization, integration, and optional-backend surfaces;
+- observable prerequisites, filesystem or network effects, credentials, external services, and failure behavior.
+
+Hidden debug commands and internal functions are recorded separately but are not treated as supported public capabilities merely because they exist in source.
+
+Capability discovery triangulates four evidence sources in this order:
+
+1. **Runtime surface:** recursive CLI `--help`, version output, MCP initialization, `tools/list`, `resources/list`, and exposed schemas.
+2. **Source registration:** command dispatchers, MCP registries, schemas, supported-language tables, feature gates, and optional-dependency declarations.
+3. **Tests and maintained documentation:** expected behavior, examples, limitations, and claimed coverage.
+4. **Runtime probes:** controlled success, boundary, ambiguity, stale-index, unsupported-input, and failure cases.
+
+Runtime discovery at the frozen revision is authoritative about what is actually exposed. Source and documentation explain intent and find surfaces that may be unavailable in the current build; neither is accepted as proof that a capability works.
+
+Every public capability receives one final disposition:
+
+- **VERIFIED:** exercised successfully with expected evidence;
+- **PARTIAL:** works only for a documented subset or with material loss;
+- **BROKEN:** exposed but fails its declared contract;
+- **UNAVAILABLE:** requires an optional dependency or backend absent from the frozen environment;
+- **RESTRICTED:** requires credentials, paid services, network access, an external database, or a destructive/remote action not authorized for this study;
+- **NOT APPLICABLE:** public capability exists but does not apply to codebase understanding;
+- **UNTESTED:** no safe conclusive probe was possible, with the reason recorded.
+
+The discovery procedure is:
+
+1. Capture the frozen revision, build/version, recursive help, MCP schemas/resources, configuration surface, optional dependencies, and source registries without a model.
+2. Normalize the inventory deterministically. Luna low may be used only for bounded schema normalization that cannot be expressed reliably as a deterministic transform; its output must be mechanically checked.
+3. Build a disposable mixed TypeScript/Rust fixture containing packages, cross-file calls, inheritance or traits, callbacks/events, name collisions, unresolved/dynamic edges, entry points, state, and a synthetic change.
+4. Exercise every safe offline public capability. Mutating, update, install, delete, or change-analysis operations run only inside disposable tool and subject clones.
+5. Inventory but do not execute restricted network, paid-model, GitHub-write, external-database, global-install, or credential-bearing capabilities without separate approval.
+6. Run a fixed Terra-medium agent probe battery against each tool’s normal public interface. Keep prompts and runner configuration identical where the capability permits comparison.
+7. Reconcile runtime observations with source and documentation, using Sol low only when evidence conflicts or a fairness decision is disputed; escalate that narrow question to Sol medium only if needed.
+8. Freeze the exact tool surface used later in controlled Pi/Codex arms and record any capability intentionally excluded.
+
+Capability-discovery model tokens, tool calls, and smoke-test outputs are measured separately and excluded from the controlled source-only versus graph-assisted experiment. “Full discovery” does not justify unsafe execution or installing every optional backend.
+
+The capability matrix records, at minimum:
+
+- public name and surface (`CLI`, `MCP tool`, `MCP resource`, or configuration);
+- purpose, inputs, outputs, schema size, and prerequisites;
+- supported languages/file types and graph entity/edge types where relevant;
+- read/write/network/credential effects;
+- documentation, source-registration, and runtime evidence;
+- fixture result, Pi/Codex applicability hypothesis, limitations, and final disposition;
+- setup time, query time, output tokens/bytes, and model tokens when applicable.
+
+### 8.2 CodeGraph
 
 - Build or copy the CLI inside the disposable CodeGraph tool clone; do not install globally or write into the live tool submodule.
 - Disable or redirect telemetry and home-directory writes.
+- Enumerate every public CLI command and the complete runtime MCP tool list before selecting the experiment surface.
 - Initialize one isolated subject clone and record index statistics.
 - Use `explore` for architecture and flow questions.
 - Use `node`, `query`, `callers`, `callees`, and `impact` when they add discriminating evidence.
 - Record verbatim-source coverage, symbol resolution, path quality, blast-radius usefulness, stale-index behavior, and output size.
 - In the MCP measurement, expose only the normal listed tool surface unless the run explicitly measures the expanded set.
 
-### 8.2 CBM
+### 8.3 CBM
 
 - Build or provision the binary inside the disposable CBM tool clone without global installation.
 - Give each run a dedicated `CBM_CACHE_DIR`.
+- Capture all fourteen advertised tools from the disposable runtime and reconcile them with `tools/list` and the source registry.
 - Verify the indexed project root before trusting any result.
 - Run `get_graph_schema` first, then `get_architecture`.
 - Use `search_graph`, `trace_path`, `query_graph`, `get_code_snippet`, and `search_code` according to the question.
@@ -312,10 +370,11 @@ Exact commands and versions will be captured in the Phase 0 runbook after live `
 - Record hybrid-LSP behavior, call-path quality, name-collision behavior, language/idiom sensitivity, schema overhead, and any git-root bleed.
 - Keep the primary comparison read-only; a synthetic diff for `detect_changes` may be created only in a disposable clone and measured separately.
 
-### 8.3 Graphify
+### 8.4 Graphify
 
-- Create or reuse a virtual environment inside the disposable Graphify tool clone with a tool-local `HOME`; do not modify the live Graphify submodule.
+- Create or reuse a virtual environment inside the disposable Graphify tool clone with explicit tool-local cache and state paths; do not modify the live Graphify submodule.
 - Set telemetry off and run the code-only AST path without an LLM backend.
+- Capture the full CLI dispatcher, runtime MCP tools/resources, optional extras, and backend prerequisites before selecting the offline experiment surface.
 - Direct all artifacts to an explicit writable output directory.
 - Use extraction, clustering/report generation, `query`, `explain`, `path`, and impact/affected operations where supported.
 - Prefer stable node IDs over ambiguous labels.
@@ -491,6 +550,13 @@ Each core report should include only the diagrams needed to communicate the syst
 ```text
 docs/research/harness-tools/codebase-intelligence/experiments/coding-agents/
   methodology.md
+  capabilities/
+    methodology.md
+    codegraph.md
+    cbm.md
+    graphify.md
+    capability-matrix.csv
+    experiment-surface-freeze.md
   pi/
     reference-ledger.md
     codegraph.md
@@ -537,6 +603,7 @@ scratchpad/code-intelligence/
     graphify/
   indexes/
   raw-output/
+    capability-discovery/
   sessions/
   metrics/
 ```
@@ -547,17 +614,32 @@ Large graph databases, raw event streams, copied repositories, and generated vis
 
 ### Phase 0 — Readiness and protocol freeze
 
+#### Phase 0A — Runtime and isolation readiness
+
 - Re-record full SHAs and clean state.
-- Verify local tool versions and exact CLI/MCP help.
+- Verify local tool versions, build paths, and runtime prerequisites.
 - Revalidate the live Sol/Terra/Luna model and effort catalog, record current pricing, and pin the Section 3.2 routing matrix.
 - Pin Terra medium for every controlled comparison arm, along with runtime configuration and the artifact tokenizer.
 - Create disposable tool clones; build CBM and create other tool environments only inside those clones.
 - Create Pi subject clones and tool-local homes/caches. Do not create, inspect, or index Codex subject clones yet.
 - Strip model credentials, Git credentials, and unrelated MCP configuration from tool subprocess environments.
-- Freeze the Pi question battery, concrete anchors, prompts, allowed tools, maximum two-turn budget, output contract, scoring keys, replicate count, randomization seed, metric schema, contamination rules, and smoke-test exclusions.
-- Smoke-test one small query per tool.
 
-**Gate:** all three tools run against disposable Pi clones without touching any live submodule or real home/cache; every measured-run control is frozen; tool and subject clones remain clean except for declared build/index artifacts; smoke-test prompts and outputs are excluded from measured sessions.
+#### Phase 0B — Complete tool-capability discovery
+
+- Execute the Section 8.1 discovery protocol using recursive CLI help, live MCP discovery, source registries, tests/docs, and disposable runtime probes.
+- Produce the four capability reports, matrix, and experiment-surface freeze listed in Section 12.
+- Use no model for enumeration and mechanical probes, Luna low only for mechanically checked normalization, Terra medium for the fixed agent-mediated probe battery and matrix synthesis, and Sol only for narrow adjudication.
+- Exercise all safe offline public capabilities on the mixed TypeScript/Rust fixture; inventory restricted or unavailable capabilities without activating them.
+- Record capability-discovery setup, schema, query, output, and model costs separately from the controlled experiment.
+- Freeze the normal public interface and enabled tool list each later experimental arm will receive.
+
+#### Phase 0C — Pi experiment protocol freeze
+
+- Freeze the Pi question battery, prompt templates, allowed tools, maximum two-turn budget, output contract, replicate count, randomization seed, metric schema, contamination rules, and smoke-test exclusions.
+- Freeze concrete Pi source anchors and scoring keys during the Pi systems-reference task before any tool runner sees them.
+- Smoke-test the frozen Pi runner configuration once per tool; exclude those sessions from measured results.
+
+**Gate:** every public capability has a recorded disposition; all safe offline capabilities have fixture evidence; restricted and unavailable capabilities have explicit reasons; the exact later experiment surfaces are frozen; all three tools run against disposable Pi clones without touching any live submodule or real home/cache; every measured-run control is frozen; tool and subject clones remain clean except for declared build/index artifacts; capability probes and smoke-test sessions are excluded from measured results.
 
 ### Phase 1 — Pi tracer bullet
 
@@ -614,22 +696,33 @@ Large graph databases, raw event streams, copied repositories, and generated vis
 The approved execution is tracked by epic `orch-8sk`. Its work items are:
 
 1. `orch-8sk.1` — Finalize this approved systems-level plan and model routing.
-2. `orch-8sk.2` — Freeze protocol and verify tool/model readiness.
-3. `orch-8sk.3` — Build Pi systems reference map.
-4. `orch-8sk.4` — Run Pi CodeGraph experiment.
-5. `orch-8sk.5` — Run Pi CBM experiment.
-6. `orch-8sk.6` — Run Pi Graphify experiment.
-7. `orch-8sk.7` — Synthesize Pi results and token accounting.
-8. `orch-8sk.8` — Teach and review Pi to its systems mastery gate.
-9. `orch-8sk.9` — Build Codex systems reference map.
-10. `orch-8sk.10` — Run Codex CodeGraph experiment.
-11. `orch-8sk.11` — Run Codex CBM experiment.
-12. `orch-8sk.12` — Run Codex Graphify experiment.
-13. `orch-8sk.13` — Synthesize Codex results and token accounting.
-14. `orch-8sk.14` — Teach and review Codex to its systems mastery gate.
-15. `orch-8sk.15` — Produce cross-repository and cross-tool systems synthesis.
+2. `orch-8sk.2` — Verify isolated tool runtimes and model readiness.
+3. `orch-8sk.17` — Freeze Pi experiment protocol and runner surfaces.
+4. `orch-8sk.3` — Build Pi systems reference map.
+5. `orch-8sk.4` — Run Pi CodeGraph experiment.
+6. `orch-8sk.5` — Run Pi CBM experiment.
+7. `orch-8sk.6` — Run Pi Graphify experiment.
+8. `orch-8sk.7` — Synthesize Pi results and token accounting.
+9. `orch-8sk.8` — Teach and review Pi to its systems mastery gate.
+10. `orch-8sk.9` — Build Codex systems reference map.
+11. `orch-8sk.10` — Run Codex CodeGraph experiment.
+12. `orch-8sk.11` — Run Codex CBM experiment.
+13. `orch-8sk.12` — Run Codex Graphify experiment.
+14. `orch-8sk.13` — Synthesize Codex results and token accounting.
+15. `orch-8sk.14` — Teach and review Codex to its systems mastery gate.
+16. `orch-8sk.15` — Produce cross-repository and cross-tool systems synthesis.
 
-The three per-tool tasks for each repository can run independently after that repository's anchors and rubric are frozen. Teaching depends on validated synthesis, not raw tool output. Codex tasks depend on the Pi learning gate.
+Capability discovery is tracked as nested epic `orch-8sk.16`:
+
+1. `orch-8sk.16.1` — Define capability-discovery protocol and model routing.
+2. `orch-8sk.16.2` — Discover and validate CodeGraph capabilities.
+3. `orch-8sk.16.3` — Discover and validate CBM capabilities.
+4. `orch-8sk.16.4` — Discover and validate Graphify capabilities.
+5. `orch-8sk.16.5` — Produce the cross-tool capability matrix and freeze experiment surfaces.
+
+Runtime/isolation readiness (`orch-8sk.2`) and the discovery protocol (`orch-8sk.16.1`) precede the three per-tool runtime-discovery tasks. Those three tasks can then run independently. Their synthesis feeds the Pi experiment-protocol freeze (`orch-8sk.17`), which must complete before the Pi systems reference (`orch-8sk.3`) begins.
+
+The three per-tool experiment tasks for each repository can run independently after that repository's anchors and rubric are frozen. Teaching depends on validated synthesis, not raw tool output. Codex tasks depend on the Pi learning gate.
 
 Creating this task graph records the approved work; it does not start Phase 0 or authorize paid services, upstream changes, or a push.
 
@@ -637,6 +730,9 @@ Creating this task graph records the approved work; it does not start Phase 0 or
 
 | Risk | Mitigation |
 | --- | --- |
+| Documentation overstates the runtime surface | Reconcile recursive help and live MCP discovery with source registries; use runtime dispositions rather than marketing claims. |
+| “Full capability” becomes unsafe scope expansion | Inventory restricted and optional capabilities, but execute only safe offline operations without separate approval. |
+| Capability probing contaminates measured sessions | Use separate fixture clones, sessions, logs, and accounting; exclude discovery and smoke-test sessions from controlled results. |
 | Tool output biases the reference truth | Complete source anchors and scoring key before exposing tool outputs to synthesis. |
 | One tool contaminates another's index or cache | Separate clones, homes, caches, indexes, sessions, and raw-output directories. |
 | CBM indexes the parent repo | Require an independent `.git` per clone and verify CBM's project root. |
@@ -657,6 +753,7 @@ Creating this task graph records the approved work; it does not start Phase 0 or
 
 - Validate the `$teach` skill structure.
 - Check the plan for unresolved placeholders and path consistency.
+- Check the capability epic/task IDs and dependency graph against live Beads state.
 - Run documentation whitespace checks.
 - Export the Beads mirror.
 - Inspect `git status` and report pre-existing changes separately.
@@ -666,6 +763,7 @@ Creating this task graph records the approved work; it does not start Phase 0 or
 The Pi/Codex study is complete only when:
 
 - both canonical report sets are source-cited and revision-pinned;
+- all three capability inventories and the cross-tool matrix are source- and runtime-grounded, with every public capability assigned a disposition;
 - all six tool runs have reproducible runbooks and isolation audits;
 - controlled token results include a no-graph baseline and equal-quality judgment;
 - limitations and failed queries are recorded, not hidden;
@@ -683,5 +781,6 @@ Approved defaults:
 3. Enforce the Pi mastery gate before beginning Codex.
 4. Use the Section 3.2 model routing, with Terra medium fixed across controlled experimental arms.
 5. Track execution under Beads epic `orch-8sk`.
+6. Complete nested capability-discovery epic `orch-8sk.16` before Pi source-reference work, executing safe offline capabilities and inventorying restricted ones.
 
 User approval of this plan authorizes planning/tracking setup and the local read-only experiment workflow. The current request separately authorizes committing the preparation changes. It does not authorize pushes, submodule updates beyond the already prepared additions, paid API use, or upstream edits.
