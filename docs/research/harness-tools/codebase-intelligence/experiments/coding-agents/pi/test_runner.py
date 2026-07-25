@@ -109,6 +109,25 @@ class PiTracerRunnerTest(unittest.TestCase):
             command,
         )
 
+    def test_assisted_audit_is_staged_inside_the_policy_scratch_root(self) -> None:
+        runner = load_runner()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            scratch_root = root / "graphify"
+            scratch_root.mkdir()
+            policy = scratch_root / "pi-tracer-policy.json"
+            policy.write_text(
+                json.dumps({"scratch_root": str(scratch_root)}),
+                encoding="utf-8",
+            )
+
+            audit = runner.staged_audit_path(
+                policy, root / "runs/01-graphify-assisted"
+            )
+
+        self.assertTrue(audit.is_relative_to(scratch_root))
+        self.assertEqual(audit.parent.name, "tracer-audits")
+
     def test_event_summary_requires_one_completion_with_usage(self) -> None:
         runner = load_runner()
         events = [
@@ -162,6 +181,27 @@ class PiTracerRunnerTest(unittest.TestCase):
             list(reversed(source_first)), arm="graphify-assisted"
         )
         self.assertFalse(graph_first["contamination"]["pre_graph_source_access_seen"])
+
+    def test_stderr_redirection_to_dev_null_is_not_a_write_attempt(self) -> None:
+        runner = load_runner()
+        events = [
+            {
+                "type": "item.completed",
+                "item": {
+                    "id": "cmd-1",
+                    "type": "command_execution",
+                    "command": "rg AgentSession packages 2>/dev/null",
+                    "aggregated_output": "packages/agent.ts",
+                },
+            },
+        ]
+
+        classified = runner.classify_operations(events, arm="source-only")
+
+        self.assertFalse(classified["contamination"]["unexpected_write_seen"])
+        events[0]["item"]["command"] = "printf result > report.txt"
+        classified = runner.classify_operations(events, arm="source-only")
+        self.assertTrue(classified["contamination"]["unexpected_write_seen"])
 
     def test_post_run_subject_drift_is_rejected(self) -> None:
         runner = load_runner()

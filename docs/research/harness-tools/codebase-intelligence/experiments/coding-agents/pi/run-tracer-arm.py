@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import importlib.util
 import json
 import os
@@ -54,6 +55,7 @@ WRITE_ATTEMPT = re.compile(
     r"(?:^|[;&|]\s*|\s)(?:tee|touch|cp|mv|rm|mkdir|install)\b|"
     r"(?:^|[^<])>>?|(?:sed|perl)\s+-i\b"
 )
+DEV_NULL_REDIRECTION = re.compile(r"(?:\d*)>>?\s*/dev/null\b")
 GRAPH_NAMES = {
     "codegraph-assisted": ("cbm", "graphify"),
     "cbm-assisted": ("codegraph", "graphify"),
@@ -272,7 +274,7 @@ def classify_operations(events: list[dict], *, arm: str) -> dict:
             contamination["pre_graph_source_access_seen"] = True
         if WEB_ACCESS.search(command):
             contamination["web_access_seen"] = True
-        if WRITE_ATTEMPT.search(command):
+        if WRITE_ATTEMPT.search(DEV_NULL_REDIRECTION.sub("", command)):
             contamination["unexpected_write_seen"] = True
         if (
             "/external/" in command
@@ -444,6 +446,17 @@ def policy_path(root: Path, arm: str) -> Path | None:
     )
 
 
+def staged_audit_path(policy: Path, run_dir: Path) -> Path:
+    config = json.loads(policy.read_text(encoding="utf-8"))
+    scratch_root = Path(config["scratch_root"]).resolve()
+    try:
+        policy.resolve().relative_to(scratch_root)
+    except ValueError as error:
+        raise ValueError("adapter policy is outside its scratch_root") from error
+    digest = hashlib.sha256(str(run_dir.resolve()).encode()).hexdigest()[:16]
+    return scratch_root / "tracer-audits" / f"{digest}.jsonl"
+
+
 def validate_request(root: Path, run_root: Path, arm: str) -> tuple[Path, Path | None]:
     completed = completed_arms(run_root)
     expected = next_arm(completed)
@@ -511,6 +524,11 @@ def run(args: argparse.Namespace) -> int:
     stderr_path = run_dir / "provider-stderr.txt"
     output_path = run_dir / "answer.json"
     audit_path = run_dir / "evaluated-interface.jsonl" if policy else None
+    audit_staging_path = (
+        staged_audit_path(policy, run_dir) if policy is not None else None
+    )
+    if audit_staging_path is not None and audit_staging_path.exists():
+        raise ValueError(f"staged audit already exists: {audit_staging_path}")
     command = build_codex_command(
         codex=args.codex,
         arm=args.arm,
@@ -518,7 +536,7 @@ def run(args: argparse.Namespace) -> int:
         output=output_path,
         events=events_path,
         interface_config=policy,
-        audit_log=audit_path,
+        audit_log=audit_staging_path,
     )
     write_json(
         run_dir / "invocation.json",
@@ -544,6 +562,10 @@ def run(args: argparse.Namespace) -> int:
             stderr=stderr,
             check=False,
         )
+    if audit_staging_path is not None and audit_staging_path.exists():
+        if audit_path is None or audit_path.exists():
+            raise ValueError("cannot finalize evaluated-interface audit")
+        audit_staging_path.replace(audit_path)
     elapsed_ms = round((time.monotonic() - started) * 1000)
     errors: list[str] = []
     try:
