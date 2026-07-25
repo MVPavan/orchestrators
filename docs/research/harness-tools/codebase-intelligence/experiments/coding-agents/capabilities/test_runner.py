@@ -763,6 +763,7 @@ class RunnerTests(unittest.TestCase):
             audit_log=Path("/audit.jsonl"),
             prompt="synthetic",
             smoke=False,
+            provider_sandbox="danger-full-access",
         )
         startup = {
             "active_mcp_count": 1,
@@ -784,6 +785,7 @@ class RunnerTests(unittest.TestCase):
         self.assertEqual(audit["active_mcp_count"], 1)
         self.assertEqual(audit["observed_tools"], ["query"])
         self.assertEqual(audit["learning_overlay_scan"], "clean")
+        self.assertEqual(audit["sandbox"], "danger-full-access")
 
     def test_all_lane_templates_materialize_and_validate(self) -> None:
         schema = json.loads(
@@ -811,6 +813,27 @@ class RunnerTests(unittest.TestCase):
                 self.assertRegex(policy["policy_digest"], r"^[0-9a-f]{64}$")
             finally:
                 tree.close()
+
+    def test_codegraph_status_uses_its_positional_project_path(self) -> None:
+        template = json.loads(
+            (ROOT / "adapter-policies" / "codegraph.template.json").read_text()
+        )
+        status = next(
+            operation
+            for operation in template["public_operations"]
+            if operation["name"] == "status"
+        )
+        self.assertEqual(
+            status["argv_template"],
+            ["${EXECUTABLE_REALPATH}", "status", "${FIXTURE_ROOT}", "--json"],
+        )
+
+    def test_probe_requires_exact_public_operation_names(self) -> None:
+        prompt = (ROOT / "probe-prompt.md").read_text()
+        self.assertIn(
+            "set `public_operation` to the exact exposed operation name",
+            prompt,
+        )
 
     def test_metrics_builder_conforms_to_metrics_schema(self) -> None:
         metrics = runner.build_metrics(

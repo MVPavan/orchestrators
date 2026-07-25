@@ -60,6 +60,7 @@ missing capabilities. When evidence is ambiguous, abstain instead of guessing.
 
 Return one JSON object matching `probe-output.schema.json`. Include every Q01
 through Q11 exactly once, in order. List each public operation in execution
-order. `output_bytes` is `null` when the runner did not expose it. Do not
-estimate provider token usage; the runner records provider completion events
-outside your answer.
+order, and set `public_operation` to the exact exposed operation name that you
+invoked (for example, `status`, not `index status`). `output_bytes` is `null`
+when the runner did not expose it. Do not estimate provider token usage; the
+runner records provider completion events outside your answer.

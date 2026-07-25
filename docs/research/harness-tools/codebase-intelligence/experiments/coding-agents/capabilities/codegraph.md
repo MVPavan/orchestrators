@@ -27,13 +27,17 @@ All earlier deterministic results tied to fixture commit
 `faa03d6bb4e0855f57f76b0485a46a54f4d83d62` and manifest
 `f9cf965fd10a1852f80c7713479e0c1935baa70607dbed66d3b0606fe5338bf9`
 are superseded. The earlier Terra event stream is also superseded because it
-used that fixture generation. It had already failed before model execution
-because the frozen schema used provider-rejected `allOf`. One current-fixture
-retry was later authorized, but the current Codex CLI exited before inference
-because its in-process app-server could not initialize inside the read-only
-filesystem. It produced zero provider events and zero tool calls. The user
-canceled further capability-probe retries; current agent-mediated behavior
-remains `UNTESTED` and excluded.
+used that fixture generation. A final user-approved current-fixture probe ran
+after repairing the nested Codex sandbox and initializing an isolated
+`.codegraph-probe` index. The provider exited 0 after 21 successful CodeGraph
+calls with zero unrelated MCP calls and zero contamination. Both output schemas
+and the canonical output validator passed. The strict runner nevertheless
+classified the run `BLOCKED_OR_INVALID` because the model reordered its
+redundant `operations` summary relative to the machine audit. Agent-mediated
+behavior is therefore exercised and usable as evidence, but the run is not a
+strict protocol pass and must not be labeled `VALIDATED`.
+The complete run artifacts are under
+`scratchpad/code-intelligence/sessions/capability-runner/codegraph/codegraph-bounded-final-validated/`.
 
 ## Scope and isolation
 
@@ -74,6 +78,7 @@ destructive API checks ran only under the isolated lane home.
 | Languages | 32 declared, 31 accepted by support predicate, 26 returned by loader-oriented list | `PARTIAL` as a support contract |
 | Extensions | 58 mapped extensions plus Play, Shopify JSON, and content-sensitive `.h` routing | `VERIFIED` as exposure/routing |
 | Framework resolvers | 24 registered; fixture detects none | `UNTESTED` for behavior |
+| Terra agent probe | 21/21 evaluated calls succeeded; schemas/canonical output passed; model-authored operation order disagreed with the machine audit | tool behavior `VERIFIED`; strict protocol result `BLOCKED_OR_INVALID` |
 | Installer/uninstaller | print paths plus public CLI material install/uninstall covered all 8 global targets and all 5 locally supported targets; Codex, Hermes, and Antigravity correctly rejected local scope; host configuration was untouched | `VERIFIED` in isolated scopes |
 | Upgrade/model offload/telemetry transmit | network, credentials, host mutation, or unregistered internal model path | `RESTRICTED` |
 
@@ -109,6 +114,7 @@ CLI capability, and `completion_operations` records measured completion runs.
 | CLI uninstall, all 8 global targets | 0.08 s | 63,488 KB | 931 B / 280 tokens |
 | CLI install/uninstall, 5 supported local targets | 0.08 s each | 63,408 / 63,160 KB | 3,180 / 2,276 B; 676 / 568 tokens |
 | CLI telemetry on/status, forced offline | 0.06 / 0.05 s | 58,112 / 56,576 KB | 206 / 428 B; 55 / 139 tokens |
+| final Terra agent probe | 130.30 s | `UNKNOWN` | 21 tool calls; 128,477 input tokens (97,536 cached), 6,490 output tokens, 1,368 reasoning tokens; 4.977163 credit-equivalent |
 
 The MCP times are transport-capture durations, not query latency; the input was
 held open for two seconds so the server could finish asynchronous calls before

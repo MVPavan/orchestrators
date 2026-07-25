@@ -22,6 +22,7 @@ MODEL = "gpt-5.6-terra"
 EFFORT = "medium"
 MAX_CALLS = 24
 TOOL_LANES = ("codegraph", "cbm", "graphify")
+PROVIDER_SANDBOXES = ("read-only", "workspace-write", "danger-full-access")
 DISABLED_FEATURES = (
     "apps",
     "browser_use",
@@ -131,6 +132,7 @@ def build_codex_command(
     audit_log: Path,
     prompt: str,
     smoke: bool,
+    provider_sandbox: str,
 ) -> list[str]:
     command = [
         codex,
@@ -140,7 +142,7 @@ def build_codex_command(
         "--ignore-rules",
         "--strict-config",
         "--sandbox",
-        "read-only",
+        provider_sandbox,
         "--model",
         MODEL,
         "-c",
@@ -1039,6 +1041,7 @@ def run(args: argparse.Namespace) -> int:
         audit_log=audit,
         prompt=prompt,
         smoke=args.smoke,
+        provider_sandbox=args.provider_sandbox,
     )
     (run_dir / "invocation.json").write_text(
         json.dumps(
@@ -1191,6 +1194,12 @@ def main() -> int:
     parser.add_argument("--interface-config", type=Path)
     parser.add_argument("--smoke", action="store_true")
     parser.add_argument("--codex", default="codex")
+    parser.add_argument(
+        "--provider-sandbox",
+        choices=PROVIDER_SANDBOXES,
+        default="read-only",
+        help="Sandbox for the nested Codex provider process.",
+    )
     args = parser.parse_args()
     if args.smoke and args.interface_config is not None:
         parser.error("--smoke does not accept --interface-config")

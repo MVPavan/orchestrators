@@ -103,7 +103,7 @@
         "required": []
       },
       "argument_policy": {},
-      "argv_template": ["${EXECUTABLE_REALPATH}", "status", "--path", "${FIXTURE_ROOT}", "--json"]
+      "argv_template": ["${EXECUTABLE_REALPATH}", "status", "${FIXTURE_ROOT}", "--json"]
     },
     {
       "name": "files",
