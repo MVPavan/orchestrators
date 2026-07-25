@@ -219,7 +219,7 @@ def check(config_path: Path) -> list[str]:
 
     access = config.get("common_access", {})
     required_access = {
-        "sandbox": "read-only",
+        "sandbox": "workspace-write",
         "source_search": True,
         "source_read": True,
         "source_write": False,

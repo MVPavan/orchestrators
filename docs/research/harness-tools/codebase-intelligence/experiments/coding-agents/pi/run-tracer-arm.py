@@ -103,7 +103,7 @@ def build_codex_command(
         "--ignore-rules",
         "--strict-config",
         "--sandbox",
-        "read-only",
+        "workspace-write",
         "--model",
         MODEL,
         "-c",
@@ -147,9 +147,15 @@ def build_codex_command(
         command.extend(
             [
                 "-c",
+                "features.code_mode.enabled=true",
+                "-c",
+                'features.code_mode.direct_only_tool_namespaces=["mcp__evaluated"]',
+                "-c",
                 f"mcp_servers.evaluated.command={json.dumps(sys.executable)}",
                 "-c",
                 f"mcp_servers.evaluated.args={json.dumps(interface_args)}",
+                "-c",
+                'mcp_servers.evaluated.default_tools_approval_mode="approve"',
                 "-c",
                 "mcp_servers.evaluated.startup_timeout_sec=20",
                 "-c",
@@ -386,6 +392,22 @@ def git_output(repo: Path, *args: str) -> str:
     return completed.stdout.strip()
 
 
+def post_run_subject_errors(subject: Path) -> list[str]:
+    try:
+        commit = git_output(subject, "rev-parse", "HEAD")
+        dirty = git_output(
+            subject, "status", "--porcelain=v1", "--untracked-files=all"
+        )
+    except ValueError as error:
+        return [f"could not verify subject clone after the arm: {error}"]
+    errors: list[str] = []
+    if commit != SUBJECT_COMMIT:
+        errors.append("subject commit drifted during the arm")
+    if dirty:
+        errors.append("subject clone is dirty after the arm")
+    return errors
+
+
 def completed_arms(run_root: Path) -> list[str]:
     completed: list[str] = []
     for index, arm in enumerate(FROZEN_ORDER, 1):
@@ -581,6 +603,9 @@ def run(args: argparse.Namespace) -> int:
                 )
         except (OSError, ValueError) as error:
             classified["contamination"]["notes"].append(str(error))
+    classified["contamination"]["notes"].extend(
+        post_run_subject_errors(subject)
+    )
 
     contamination = classified["contamination"]
     contaminated = bool(contamination["notes"]) or any(

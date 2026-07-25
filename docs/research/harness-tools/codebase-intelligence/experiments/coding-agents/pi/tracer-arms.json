@@ -7,7 +7,7 @@
   "metrics_schema": "tracer-metrics.schema.json",
   "artifact_sha256": {
     "tracer-prompt.md": "39aadc15a574f867b311587c669a5bd7422cc1aea02c9f3d94cd7650fdb4cb6f",
-    "tracer-answer.schema.json": "62890a315da4a8c765f986f2871b76b43a07db5bb6d4b1d6c39631f8cb79c60b",
+    "tracer-answer.schema.json": "e606fd4b6d09b7765d219a0947c1ed891e3bc854ada5ac1f0f389c19ff44bd91",
     "tracer-metrics.schema.json": "637fd262495038b5f7de94ad78e27ba5b204df25dcfa5c4aeb0c4e77421e27c5"
   },
   "subject": {
@@ -34,7 +34,7 @@
     ]
   },
   "common_access": {
-    "sandbox": "read-only",
+    "sandbox": "workspace-write",
     "source_search": true,
     "source_read": true,
     "source_write": false,

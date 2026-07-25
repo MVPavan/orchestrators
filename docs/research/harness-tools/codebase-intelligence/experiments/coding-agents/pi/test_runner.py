@@ -8,6 +8,7 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 import jsonschema
 
@@ -55,7 +56,7 @@ class PiTracerRunnerTest(unittest.TestCase):
         self.assertIn("--ignore-user-config", command)
         self.assertIn("--ignore-rules", command)
         self.assertIn("--strict-config", command)
-        self.assertIn("--sandbox\nread-only", joined)
+        self.assertIn("--sandbox\nworkspace-write", joined)
         self.assertIn("--model\ngpt-5.6-terra", joined)
         self.assertIn('model_reasoning_effort="medium"', command)
         self.assertIn('model_provider="openai-no-retry"', command)
@@ -77,6 +78,36 @@ class PiTracerRunnerTest(unittest.TestCase):
         )
         self.assertNotIn("model_providers.openai.", joined)
         self.assertNotIn("mcp_servers.evaluated.command", joined)
+        self.assertNotIn(
+            "features.code_mode.direct_only_tool_namespaces", joined
+        )
+
+    def test_assisted_command_directly_exposes_evaluated_namespace(self) -> None:
+        runner = load_runner()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            command = runner.build_codex_command(
+                codex="codex",
+                arm="graphify-assisted",
+                subject=root,
+                output=root / "answer.json",
+                events=root / "events.jsonl",
+                interface_config=root / "policy.json",
+                audit_log=root / "audit.jsonl",
+            )
+
+        self.assertIn(
+            "features.code_mode.enabled=true",
+            command,
+        )
+        self.assertIn(
+            'features.code_mode.direct_only_tool_namespaces=["mcp__evaluated"]',
+            command,
+        )
+        self.assertIn(
+            'mcp_servers.evaluated.default_tools_approval_mode="approve"',
+            command,
+        )
 
     def test_event_summary_requires_one_completion_with_usage(self) -> None:
         runner = load_runner()
@@ -131,6 +162,19 @@ class PiTracerRunnerTest(unittest.TestCase):
             list(reversed(source_first)), arm="graphify-assisted"
         )
         self.assertFalse(graph_first["contamination"]["pre_graph_source_access_seen"])
+
+    def test_post_run_subject_drift_is_rejected(self) -> None:
+        runner = load_runner()
+        subject = Path("/disposable-subject")
+        with patch.object(
+            runner,
+            "git_output",
+            side_effect=[runner.SUBJECT_COMMIT, "modified.ts"],
+        ):
+            self.assertEqual(
+                runner.post_run_subject_errors(subject),
+                ["subject clone is dirty after the arm"],
+            )
 
     def test_metrics_builder_matches_the_frozen_schema(self) -> None:
         runner = load_runner()

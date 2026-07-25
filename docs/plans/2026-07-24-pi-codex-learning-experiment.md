@@ -303,6 +303,14 @@ The graph-only capability run may use source returned by the graph tool but may 
 
 Create disposable clones for both subjects and tools under `scratchpad/`. Never build, install, index, or create a virtual environment inside a live submodule.
 
+The current Codex CLI cannot initialize its in-process app-server client under
+`--sandbox read-only` in this environment. Controlled tracer arms therefore use
+`--sandbox workspace-write` against disposable subject clones. Source writes
+remain forbidden by the prompt and operation audit; any write attempt or dirty
+post-run subject invalidates the arm. This runtime adaptation applies equally
+to all four arms and does not authorize writes to live submodules or the parent
+repository.
+
 Each subject clone and tool clone must:
 
 - resolve to the same frozen commit;

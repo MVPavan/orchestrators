@@ -18,12 +18,15 @@
   ],
   "properties": {
     "schema_version": {
+      "type": "string",
       "const": "1.0"
     },
     "question_id": {
+      "type": "string",
       "const": "PI-T01"
     },
     "run_status": {
+      "type": "string",
       "enum": [
         "COMPLETED",
         "PARTIAL",
@@ -84,7 +87,7 @@
       "properties": {
         "path": {
           "type": "string",
-          "pattern": "^(?!/)(?!.*\\.\\.)[^\\\\]+$"
+          "pattern": "^([^./\\\\]|\\.([^.\\\\]|$))([^.\\\\]|\\.([^.\\\\]|$))*$"
         },
         "symbol": {
           "type": [
@@ -167,6 +170,7 @@
       ],
       "properties": {
         "kind": {
+          "type": "string",
           "enum": [
             "SYSTEM",
             "CONTROL",
