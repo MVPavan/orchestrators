@@ -1,0 +1,22 @@
+{
+  "name": "code-intel",
+  "owner": {
+    "name": "PavanMV"
+  },
+  "metadata": {
+    "description": "Token-cheap code intelligence for large codebases: serena (LSP navigation + symbol edits) + CBM (auto-sync knowledge graph + local semantic search) + ast-grep (structural search/rewrite).",
+    "version": "0.1.0"
+  },
+  "plugins": [
+    {
+      "name": "code-intel",
+      "description": "Graph-first code intelligence: serena & CBM MCP servers + ast-grep, with a graph-first workflow skill and indexing commands. Query the symbol graph before reading files to cut tokens on large repos.",
+      "version": "0.1.0",
+      "author": {
+        "name": "PavanMV",
+        "email": "mvpavan42@gmail.com"
+      },
+      "source": "./"
+    }
+  ]
+}

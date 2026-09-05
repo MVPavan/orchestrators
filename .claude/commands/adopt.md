@@ -37,10 +37,26 @@ Keep the core harness stable. Update only `.claude/project/*` with facts derived
    - `.claude/project/tools.md`
    - `.claude/project/tracking.md`
    - `.claude/project/learnings.md`
+   - `.claude/project/code-intel.md`
    - `.claude/project/adoption-report.md`
 6. Use repo-relative paths only.
 7. If running in Claude Code with Codex available and the adoption work is `standard` or `deep`, ask Codex to challenge major assumptions before finalizing.
 8. Stop and present the adoption report for review.
+
+## Code intelligence (code-intel plugin)
+
+While scanning, assess whether the repo benefits from the `code-intel` plugin
+(serena + CBM + ast-grep): a substantial, multi-session, navigation-heavy codebase
+benefits; a tiny or throwaway repo does not. Record the assessment, primary
+language/LSP, and index state in `.claude/project/code-intel.md`.
+
+In the adoption **report** only — do NOT auto-enable; plugin enablement and
+settings are a trust decision the user makes:
+
+- if warranted, give the opt-in steps: register the marketplace, set
+  `"enabledPlugins": {"code-intel@code-intel": true}`, then `/code-intel:setup`
+  (once per machine) and `/code-intel:index-repo` (once per repo);
+- note that CBM query tools need the `project` path-slug arg (see `learnings.md`).
 
 ## Rules
 
