@@ -1,0 +1,3 @@
+protocol=fixture-policy-v0
+status=retired
+note=this unknown extension is an unsupported-input coverage probe

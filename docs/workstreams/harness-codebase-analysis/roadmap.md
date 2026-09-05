@@ -1,8 +1,8 @@
 # Workstream — Codebase-Analysis Tooling Experiment (paperclip)
 
-**Runbook:** [`docs/research/harness/codebase-analysis-exps.md`](../../research/harness/codebase-analysis-exps.md)
-**Isolation contract:** [`docs/research/harness/isolation-contract.md`](../../research/harness/isolation-contract.md)
-**Subject:** `external/paperclip` (frozen, read-only copy at `scratchpad/harness/_paperclip_src/`).
+**Runbook:** [`docs/research/harness-tools/codebase-intelligence/codebase-analysis-exps.md`](../../research/harness/codebase-analysis-exps.md)
+**Isolation contract:** [`docs/research/harness-tools/codebase-intelligence/isolation-contract.md`](../../research/harness/isolation-contract.md)
+**Subject:** `external/agent-systems/paperclip` (frozen, read-only copy at `scratchpad/harness/_paperclip_src/`).
 
 ## Objective
 

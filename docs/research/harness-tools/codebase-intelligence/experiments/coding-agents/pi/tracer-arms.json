@@ -1,0 +1,115 @@
+{
+  "schema_version": "1.0",
+  "experiment_id": "pi-primary-agent-turn-v1",
+  "question_id": "PI-T01",
+  "prompt_file": "tracer-prompt.md",
+  "answer_schema": "tracer-answer.schema.json",
+  "metrics_schema": "tracer-metrics.schema.json",
+  "artifact_sha256": {
+    "tracer-prompt.md": "39aadc15a574f867b311587c669a5bd7422cc1aea02c9f3d94cd7650fdb4cb6f",
+    "tracer-answer.schema.json": "e606fd4b6d09b7765d219a0947c1ed891e3bc854ada5ac1f0f389c19ff44bd91",
+    "tracer-metrics.schema.json": "637fd262495038b5f7de94ad78e27ba5b204df25dcfa5c4aeb0c4e77421e27c5"
+  },
+  "subject": {
+    "name": "pi",
+    "commit": "24bace27cf308c89707cf8005b4795d873e23f17"
+  },
+  "model": {
+    "name": "gpt-5.6-terra",
+    "reasoning_effort": "medium",
+    "answer_turns": 1,
+    "automatic_retries": 0,
+    "automatic_repairs": 0,
+    "runs_per_arm": 1,
+    "additional_replicates": 0
+  },
+  "order": {
+    "algorithm": "ascending SHA-256 of seed + ':' + arm id",
+    "seed": "pi-t01:24bace27cf308c89707cf8005b4795d873e23f17:v1",
+    "arms": [
+      "graphify-assisted",
+      "source-only",
+      "cbm-assisted",
+      "codegraph-assisted"
+    ]
+  },
+  "common_access": {
+    "sandbox": "workspace-write",
+    "source_search": true,
+    "source_read": true,
+    "source_write": false,
+    "web": false,
+    "git_history": false,
+    "reference_answers": false,
+    "scoring_anchors": false,
+    "other_graph_tools": false,
+    "learning_workspace": false
+  },
+  "arms": [
+    {
+      "id": "source-only",
+      "subject_clone": "scratchpad/code-intelligence/subjects/pi/source-only",
+      "adapter_policy": null,
+      "graph_required_before_source": false,
+      "allowed_graph_operations": []
+    },
+    {
+      "id": "codegraph-assisted",
+      "subject_clone": "scratchpad/code-intelligence/subjects/pi/codegraph",
+      "adapter_policy": "docs/research/harness-tools/codebase-intelligence/experiments/coding-agents/capabilities/adapter-policies/codegraph.template.json",
+      "graph_required_before_source": true,
+      "allowed_graph_operations": [
+        "query",
+        "explore",
+        "callers",
+        "callees",
+        "impact",
+        "node",
+        "status",
+        "files"
+      ]
+    },
+    {
+      "id": "cbm-assisted",
+      "subject_clone": "scratchpad/code-intelligence/subjects/pi/cbm",
+      "adapter_policy": "docs/research/harness-tools/codebase-intelligence/experiments/coding-agents/capabilities/adapter-policies/cbm.template.json",
+      "graph_required_before_source": true,
+      "allowed_graph_operations": [
+        "search_graph",
+        "query_graph",
+        "trace_path",
+        "get_code_snippet",
+        "get_graph_schema",
+        "get_architecture",
+        "search_code",
+        "list_projects",
+        "index_status"
+      ]
+    },
+    {
+      "id": "graphify-assisted",
+      "subject_clone": "scratchpad/code-intelligence/subjects/pi/graphify",
+      "adapter_policy": "docs/research/harness-tools/codebase-intelligence/experiments/coding-agents/capabilities/adapter-policies/graphify.template.json",
+      "graph_required_before_source": true,
+      "allowed_graph_operations": [
+        "query",
+        "explain",
+        "path",
+        "affected",
+        "god_nodes",
+        "diagnose",
+        "benchmark"
+      ]
+    }
+  ],
+  "stop_conditions": [
+    "preflight failure",
+    "setup failure before inference",
+    "missing provider usage event",
+    "more than one answer turn",
+    "source access before the assigned graph in an assisted arm",
+    "access to another graph tool, web, reference answer, or scoring anchor",
+    "unexpected source write or live-submodule access",
+    "one arm exceeds 12 credit-equivalent"
+  ]
+}

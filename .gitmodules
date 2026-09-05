@@ -1,23 +1,75 @@
 [submodule "gascity"]
-	path = external/gascity
+	path = external/agent-systems/gascity
 	url = https://github.com/gastownhall/gascity.git
 	branch = main
 
 [submodule "gastown"]
-	path = external/gastown
+	path = external/agent-systems/gastown
 	url = https://github.com/gastownhall/gastown.git
 	branch = main
 
 [submodule "OpenHands"]
-	path = external/OpenHands
+	path = external/agent-systems/OpenHands
 	url = https://github.com/OpenHands/OpenHands.git
 	branch = main
 
 [submodule "paperclip"]
-	path = external/paperclip
+	path = external/agent-systems/paperclip
 	url = https://github.com/paperclipai/paperclip.git
 	branch = master
-[submodule "external/codex-adapter"]
-	path = external/codex-adapter
-	url = https://github.com/MVPavan/codex-adapter.git
+[submodule "Puppetmaster"]
+	path = external/agent-systems/Puppetmaster
+	url = https://github.com/professorpalmer/Puppetmaster.git
+	branch = main
+[submodule "deer-flow"]
+	path = external/agent-systems/deer-flow
+	url = https://github.com/bytedance/deer-flow.git
+	branch = main
+[submodule "ast-grep"]
+	path = external/harness-tools/codebase-intelligence/ast-grep
+	url = https://github.com/ast-grep/ast-grep.git
+	branch = main
+[submodule "codebase-memory-mcp"]
+	path = external/harness-tools/codebase-intelligence/codebase-memory-mcp
+	url = https://github.com/DeusData/codebase-memory-mcp.git
+	branch = main
+[submodule "codegraph"]
+	path = external/harness-tools/codebase-intelligence/codegraph
+	url = https://github.com/colbymchenry/codegraph.git
+	branch = main
+[submodule "graphify"]
+	path = external/harness-tools/codebase-intelligence/graphify
+	url = https://github.com/Graphify-Labs/graphify.git
+	branch = v8
+[submodule "headroom"]
+	path = external/harness-tools/compression/headroom
+	url = https://github.com/chopratejas/headroom.git
+	branch = main
+[submodule "repomix"]
+	path = external/harness-tools/codebase-intelligence/repomix
+	url = https://github.com/yamadashy/repomix.git
+	branch = main
+[submodule "serena"]
+	path = external/harness-tools/codebase-intelligence/serena
+	url = https://github.com/oraios/serena.git
+	branch = main
+[submodule "understand-anything"]
+	path = external/harness-tools/codebase-intelligence/understand-anything
+	url = https://github.com/Egonex-AI/Understand-Anything.git
+	branch = main
+[submodule "external/coding-agents/codex"]
+	path = external/coding-agents/codex
+	url = https://github.com/openai/codex.git
+	branch = main
+[submodule "external/coding-agents/pydantic-ai"]
+	path = external/coding-agents/pydantic-ai
+	url = https://github.com/pydantic/pydantic-ai.git
+	branch = main
+[submodule "external/coding-agents/deepagents"]
+	path = external/coding-agents/deepagents
+	url = https://github.com/langchain-ai/deepagents.git
+	branch = main
+[submodule "external/coding-agents/pi"]
+	path = external/coding-agents/pi
+	url = https://github.com/earendil-works/pi.git
 	branch = main

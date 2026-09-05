@@ -11,7 +11,7 @@ Use this file to find the right source before guessing. Prefer current repo file
 | `README.md` | Public repo summary, submodule layout, clone/sync commands | authoritative | Understanding the parent repo and upstream sync model |
 | `AGENTS.md` | Always-loaded agent operating guide | authoritative | Starting any agent work in this repo |
 | `CLAUDE.md` | Claude entry point pointing at `AGENTS.md` | authoritative | Claude Code startup |
-| `.gitmodules` | Submodule path, URL, and branch declarations | authoritative | Working with `external/gascity` or `external/gastown` |
+| `.gitmodules` | Submodule path, URL, and branch declarations | authoritative | Working with `external/agent-systems/gascity` or `external/agent-systems/gastown` |
 | `.beads/beads.md` | Beads policy, work item conventions, generated mirror rules | authoritative | Creating, claiming, closing, or syncing issues |
 | `.beads/config.yaml` | Beads sync/export configuration | authoritative | Debugging issue tracker persistence or sync |
 | `docs/research/codex-usage-options.md` | Current Codex surface comparison and adoption recommendation | authoritative research note | Deciding how to invoke Codex from Claude, Gemini, shell, cloud, SDK, or MCP |
@@ -43,8 +43,8 @@ These files came from the copied harness and may contain useful patterns, but th
 
 | Path | Meaning |
 | --- | --- |
-| `external/gascity/README.md`, `external/gascity/AGENTS.md`, `external/gascity/CLAUDE.md` | Upstream project docs. Read when inspecting gascity, but do not treat them as parent-repo policy. |
-| `external/gastown/README.md`, `external/gastown/AGENTS.md` | Upstream project docs. Read when inspecting gastown, but do not treat them as parent-repo policy. |
+| `external/agent-systems/gascity/README.md`, `external/agent-systems/gascity/AGENTS.md`, `external/agent-systems/gascity/CLAUDE.md` | Upstream project docs. Read when inspecting gascity, but do not treat them as parent-repo policy. |
+| `external/agent-systems/gastown/README.md`, `external/agent-systems/gastown/AGENTS.md` | Upstream project docs. Read when inspecting gastown, but do not treat them as parent-repo policy. |
 
 ## Planned But Not Present Yet
 

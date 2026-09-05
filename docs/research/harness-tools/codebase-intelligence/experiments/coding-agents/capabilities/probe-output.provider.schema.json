@@ -1,0 +1,1025 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://orchestrators.local/schemas/capability-probe-output-v1.json",
+  "title": "Capability tool-neutral probe output",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "fixture_id",
+    "run_status",
+    "answers",
+    "operations",
+    "limitations"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0",
+      "type": "string"
+    },
+    "fixture_id": {
+      "const": "mixed-ts-rust-capability-v1",
+      "type": "string"
+    },
+    "run_status": {
+      "enum": [
+        "COMPLETED",
+        "PARTIAL",
+        "FAILED"
+      ]
+    },
+    "answers": {
+      "type": "array",
+      "minItems": 11,
+      "maxItems": 11,
+      "items": {
+        "$ref": "#/$defs/provider_answer"
+      }
+    },
+    "operations": {
+      "type": "array",
+      "maxItems": 24,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "sequence",
+          "public_operation",
+          "purpose",
+          "result",
+          "output_bytes"
+        ],
+        "properties": {
+          "sequence": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "public_operation": {
+            "type": "string"
+          },
+          "purpose": {
+            "type": "string"
+          },
+          "result": {
+            "enum": [
+              "SUCCESS",
+              "PARTIAL",
+              "NOT_APPLICABLE",
+              "UNAVAILABLE",
+              "FAILED"
+            ]
+          },
+          "output_bytes": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 0
+          }
+        }
+      }
+    },
+    "limitations": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "$defs": {
+    "answer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "question_id",
+        "status",
+        "answer",
+        "evidence",
+        "uncertainty"
+      ],
+      "properties": {
+        "question_id": {
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "ANSWERED",
+            "PARTIAL",
+            "NOT_APPLICABLE",
+            "UNAVAILABLE",
+            "ABSTAINED",
+            "FAILED"
+          ]
+        },
+        "answer": {
+          "type": "string"
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "path",
+              "symbol",
+              "claim",
+              "source"
+            ],
+            "properties": {
+              "path": {
+                "type": "string"
+              },
+              "symbol": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "claim": {
+                "type": "string"
+              },
+              "source": {
+                "enum": [
+                  "TOOL_RETURNED_SOURCE",
+                  "TOOL_GRAPH_FACT",
+                  "TOOL_STATUS",
+                  "DOCUMENTATION_RETURNED_BY_TOOL"
+                ]
+              }
+            }
+          }
+        },
+        "uncertainty": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "q01": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "question_id",
+        "status",
+        "answer",
+        "evidence",
+        "uncertainty"
+      ],
+      "properties": {
+        "question_id": {
+          "type": "string",
+          "const": "Q01"
+        },
+        "status": {
+          "enum": [
+            "ANSWERED",
+            "PARTIAL",
+            "NOT_APPLICABLE",
+            "UNAVAILABLE",
+            "ABSTAINED",
+            "FAILED"
+          ]
+        },
+        "answer": {
+          "type": "string"
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "path",
+              "symbol",
+              "claim",
+              "source"
+            ],
+            "properties": {
+              "path": {
+                "type": "string"
+              },
+              "symbol": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "claim": {
+                "type": "string"
+              },
+              "source": {
+                "enum": [
+                  "TOOL_RETURNED_SOURCE",
+                  "TOOL_GRAPH_FACT",
+                  "TOOL_STATUS",
+                  "DOCUMENTATION_RETURNED_BY_TOOL"
+                ]
+              }
+            }
+          }
+        },
+        "uncertainty": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "q02": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "question_id",
+        "status",
+        "answer",
+        "evidence",
+        "uncertainty"
+      ],
+      "properties": {
+        "question_id": {
+          "type": "string",
+          "const": "Q02"
+        },
+        "status": {
+          "enum": [
+            "ANSWERED",
+            "PARTIAL",
+            "NOT_APPLICABLE",
+            "UNAVAILABLE",
+            "ABSTAINED",
+            "FAILED"
+          ]
+        },
+        "answer": {
+          "type": "string"
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "path",
+              "symbol",
+              "claim",
+              "source"
+            ],
+            "properties": {
+              "path": {
+                "type": "string"
+              },
+              "symbol": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "claim": {
+                "type": "string"
+              },
+              "source": {
+                "enum": [
+                  "TOOL_RETURNED_SOURCE",
+                  "TOOL_GRAPH_FACT",
+                  "TOOL_STATUS",
+                  "DOCUMENTATION_RETURNED_BY_TOOL"
+                ]
+              }
+            }
+          }
+        },
+        "uncertainty": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "q03": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "question_id",
+        "status",
+        "answer",
+        "evidence",
+        "uncertainty"
+      ],
+      "properties": {
+        "question_id": {
+          "type": "string",
+          "const": "Q03"
+        },
+        "status": {
+          "enum": [
+            "ANSWERED",
+            "PARTIAL",
+            "NOT_APPLICABLE",
+            "UNAVAILABLE",
+            "ABSTAINED",
+            "FAILED"
+          ]
+        },
+        "answer": {
+          "type": "string"
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "path",
+              "symbol",
+              "claim",
+              "source"
+            ],
+            "properties": {
+              "path": {
+                "type": "string"
+              },
+              "symbol": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "claim": {
+                "type": "string"
+              },
+              "source": {
+                "enum": [
+                  "TOOL_RETURNED_SOURCE",
+                  "TOOL_GRAPH_FACT",
+                  "TOOL_STATUS",
+                  "DOCUMENTATION_RETURNED_BY_TOOL"
+                ]
+              }
+            }
+          }
+        },
+        "uncertainty": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "q04": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "question_id",
+        "status",
+        "answer",
+        "evidence",
+        "uncertainty"
+      ],
+      "properties": {
+        "question_id": {
+          "type": "string",
+          "const": "Q04"
+        },
+        "status": {
+          "enum": [
+            "ANSWERED",
+            "PARTIAL",
+            "NOT_APPLICABLE",
+            "UNAVAILABLE",
+            "ABSTAINED",
+            "FAILED"
+          ]
+        },
+        "answer": {
+          "type": "string"
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "path",
+              "symbol",
+              "claim",
+              "source"
+            ],
+            "properties": {
+              "path": {
+                "type": "string"
+              },
+              "symbol": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "claim": {
+                "type": "string"
+              },
+              "source": {
+                "enum": [
+                  "TOOL_RETURNED_SOURCE",
+                  "TOOL_GRAPH_FACT",
+                  "TOOL_STATUS",
+                  "DOCUMENTATION_RETURNED_BY_TOOL"
+                ]
+              }
+            }
+          }
+        },
+        "uncertainty": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "q05": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "question_id",
+        "status",
+        "answer",
+        "evidence",
+        "uncertainty"
+      ],
+      "properties": {
+        "question_id": {
+          "type": "string",
+          "const": "Q05"
+        },
+        "status": {
+          "enum": [
+            "ANSWERED",
+            "PARTIAL",
+            "NOT_APPLICABLE",
+            "UNAVAILABLE",
+            "ABSTAINED",
+            "FAILED"
+          ]
+        },
+        "answer": {
+          "type": "string"
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "path",
+              "symbol",
+              "claim",
+              "source"
+            ],
+            "properties": {
+              "path": {
+                "type": "string"
+              },
+              "symbol": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "claim": {
+                "type": "string"
+              },
+              "source": {
+                "enum": [
+                  "TOOL_RETURNED_SOURCE",
+                  "TOOL_GRAPH_FACT",
+                  "TOOL_STATUS",
+                  "DOCUMENTATION_RETURNED_BY_TOOL"
+                ]
+              }
+            }
+          }
+        },
+        "uncertainty": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "q06": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "question_id",
+        "status",
+        "answer",
+        "evidence",
+        "uncertainty"
+      ],
+      "properties": {
+        "question_id": {
+          "type": "string",
+          "const": "Q06"
+        },
+        "status": {
+          "enum": [
+            "ANSWERED",
+            "PARTIAL",
+            "NOT_APPLICABLE",
+            "UNAVAILABLE",
+            "ABSTAINED",
+            "FAILED"
+          ]
+        },
+        "answer": {
+          "type": "string"
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "path",
+              "symbol",
+              "claim",
+              "source"
+            ],
+            "properties": {
+              "path": {
+                "type": "string"
+              },
+              "symbol": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "claim": {
+                "type": "string"
+              },
+              "source": {
+                "enum": [
+                  "TOOL_RETURNED_SOURCE",
+                  "TOOL_GRAPH_FACT",
+                  "TOOL_STATUS",
+                  "DOCUMENTATION_RETURNED_BY_TOOL"
+                ]
+              }
+            }
+          }
+        },
+        "uncertainty": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "q07": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "question_id",
+        "status",
+        "answer",
+        "evidence",
+        "uncertainty"
+      ],
+      "properties": {
+        "question_id": {
+          "type": "string",
+          "const": "Q07"
+        },
+        "status": {
+          "enum": [
+            "ANSWERED",
+            "PARTIAL",
+            "NOT_APPLICABLE",
+            "UNAVAILABLE",
+            "ABSTAINED",
+            "FAILED"
+          ]
+        },
+        "answer": {
+          "type": "string"
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "path",
+              "symbol",
+              "claim",
+              "source"
+            ],
+            "properties": {
+              "path": {
+                "type": "string"
+              },
+              "symbol": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "claim": {
+                "type": "string"
+              },
+              "source": {
+                "enum": [
+                  "TOOL_RETURNED_SOURCE",
+                  "TOOL_GRAPH_FACT",
+                  "TOOL_STATUS",
+                  "DOCUMENTATION_RETURNED_BY_TOOL"
+                ]
+              }
+            }
+          }
+        },
+        "uncertainty": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "q08": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "question_id",
+        "status",
+        "answer",
+        "evidence",
+        "uncertainty"
+      ],
+      "properties": {
+        "question_id": {
+          "type": "string",
+          "const": "Q08"
+        },
+        "status": {
+          "enum": [
+            "ANSWERED",
+            "PARTIAL",
+            "NOT_APPLICABLE",
+            "UNAVAILABLE",
+            "ABSTAINED",
+            "FAILED"
+          ]
+        },
+        "answer": {
+          "type": "string"
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "path",
+              "symbol",
+              "claim",
+              "source"
+            ],
+            "properties": {
+              "path": {
+                "type": "string"
+              },
+              "symbol": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "claim": {
+                "type": "string"
+              },
+              "source": {
+                "enum": [
+                  "TOOL_RETURNED_SOURCE",
+                  "TOOL_GRAPH_FACT",
+                  "TOOL_STATUS",
+                  "DOCUMENTATION_RETURNED_BY_TOOL"
+                ]
+              }
+            }
+          }
+        },
+        "uncertainty": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "q09": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "question_id",
+        "status",
+        "answer",
+        "evidence",
+        "uncertainty"
+      ],
+      "properties": {
+        "question_id": {
+          "type": "string",
+          "const": "Q09"
+        },
+        "status": {
+          "enum": [
+            "ANSWERED",
+            "PARTIAL",
+            "NOT_APPLICABLE",
+            "UNAVAILABLE",
+            "ABSTAINED",
+            "FAILED"
+          ]
+        },
+        "answer": {
+          "type": "string"
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "path",
+              "symbol",
+              "claim",
+              "source"
+            ],
+            "properties": {
+              "path": {
+                "type": "string"
+              },
+              "symbol": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "claim": {
+                "type": "string"
+              },
+              "source": {
+                "enum": [
+                  "TOOL_RETURNED_SOURCE",
+                  "TOOL_GRAPH_FACT",
+                  "TOOL_STATUS",
+                  "DOCUMENTATION_RETURNED_BY_TOOL"
+                ]
+              }
+            }
+          }
+        },
+        "uncertainty": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "q10": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "question_id",
+        "status",
+        "answer",
+        "evidence",
+        "uncertainty"
+      ],
+      "properties": {
+        "question_id": {
+          "type": "string",
+          "const": "Q10"
+        },
+        "status": {
+          "enum": [
+            "ANSWERED",
+            "PARTIAL",
+            "NOT_APPLICABLE",
+            "UNAVAILABLE",
+            "ABSTAINED",
+            "FAILED"
+          ]
+        },
+        "answer": {
+          "type": "string"
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "path",
+              "symbol",
+              "claim",
+              "source"
+            ],
+            "properties": {
+              "path": {
+                "type": "string"
+              },
+              "symbol": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "claim": {
+                "type": "string"
+              },
+              "source": {
+                "enum": [
+                  "TOOL_RETURNED_SOURCE",
+                  "TOOL_GRAPH_FACT",
+                  "TOOL_STATUS",
+                  "DOCUMENTATION_RETURNED_BY_TOOL"
+                ]
+              }
+            }
+          }
+        },
+        "uncertainty": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "q11": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "question_id",
+        "status",
+        "answer",
+        "evidence",
+        "uncertainty"
+      ],
+      "properties": {
+        "question_id": {
+          "type": "string",
+          "const": "Q11"
+        },
+        "status": {
+          "enum": [
+            "ANSWERED",
+            "PARTIAL",
+            "NOT_APPLICABLE",
+            "UNAVAILABLE",
+            "ABSTAINED",
+            "FAILED"
+          ]
+        },
+        "answer": {
+          "type": "string"
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "path",
+              "symbol",
+              "claim",
+              "source"
+            ],
+            "properties": {
+              "path": {
+                "type": "string"
+              },
+              "symbol": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "claim": {
+                "type": "string"
+              },
+              "source": {
+                "enum": [
+                  "TOOL_RETURNED_SOURCE",
+                  "TOOL_GRAPH_FACT",
+                  "TOOL_STATUS",
+                  "DOCUMENTATION_RETURNED_BY_TOOL"
+                ]
+              }
+            }
+          }
+        },
+        "uncertainty": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "provider_answer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "question_id",
+        "status",
+        "answer",
+        "evidence",
+        "uncertainty"
+      ],
+      "properties": {
+        "question_id": {
+          "type": "string",
+          "enum": [
+            "Q01",
+            "Q02",
+            "Q03",
+            "Q04",
+            "Q05",
+            "Q06",
+            "Q07",
+            "Q08",
+            "Q09",
+            "Q10",
+            "Q11"
+          ]
+        },
+        "status": {
+          "enum": [
+            "ANSWERED",
+            "PARTIAL",
+            "NOT_APPLICABLE",
+            "UNAVAILABLE",
+            "ABSTAINED",
+            "FAILED"
+          ]
+        },
+        "answer": {
+          "type": "string"
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "path",
+              "symbol",
+              "claim",
+              "source"
+            ],
+            "properties": {
+              "path": {
+                "type": "string"
+              },
+              "symbol": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "claim": {
+                "type": "string"
+              },
+              "source": {
+                "enum": [
+                  "TOOL_RETURNED_SOURCE",
+                  "TOOL_GRAPH_FACT",
+                  "TOOL_STATUS",
+                  "DOCUMENTATION_RETURNED_BY_TOOL"
+                ]
+              }
+            }
+          }
+        },
+        "uncertainty": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

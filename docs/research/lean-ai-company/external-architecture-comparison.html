@@ -426,7 +426,7 @@
             <td>Ad hoc runtime mutation, unversioned prompts/tools, non-replayable workflow behavior.</td>
           </tr>
           <tr>
-            <td><strong>Gascity</strong><br><code>external/gascity</code></td>
+            <td><strong>Gascity</strong><br><code>external/agent-systems/gascity</code></td>
             <td>Machine supervisor and per-city <code>CityRuntime</code> reconcile desired state.</td>
             <td><code>city.toml</code>, packs, formulas, orders, Beads, session beads, supervisor registry, event logs.</td>
             <td>Runtime providers such as tmux/subprocess/ACP start, observe, nudge, and stop sessions.</td>
@@ -434,7 +434,7 @@
             <td>Being the product app database, workflow engine, or UI-first company product.</td>
           </tr>
           <tr>
-            <td><strong>Gastown</strong><br><code>external/gastown</code></td>
+            <td><strong>Gastown</strong><br><code>external/agent-systems/gastown</code></td>
             <td><code>gt</code> CLI plus daemon/refinery/witness runtime around towns, rigs, and polecats.</td>
             <td>Town Beads, rig Beads, Dolt SQL server, git repos/worktrees, config/runtime files.</td>
             <td>Tmux-backed agent sessions, worktrees, merge queue, recovery daemon.</td>
@@ -442,7 +442,7 @@
             <td>Replacing a web product control plane or Temporal-backed durable workflow model.</td>
           </tr>
           <tr>
-            <td><strong>Paperclip</strong><br><code>external/paperclip</code></td>
+            <td><strong>Paperclip</strong><br><code>external/agent-systems/paperclip</code></td>
             <td>Node/Express server service layer and heartbeat service.</td>
             <td>Broad Postgres/Drizzle schema for companies, agents, issues, runs, wakeups, costs, approvals, plugins, environments, workspaces.</td>
             <td>Heartbeat claims queued work, realizes workspace/environment, calls adapters, persists logs/usage/results.</td>
@@ -450,7 +450,7 @@
             <td>Lean first cut; Temporal-first execution; strict schema ownership if copied wholesale.</td>
           </tr>
           <tr>
-            <td><strong>OpenHands</strong><br><code>external/OpenHands</code></td>
+            <td><strong>OpenHands</strong><br><code>external/agent-systems/OpenHands</code></td>
             <td>FastAPI app-server and React frontend around sandbox-hosted agent-server.</td>
             <td>SQL metadata/start tasks/callbacks/pending messages, file/object event storage, settings/secrets stores, sandbox records.</td>
             <td>App-server starts conversations; sandbox agent-server owns running conversation.</td>
@@ -982,7 +982,7 @@
             <td><span class="tag direct">High for checked-out source snapshot; SDK internals are outside this repo</span></td>
           </tr>
           <tr>
-            <td><a href="../../../external/paperclip/packages/adapters/codex-local/src/index.ts">Paperclip Codex local adapter</a> and <a href="../../../external/paperclip/packages/adapters/claude-local/src/server/execute.ts">Claude local adapter</a></td>
+            <td><a href="../../../external/agent-systems/paperclip/packages/adapters/codex-local/src/index.ts">Paperclip Codex local adapter</a> and <a href="../../../external/agent-systems/paperclip/packages/adapters/claude-local/src/server/execute.ts">Claude local adapter</a></td>
             <td>Subscription-aware local adapter evidence.</td>
             <td><span class="tag moderate">Medium; exact auth behavior still requires live account-mode tests</span></td>
           </tr>

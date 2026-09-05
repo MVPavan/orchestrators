@@ -1,0 +1,133 @@
+{
+  "policy_version": "1.0",
+  "tool_lane": "codegraph",
+  "mode": "cli",
+  "fixture_root": "${FIXTURE_ROOT}",
+  "scratch_root": "${SCRATCH_ROOT}",
+  "cwd": "${FIXTURE_ROOT}",
+  "environment": {
+    "PATH": "${SCRATCH_ROOT}/bin",
+    "HOME": "${SCRATCH_ROOT}/home",
+    "TMPDIR": "${SCRATCH_ROOT}/tmp",
+    "LANG": "C.UTF-8",
+    "CODEGRAPH_DIR": ".codegraph-probe",
+    "CODEGRAPH_NO_DAEMON": "1",
+    "CODEGRAPH_NO_WATCH": "1",
+    "DO_NOT_TRACK": "1"
+  },
+  "executable": {
+    "realpath": "${EXECUTABLE_REALPATH}",
+    "sha256": "${EXECUTABLE_SHA256}"
+  },
+  "command_template": ["${EXECUTABLE_REALPATH}"],
+  "public_operations": [
+    {
+      "name": "query",
+      "description": "Search indexed symbols in the assigned fixture.",
+      "input_schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {"query": {"type": "string"}},
+        "required": ["query"]
+      },
+      "argument_policy": {"query": {"kind": "text"}},
+      "argv_template": ["${EXECUTABLE_REALPATH}", "query", "{query}", "--path", "${FIXTURE_ROOT}", "--json"]
+    },
+    {
+      "name": "explore",
+      "description": "Explore a systems question in the assigned fixture.",
+      "input_schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {"query": {"type": "string"}},
+        "required": ["query"]
+      },
+      "argument_policy": {"query": {"kind": "text"}},
+      "argv_template": ["${EXECUTABLE_REALPATH}", "explore", "{query}", "--path", "${FIXTURE_ROOT}"]
+    },
+    {
+      "name": "callers",
+      "description": "List callers of one symbol in the assigned fixture.",
+      "input_schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {"symbol": {"type": "string"}},
+        "required": ["symbol"]
+      },
+      "argument_policy": {"symbol": {"kind": "text"}},
+      "argv_template": ["${EXECUTABLE_REALPATH}", "callers", "{symbol}", "--path", "${FIXTURE_ROOT}", "--json"]
+    },
+    {
+      "name": "callees",
+      "description": "List callees of one symbol in the assigned fixture.",
+      "input_schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {"symbol": {"type": "string"}},
+        "required": ["symbol"]
+      },
+      "argument_policy": {"symbol": {"kind": "text"}},
+      "argv_template": ["${EXECUTABLE_REALPATH}", "callees", "{symbol}", "--path", "${FIXTURE_ROOT}", "--json"]
+    },
+    {
+      "name": "impact",
+      "description": "Trace reverse impact for one symbol in the assigned fixture.",
+      "input_schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {"symbol": {"type": "string"}},
+        "required": ["symbol"]
+      },
+      "argument_policy": {"symbol": {"kind": "text"}},
+      "argv_template": ["${EXECUTABLE_REALPATH}", "impact", "{symbol}", "--path", "${FIXTURE_ROOT}", "--json"]
+    },
+    {
+      "name": "node",
+      "description": "Inspect one indexed symbol in the assigned fixture.",
+      "input_schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {"symbol": {"type": "string"}},
+        "required": ["symbol"]
+      },
+      "argument_policy": {"symbol": {"kind": "text"}},
+      "argv_template": ["${EXECUTABLE_REALPATH}", "node", "{symbol}", "--path", "${FIXTURE_ROOT}"]
+    },
+    {
+      "name": "status",
+      "description": "Report index status for the assigned fixture.",
+      "input_schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {},
+        "required": []
+      },
+      "argument_policy": {},
+      "argv_template": ["${EXECUTABLE_REALPATH}", "status", "${FIXTURE_ROOT}", "--json"]
+    },
+    {
+      "name": "files",
+      "description": "List indexed files matching a safe relative pattern.",
+      "input_schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {"pattern": {"type": "string"}},
+        "required": ["pattern"]
+      },
+      "argument_policy": {"pattern": {"kind": "text"}},
+      "argv_template": ["${EXECUTABLE_REALPATH}", "files", "--path", "${FIXTURE_ROOT}", "--pattern", "{pattern}", "--format", "flat"]
+    }
+  ],
+  "expected_surface": {
+    "tools": ["query", "explore", "callers", "callees", "impact", "node", "status", "files"],
+    "resources": [],
+    "resource_templates": [],
+    "prompts": [],
+    "capabilities": ["tools"],
+    "instructions_sha256": null
+  },
+  "expected_surface_digests": {},
+  "allowed_tool_names": ["query", "explore", "callers", "callees", "impact", "node", "status", "files"],
+  "allowed_mcp_methods": ["initialize", "notifications/initialized", "ping", "tools/list", "tools/call"],
+  "denied_content_sha256": []
+}

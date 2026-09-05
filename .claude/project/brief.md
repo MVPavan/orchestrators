@@ -18,8 +18,8 @@ The repo tracks upstream projects as Git submodules under `external/`:
 
 | Path | Upstream | Branch |
 | --- | --- | --- |
-| `external/gascity` | `https://github.com/gastownhall/gascity.git` | `main` |
-| `external/gastown` | `https://github.com/gastownhall/gastown.git` | `main` |
+| `external/agent-systems/gascity` | `https://github.com/gastownhall/gascity.git` | `main` |
+| `external/agent-systems/gastown` | `https://github.com/gastownhall/gastown.git` | `main` |
 
 Only submodule commit pointers belong to this parent repo. The internal files and history of those projects stay in their own repositories.
 
@@ -41,7 +41,7 @@ Only submodule commit pointers belong to this parent repo. The internal files an
 
 ## Non-Negotiable Constraints
 
-- Keep `external/gascity` and `external/gastown` as submodules, not copied source trees.
+- Keep `external/agent-systems/gascity` and `external/agent-systems/gastown` as submodules, not copied source trees.
 - Do not hand-edit Beads-generated workstream mirrors once the renderer exists; update Beads first, then regenerate.
 - Do not commit or push unless explicitly asked or an active workflow grants that authority.
 - Do not claim tests or runtime behavior for first-party code until such code and verification commands exist.

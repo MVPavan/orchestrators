@@ -88,7 +88,7 @@ Record verified, likely-to-recur patterns in `.claude/project/learnings.md` (for
 
 ## External Submodules
 
-`external/gascity` and `external/gastown` are Git submodules. The parent repo tracks their commit pointers only. Do not edit submodule internals unless the task is explicitly submodule-local; for upstream sync, update and stage the submodule path.
+`external/agent-systems/gascity` and `external/agent-systems/gastown` are Git submodules. The parent repo tracks their commit pointers only. Do not edit submodule internals unless the task is explicitly submodule-local; for upstream sync, update and stage the submodule path.
 
 ## Beads Issue Tracker
 

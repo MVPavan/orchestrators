@@ -1,0 +1,77 @@
+{
+  "schema_version": "1.0",
+  "policy": {
+    "max_delegated_turns_before_pi": 8,
+    "max_credit_equivalent_per_turn": 12.0,
+    "max_credit_equivalent_phase_0b": 50.0,
+    "rates_per_million_tokens": {
+      "gpt-5.6-terra": {
+        "input": 62.5,
+        "cached_input": 6.25,
+        "output": 375.0
+      }
+    }
+  },
+  "totals": {
+    "delegated_turns": 4,
+    "credit_equivalent": 25.869838
+  },
+  "turns": [
+    {
+      "sequence": 1,
+      "purpose": "orch-8sk.16.7 runner acceptance review",
+      "session_id": "019f94a5-5eeb-7722-9448-056432c3e553",
+      "model": "gpt-5.6-terra",
+      "effort": "medium",
+      "input_tokens": 434751,
+      "cached_input_tokens": 369152,
+      "uncached_input_tokens": 65599,
+      "output_tokens": 3547,
+      "credit_equivalent": 7.737262,
+      "within_per_turn_limit": true,
+      "result": "FAIL_REVIEW_ADJUDICATED_LOCALLY"
+    },
+    {
+      "sequence": 2,
+      "purpose": "orch-8sk.16.4 Graphify evidence stability repair",
+      "session_id": "019f94a9-010a-7603-a0ee-9ba3566e7651",
+      "model": "gpt-5.6-terra",
+      "effort": "medium",
+      "input_tokens": 727510,
+      "cached_input_tokens": 657152,
+      "uncached_input_tokens": 70358,
+      "output_tokens": 6586,
+      "credit_equivalent": 10.974325,
+      "within_per_turn_limit": true,
+      "result": "DONE_LIMIT_RAISED_WITH_USER_APPROVAL"
+    },
+    {
+      "sequence": 3,
+      "purpose": "CodeGraph bounded provider probe after sandbox repair",
+      "session_id": "019f9767-a19a-78e0-a91b-88279f486153",
+      "model": "gpt-5.6-terra",
+      "effort": "medium",
+      "input_tokens": 64565,
+      "cached_input_tokens": 45824,
+      "uncached_input_tokens": 18741,
+      "output_tokens": 1929,
+      "credit_equivalent": 2.181088,
+      "within_per_turn_limit": true,
+      "result": "BLOCKED_MISSING_INDEX_FIXED_AFTER_RUN"
+    },
+    {
+      "sequence": 4,
+      "purpose": "User-approved final CodeGraph capability probe",
+      "session_id": "019f9770-37d1-76f2-bfe9-02e7cf1dc5a8",
+      "model": "gpt-5.6-terra",
+      "effort": "medium",
+      "input_tokens": 128477,
+      "cached_input_tokens": 97536,
+      "uncached_input_tokens": 30941,
+      "output_tokens": 6490,
+      "credit_equivalent": 4.977163,
+      "within_per_turn_limit": true,
+      "result": "TOOL_SUCCESS_STRICT_AUDIT_OPERATION_ORDER_MISMATCH"
+    }
+  ]
+}

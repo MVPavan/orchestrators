@@ -1,0 +1,35 @@
+diff --git a/packages/core/src/contracts.ts b/packages/core/src/contracts.ts
+--- a/packages/core/src/contracts.ts
++++ b/packages/core/src/contracts.ts
+@@ -12,3 +12,4 @@ export interface WorkResult {
+   state: "AUTHORIZED" | "COMPLETED" | "FAILED";
+   output: string;
++  attempts: number;
+ }
+diff --git a/packages/core/src/handlers.ts b/packages/core/src/handlers.ts
+--- a/packages/core/src/handlers.ts
++++ b/packages/core/src/handlers.ts
+@@ -10,4 +10,5 @@ export abstract class BaseHandler implements Handler {
+       state: "COMPLETED",
+-      output: this.transform(normalize(request.payload))
++      output: this.transform(normalize(request.payload)),
++      attempts: 1
+     };
+   }
+diff --git a/packages/core/src/workflow.ts b/packages/core/src/workflow.ts
+--- a/packages/core/src/workflow.ts
++++ b/packages/core/src/workflow.ts
+@@ -22,4 +22,5 @@ export class WorkflowEngine {
+         state: "AUTHORIZED",
+-        output: ""
++        output: "",
++        attempts: 0
+       };
+       this.store.save(authorized);
+@@ -36,4 +37,5 @@ export class WorkflowEngine {
+         state: "FAILED",
+-        output: reason
++        output: reason,
++        attempts: 1
+       };
+       this.store.save(failed);

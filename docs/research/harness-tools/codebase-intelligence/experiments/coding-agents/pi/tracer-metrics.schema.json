@@ -1,0 +1,175 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://orchestrators.local/schemas/pi-tracer-metrics-v1.json",
+  "title": "Pi tracer externally measured metrics",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "run_id",
+    "arm",
+    "subject_commit",
+    "model",
+    "reasoning_effort",
+    "answer_turns",
+    "provider_usage",
+    "operations",
+    "elapsed_ms",
+    "result",
+    "contamination"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "run_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "arm": {
+      "enum": [
+        "source-only",
+        "codegraph-assisted",
+        "cbm-assisted",
+        "graphify-assisted"
+      ]
+    },
+    "subject_commit": {
+      "const": "24bace27cf308c89707cf8005b4795d873e23f17"
+    },
+    "model": {
+      "const": "gpt-5.6-terra"
+    },
+    "reasoning_effort": {
+      "const": "medium"
+    },
+    "answer_turns": {
+      "const": 1
+    },
+    "provider_usage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "input_tokens",
+        "cached_input_tokens",
+        "output_tokens",
+        "reasoning_tokens",
+        "measurement_source"
+      ],
+      "properties": {
+        "input_tokens": {
+          "$ref": "#/$defs/count_or_unknown"
+        },
+        "cached_input_tokens": {
+          "$ref": "#/$defs/count_or_unknown"
+        },
+        "output_tokens": {
+          "$ref": "#/$defs/count_or_unknown"
+        },
+        "reasoning_tokens": {
+          "$ref": "#/$defs/count_or_unknown"
+        },
+        "measurement_source": {
+          "const": "provider_completion_event"
+        }
+      }
+    },
+    "operations": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "graph_calls",
+        "source_searches",
+        "file_reads",
+        "returned_bytes",
+        "returned_local_tokens"
+      ],
+      "properties": {
+        "graph_calls": {
+          "$ref": "#/$defs/count_or_unknown"
+        },
+        "source_searches": {
+          "$ref": "#/$defs/count_or_unknown"
+        },
+        "file_reads": {
+          "$ref": "#/$defs/count_or_unknown"
+        },
+        "returned_bytes": {
+          "$ref": "#/$defs/count_or_unknown"
+        },
+        "returned_local_tokens": {
+          "$ref": "#/$defs/count_or_unknown"
+        }
+      }
+    },
+    "elapsed_ms": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "result": {
+      "enum": [
+        "COMPLETED",
+        "PARTIAL",
+        "SETUP_FAILURE",
+        "PROVIDER_FAILURE",
+        "CONTAMINATED"
+      ]
+    },
+    "contamination": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "other_graph_tool_seen",
+        "reference_or_scoring_anchor_seen",
+        "web_access_seen",
+        "live_submodule_access_seen",
+        "pre_graph_source_access_seen",
+        "unexpected_write_seen",
+        "multiple_turns_seen",
+        "notes"
+      ],
+      "properties": {
+        "other_graph_tool_seen": {
+          "type": "boolean"
+        },
+        "reference_or_scoring_anchor_seen": {
+          "type": "boolean"
+        },
+        "web_access_seen": {
+          "type": "boolean"
+        },
+        "live_submodule_access_seen": {
+          "type": "boolean"
+        },
+        "pre_graph_source_access_seen": {
+          "type": "boolean"
+        },
+        "unexpected_write_seen": {
+          "type": "boolean"
+        },
+        "multiple_turns_seen": {
+          "type": "boolean"
+        },
+        "notes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "count_or_unknown": {
+      "oneOf": [
+        {
+          "type": "integer",
+          "minimum": 0
+        },
+        {
+          "const": "UNKNOWN"
+        }
+      ]
+    }
+  }
+}

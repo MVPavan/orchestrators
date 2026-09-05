@@ -1,0 +1,153 @@
+{
+  "schema_version": "1.0",
+  "fixture_id": "mixed-ts-rust-capability-v1",
+  "rules": {
+    "visibility": "reference-curator-only",
+    "agent_must_not_receive": true,
+    "evidence_requirement": "A source claim requires a returned source location or graph fact. Documentation-only evidence is labeled separately and cannot establish the scoring anchor by itself.",
+    "cross_language_rule": "Source implements a runtime process and delimiter-protocol boundary but contains no statically resolvable TypeScript-to-Rust symbol call."
+  },
+  "anchors": [
+    {
+      "id": "inventory-packages",
+      "construct": "package-and-language-inventory",
+      "locations": [
+        "package.json",
+        "packages/core/package.json",
+        "packages/core/src/contracts.ts",
+        "packages/gateway/package.json",
+        "packages/gateway/src/main.ts",
+        "rust/policy/Cargo.toml",
+        "rust/policy/src/main.rs"
+      ],
+      "expected": "TypeScript core and gateway packages plus one Rust policy crate with TypeScript and Rust entry points."
+    },
+    {
+      "id": "architecture-composition",
+      "construct": "composition",
+      "locations": [
+        "packages/core/src/workflow.ts:WorkflowEngine",
+        "packages/gateway/src/main.ts:engine"
+      ],
+      "expected": "WorkflowEngine composes Policy, HandlerRegistry, ResultStore, and EventBus."
+    },
+    {
+      "id": "lifecycle-success",
+      "construct": "direct-and-transitive-call-path",
+      "locations": [
+        "packages/gateway/src/main.ts",
+        "packages/gateway/src/router.ts:handleRequest",
+        "packages/core/src/workflow.ts:WorkflowEngine.run",
+        "packages/gateway/src/policy.ts:ProcessPolicy.authorize",
+        "packages/gateway/src/process-launcher.ts:NodeProcessLauncher.request",
+        "rust/policy/src/main.rs:main",
+        "packages/core/src/handlers.ts:HandlerRegistry.resolve",
+        "packages/core/src/handlers.ts:BaseHandler.execute",
+        "packages/core/src/store.ts:ResultStore.save",
+        "packages/core/src/events.ts:EventBus.publish"
+      ],
+      "expected": "The gateway validates, authorizes, resolves a handler dynamically, executes, persists, and publishes completion."
+    },
+    {
+      "id": "interface-implementations",
+      "construct": "interface-and-trait-implementation",
+      "locations": [
+        "packages/core/src/contracts.ts:Policy",
+        "packages/gateway/src/policy.ts:ProcessPolicy",
+        "rust/policy/src/lib.rs:Policy",
+        "rust/policy/src/lib.rs:StrictPolicy"
+      ],
+      "expected": "ProcessPolicy implements the TypeScript Policy contract; StrictPolicy implements the independent Rust Policy trait."
+    },
+    {
+      "id": "inheritance",
+      "construct": "inheritance",
+      "locations": [
+        "packages/core/src/handlers.ts:BaseHandler",
+        "packages/core/src/handlers.ts:PaymentHandler",
+        "packages/core/src/handlers.ts:ReportHandler"
+      ],
+      "expected": "PaymentHandler and ReportHandler extend BaseHandler and implement transform."
+    },
+    {
+      "id": "callback-event",
+      "construct": "callback-and-event-flow",
+      "locations": [
+        "packages/core/src/events.ts:EventBus.subscribe",
+        "packages/core/src/events.ts:EventBus.publish",
+        "packages/gateway/src/main.ts:events.subscribe"
+      ],
+      "expected": "The entry point registers a callback; WorkflowEngine publishes completion or failure to it."
+    },
+    {
+      "id": "name-collision",
+      "construct": "same-name-distinct-binding",
+      "locations": [
+        "packages/core/src/normalize.ts:normalize",
+        "packages/gateway/src/normalize.ts:normalize",
+        "packages/core/src/handlers.ts",
+        "packages/gateway/src/router.ts"
+      ],
+      "expected": "Core normalize processes payload; gateway normalize processes actor. Imports must not conflate them."
+    },
+    {
+      "id": "dynamic-dispatch",
+      "construct": "unresolved-or-dynamic-dispatch",
+      "locations": [
+        "packages/core/src/handlers.ts:HandlerRegistry.resolve",
+        "packages/gateway/src/policy.ts:ProcessLauncher.request",
+        "packages/gateway/src/process-launcher.ts:NodeProcessLauncher.request",
+        "packages/gateway/src/main.ts:FIXTURE_POLICY_COMMAND"
+      ],
+      "expected": "Map lookup chooses a Handler at runtime; NodeProcessLauncher spawns the command selected from FIXTURE_POLICY_COMMAND or a PATH-resolved fallback."
+    },
+    {
+      "id": "cross-language-boundary",
+      "construct": "process-and-protocol-cross-language-runtime-boundary",
+      "locations": [
+        "packages/gateway/src/policy.ts:ProcessPolicy.authorize",
+        "packages/gateway/src/process-launcher.ts:NodeProcessLauncher.request",
+        "rust/policy/src/main.rs:main"
+      ],
+      "expected": "TypeScript spawns a runtime-selected command and sends fixture-policy-v1|ACTOR; Rust parses that delimiter protocol and replies fixture-policy-v1|RESULT. No direct source-level TypeScript-to-Rust symbol edge exists."
+    },
+    {
+      "id": "state-transitions",
+      "construct": "persistence-like-state",
+      "locations": [
+        "packages/core/src/store.ts:ResultStore",
+        "packages/core/src/workflow.ts:WorkflowEngine.run"
+      ],
+      "expected": "ResultStore retains per-request transition history; run writes AUTHORIZED then COMPLETED, or FAILED on errors."
+    },
+    {
+      "id": "trust-and-failure",
+      "construct": "trust-and-failure-path",
+      "locations": [
+        "packages/gateway/src/router.ts:handleRequest",
+        "packages/core/src/workflow.ts:WorkflowEngine.run",
+        "packages/core/src/events.ts:WorkflowEvent"
+      ],
+      "expected": "Gateway validation is the trust boundary; denials and downstream failures persist FAILED, publish workflow.failed, and rethrow."
+    },
+    {
+      "id": "synthetic-impact",
+      "construct": "change-impact",
+      "locations": [
+        "synthetic-change.patch",
+        "packages/core/src/contracts.ts:WorkResult",
+        "packages/core/src/handlers.ts:BaseHandler.execute",
+        "packages/core/src/workflow.ts:WorkflowEngine.run"
+      ],
+      "expected": "Adding required WorkResult.attempts affects all three result constructors; ResultStore consumes WorkResult without constructing it."
+    },
+    {
+      "id": "unsupported-input",
+      "construct": "unsupported-file-type",
+      "locations": [
+        "unsupported/legacy.capfixture"
+      ],
+      "expected": "The tool must explicitly report whether the unknown extension was indexed, skipped, or unsupported."
+    }
+  ]
+}

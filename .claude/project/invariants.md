@@ -63,6 +63,6 @@ These invariants describe the repo as it exists now. Update them when the projec
 ## [INV-08] Parent Repo Has No First-Party Source Tree Yet
 
 - Statement: the parent repo currently has no `src/` or `tests/`; upstream source lives in submodules.
-- Check: `test ! -d src && test ! -d tests && test -d external/gascity && test -d external/gastown`
+- Check: `test ! -d src && test ! -d tests && test -d external/agent-systems/gascity && test -d external/agent-systems/gastown`
 - Must return: exit 0.
 - Why it matters: verification must not pretend there are application tests until first-party code exists.

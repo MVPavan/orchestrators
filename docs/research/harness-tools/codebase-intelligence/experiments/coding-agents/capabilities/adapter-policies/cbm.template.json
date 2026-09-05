@@ -1,0 +1,61 @@
+{
+  "policy_version": "1.0",
+  "tool_lane": "cbm",
+  "mode": "native_mcp",
+  "fixture_root": "${FIXTURE_ROOT}",
+  "scratch_root": "${SCRATCH_ROOT}",
+  "cwd": "${FIXTURE_ROOT}",
+  "environment": {
+    "PATH": "${SCRATCH_ROOT}/bin",
+    "HOME": "${SCRATCH_ROOT}/home",
+    "TMPDIR": "${SCRATCH_ROOT}/tmp",
+    "LANG": "C.UTF-8",
+    "CBM_CACHE_DIR": "${SCRATCH_ROOT}/cache",
+    "CBM_LOG_LEVEL": "error",
+    "CBM_WORKERS": "1"
+  },
+  "executable": {
+    "realpath": "${EXECUTABLE_REALPATH}",
+    "sha256": "${EXECUTABLE_SHA256}"
+  },
+  "command_template": ["${EXECUTABLE_REALPATH}"],
+  "expected_surface": {
+    "tools": [
+      "index_repository",
+      "search_graph",
+      "query_graph",
+      "trace_path",
+      "get_code_snippet",
+      "get_graph_schema",
+      "get_architecture",
+      "search_code",
+      "list_projects",
+      "delete_project",
+      "index_status",
+      "detect_changes",
+      "manage_adr",
+      "ingest_traces"
+    ],
+    "resources": [],
+    "resource_templates": [],
+    "prompts": [],
+    "capabilities": ["tools"],
+    "instructions_sha256": null
+  },
+  "expected_surface_digests": {},
+  "allowed_tool_names": [
+    "index_repository",
+    "search_graph",
+    "query_graph",
+    "trace_path",
+    "get_code_snippet",
+    "get_graph_schema",
+    "get_architecture",
+    "search_code",
+    "list_projects",
+    "index_status",
+    "detect_changes"
+  ],
+  "allowed_mcp_methods": ["initialize", "notifications/initialized", "ping", "tools/list", "tools/call"],
+  "denied_content_sha256": []
+}

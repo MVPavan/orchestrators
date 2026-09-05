@@ -1,0 +1,346 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://orchestrators.local/schemas/capability-probe-output-v1.json",
+  "title": "Capability tool-neutral probe output",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "fixture_id",
+    "run_status",
+    "answers",
+    "operations",
+    "limitations"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "fixture_id": {
+      "const": "mixed-ts-rust-capability-v1"
+    },
+    "run_status": {
+      "enum": [
+        "COMPLETED",
+        "PARTIAL",
+        "FAILED"
+      ]
+    },
+    "answers": {
+      "type": "array",
+      "minItems": 11,
+      "maxItems": 11,
+      "prefixItems": [
+        {
+          "$ref": "#/$defs/q01"
+        },
+        {
+          "$ref": "#/$defs/q02"
+        },
+        {
+          "$ref": "#/$defs/q03"
+        },
+        {
+          "$ref": "#/$defs/q04"
+        },
+        {
+          "$ref": "#/$defs/q05"
+        },
+        {
+          "$ref": "#/$defs/q06"
+        },
+        {
+          "$ref": "#/$defs/q07"
+        },
+        {
+          "$ref": "#/$defs/q08"
+        },
+        {
+          "$ref": "#/$defs/q09"
+        },
+        {
+          "$ref": "#/$defs/q10"
+        },
+        {
+          "$ref": "#/$defs/q11"
+        }
+      ],
+      "items": false
+    },
+    "operations": {
+      "type": "array",
+      "maxItems": 24,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "sequence",
+          "public_operation",
+          "purpose",
+          "result",
+          "output_bytes"
+        ],
+        "properties": {
+          "sequence": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "public_operation": {
+            "type": "string"
+          },
+          "purpose": {
+            "type": "string"
+          },
+          "result": {
+            "enum": [
+              "SUCCESS",
+              "PARTIAL",
+              "NOT_APPLICABLE",
+              "UNAVAILABLE",
+              "FAILED"
+            ]
+          },
+          "output_bytes": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 0
+          }
+        }
+      }
+    },
+    "limitations": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "$defs": {
+    "answer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "question_id",
+        "status",
+        "answer",
+        "evidence",
+        "uncertainty"
+      ],
+      "properties": {
+        "question_id": {
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "ANSWERED",
+            "PARTIAL",
+            "NOT_APPLICABLE",
+            "UNAVAILABLE",
+            "ABSTAINED",
+            "FAILED"
+          ]
+        },
+        "answer": {
+          "type": "string"
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "path",
+              "symbol",
+              "claim",
+              "source"
+            ],
+            "properties": {
+              "path": {
+                "type": "string"
+              },
+              "symbol": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "claim": {
+                "type": "string"
+              },
+              "source": {
+                "enum": [
+                  "TOOL_RETURNED_SOURCE",
+                  "TOOL_GRAPH_FACT",
+                  "TOOL_STATUS",
+                  "DOCUMENTATION_RETURNED_BY_TOOL"
+                ]
+              }
+            }
+          }
+        },
+        "uncertainty": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "q01": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/answer"
+        },
+        {
+          "properties": {
+            "question_id": {
+              "const": "Q01"
+            }
+          }
+        }
+      ]
+    },
+    "q02": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/answer"
+        },
+        {
+          "properties": {
+            "question_id": {
+              "const": "Q02"
+            }
+          }
+        }
+      ]
+    },
+    "q03": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/answer"
+        },
+        {
+          "properties": {
+            "question_id": {
+              "const": "Q03"
+            }
+          }
+        }
+      ]
+    },
+    "q04": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/answer"
+        },
+        {
+          "properties": {
+            "question_id": {
+              "const": "Q04"
+            }
+          }
+        }
+      ]
+    },
+    "q05": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/answer"
+        },
+        {
+          "properties": {
+            "question_id": {
+              "const": "Q05"
+            }
+          }
+        }
+      ]
+    },
+    "q06": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/answer"
+        },
+        {
+          "properties": {
+            "question_id": {
+              "const": "Q06"
+            }
+          }
+        }
+      ]
+    },
+    "q07": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/answer"
+        },
+        {
+          "properties": {
+            "question_id": {
+              "const": "Q07"
+            }
+          }
+        }
+      ]
+    },
+    "q08": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/answer"
+        },
+        {
+          "properties": {
+            "question_id": {
+              "const": "Q08"
+            }
+          }
+        }
+      ]
+    },
+    "q09": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/answer"
+        },
+        {
+          "properties": {
+            "question_id": {
+              "const": "Q09"
+            }
+          }
+        }
+      ]
+    },
+    "q10": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/answer"
+        },
+        {
+          "properties": {
+            "question_id": {
+              "const": "Q10"
+            }
+          }
+        }
+      ]
+    },
+    "q11": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/answer"
+        },
+        {
+          "properties": {
+            "question_id": {
+              "const": "Q11"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

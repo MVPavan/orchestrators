@@ -1,0 +1,5 @@
+blind_label,arm,factual_precision,required_fact_coverage,source_citation_correctness,causal_mechanism,uncertainty_handling,learning_value,total,mandatory_facts_present,missing_mandatory_facts,automatic_failure,quality_gate,review_status
+A,cbm-assisted,2,1,2,2,2,2,11,9,"F05;F10;F11",no,FAIL,"Near threshold; independent second review not run"
+B,source-only,2,0,2,2,2,2,10,7,"F03;F05;F08;F10;F11",no,FAIL,"At numeric threshold but missing mandatory facts; independent second review not run"
+C,graphify-assisted,2,1,2,2,2,2,11,10,"F10;F11",no,FAIL,"Near threshold; independent second review not run"
+D,codegraph-assisted,2,0,2,2,2,2,10,8,"F08;F10;F11;F12",no,FAIL,"At numeric threshold but missing mandatory facts; independent second review not run"
